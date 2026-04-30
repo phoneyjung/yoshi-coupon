@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Yoshi SPA - สุ่มส่วนลด</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -144,36 +143,6 @@
   }
   .btn:disabled { background: #ccc; color: #888; cursor: not-allowed; }
   .btn-staff { background: linear-gradient(135deg, #6a4a4a, #4a2a2a); color: #fff; }
-
-  /* ปุ่มแชร์ - สีสันสดใส น่ากด */
-  .btn-share {
-    background: linear-gradient(135deg, #ff6b9d, #ffb84d);
-    color: #fff;
-    margin-top: 10px;
-    font-size: 16px;
-    box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
-    animation: shareBtnPulse 2.5s ease-in-out infinite;
-  }
-  @keyframes shareBtnPulse {
-    0%, 100% { box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4); transform: scale(1); }
-    50% { box-shadow: 0 5px 25px rgba(255, 107, 157, 0.7); transform: scale(1.02); }
-  }
-  .btn-share:disabled {
-    animation: none;
-    background: #ccc;
-    color: #888;
-  }
-
-  /* กล่องที่จะถูกแคป (ซ่อนตอนปกติ) - คลอน result-box สำหรับ render */
-  .capture-target {
-    background: linear-gradient(135deg, #fff, #fff5f5);
-    color: #d96e87;
-    padding: 30px 25px;
-    border-radius: 20px;
-    border: 3px dashed #ff9eb4;
-    width: 380px;
-    text-align: center;
-  }
 
   .info-box {
     background: rgba(255, 255, 255, 0.7);
@@ -739,6 +708,7 @@
     <div style="display: flex; flex-direction: column; gap: 6px;">
       <button class="demo-reset" onclick="resetDemoData()">🔄 รีเซ็ต</button>
       <button class="demo-reset" onclick="forceJackpot()" style="background: linear-gradient(135deg, #ffd700, #ffb84d); color: #5a2a00;">🏆 บังคับ 300</button>
+      <button class="demo-reset" onclick="previewUsedState()" style="background: linear-gradient(135deg, #999, #666); color: #fff;">👁️ ดูตอนใช้แล้ว</button>
     </div>
   </div>
 
@@ -782,17 +752,12 @@
       <div class="progress-bar" id="progressBar">
         <div class="progress-fill" id="progressFill"></div>
       </div>
-      <div class="others-banner" id="othersBanner">
-        <div class="b1">🎯 ใบที่เหลือถ้าคุณเลือก...</div>
-        <div>ดูซิ! รางวัลที่ใบอื่นซ่อนอยู่</div>
-      </div>
     </div>
 
     <div id="resultBox" class="result-box">
       <h2>🎉 ยินดีด้วย! คุณได้รับส่วนลด 🎉</h2>
       <div class="amount"><span id="amount-display">0</span> บาท</div>
       <div style="font-size: 14px;">ใช้ลดกับราคาปกติ</div>
-      <div class="code" id="couponCodeDisplay">YOSHI-XXXXXX</div>
       <div class="valid">📅 หมดอายุ: <span id="expire-display">31/05/69</span></div>
       <div class="valid">🏪 ใช้ได้ที่ Yoshi SPA เท่านั้น</div>
 
@@ -801,15 +766,8 @@
       </div>
 
       <div id="staffArea">
-        <div class="warning">
-          ⚠️ ห้ามกดใช้สิทธิ์เอง!<br>
-          กรุณาให้พนักงานหน้าร้านกดให้เท่านั้น
-        </div>
         <button id="staff-btn" class="btn btn-staff" onclick="useCoupon()">
           🔒 พนักงานกดเพื่อใช้สิทธิ์
-        </button>
-        <button id="share-btn" class="btn btn-share" onclick="shareCoupon()">
-          📸 แคป แชร์ โชว์เพื่อน
         </button>
       </div>
     </div>
@@ -841,6 +799,57 @@
     <div class="modal-buttons">
       <button class="modal-btn modal-btn-cancel" onclick="cancelChoice()">❌ ไม่ใช่</button>
       <button class="modal-btn modal-btn-confirm" onclick="confirmChoice()">✅ ใช่ค่ะ</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🔒 Modal ใส่รหัสพนักงาน -->
+<div class="modal-overlay" id="staffCodeModal">
+  <div class="modal-box">
+    <div style="font-size: 50px; margin-bottom: 10px;">🔒</div>
+    <div class="modal-title">รหัสพนักงาน</div>
+    <div class="modal-text">
+      กรุณากรอกรหัสพนักงาน<br>
+      <strong style="color:#d96e87;">เพื่อใช้สิทธิ์คูปอง</strong>
+    </div>
+    <input type="password" id="staffCodeInput" placeholder="••••••••"
+           style="width: 100%; padding: 12px 15px; font-size: 16px; border: 2px solid #ff9eb4; border-radius: 10px; margin-bottom: 15px; text-align: center; letter-spacing: 3px; outline: none;">
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelStaffCode()">❌ ยกเลิก</button>
+      <button class="modal-btn modal-btn-confirm" onclick="submitStaffCode()">✅ ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Modal ยืนยันใช้สิทธิ์ -->
+<div class="modal-overlay" id="confirmUseModal">
+  <div class="modal-box">
+    <div style="font-size: 50px; margin-bottom: 10px;">🎫</div>
+    <div class="modal-title">ยืนยันใช้สิทธิ์คูปอง</div>
+    <div class="modal-text">
+      ส่วนลด <strong style="color:#d96e87; font-size: 24px;">
+      <span id="confirmUseAmount">0</span> บาท</strong><br>
+      <span style="color: #999;">เมื่อยืนยันแล้วจะใช้คูปองนี้ทันที</span>
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelUse()">❌ ยกเลิก</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmUse()">✅ ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- 🔄 Modal รีเซ็ต (โหมดทดสอบ) -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal-box">
+    <div style="font-size: 50px; margin-bottom: 10px;">🔄</div>
+    <div class="modal-title">รีเซ็ตข้อมูล?</div>
+    <div class="modal-text">
+      ลบข้อมูลคูปองและสุ่มใหม่<br>
+      <span style="color: #999;">(สำหรับทดสอบเท่านั้น)</span>
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelReset()">❌ ยกเลิก</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmReset()">✅ ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -1073,7 +1082,15 @@ function savePlayData(data) {
 }
 
 function resetDemoData() {
-  if (!confirm("ลบข้อมูลคูปองและสุ่มใหม่?")) return;
+  document.getElementById("resetModal").classList.add("show");
+}
+
+function cancelReset() {
+  document.getElementById("resetModal").classList.remove("show");
+}
+
+function confirmReset() {
+  document.getElementById("resetModal").classList.remove("show");
   localStorage.removeItem("yoshi_played");
   localStorage.removeItem("force_jackpot");
   showToast("✅ รีเซ็ตเรียบร้อย กำลังโหลดใหม่...");
@@ -1085,6 +1102,22 @@ function forceJackpot() {
   localStorage.setItem("force_jackpot", "1");
   localStorage.removeItem("yoshi_played");
   showToast("🏆 ตั้งค่าให้ได้ 300 บาท! กำลังโหลด...", "warn");
+  setTimeout(() => location.reload(), 800);
+}
+
+// 👁️ ดูตัวอย่างหน้าจอตอนใช้คูปองแล้ว
+function previewUsedState() {
+  // สร้างคูปองตัวอย่างเป็น "ใช้แล้ว"
+  const fakeData = {
+    amount: 200,
+    code: "YOSHI-PREVIEW",
+    expireDate: "31/05/69",
+    isUsed: true,
+    date: new Date().toISOString(),
+    usedDate: new Date().toISOString()
+  };
+  savePlayData(fakeData);
+  showToast("👁️ แสดงตัวอย่างคูปองที่ใช้แล้ว", "warn");
   setTimeout(() => location.reload(), 800);
 }
 
@@ -1460,7 +1493,6 @@ function revealCoupon(couponDiv, index) {
   }
 
   setTimeout(() => {
-    document.getElementById("othersBanner").classList.add("show");
     let delay = 0;
     document.querySelectorAll(".coupon").forEach((c, i) => {
       if (i === index) return;
@@ -1530,7 +1562,8 @@ function showResult(amount, code, expireDate, isUsed) {
   }, 200);
 
   document.getElementById("amount-display").textContent = amount;
-  document.getElementById("couponCodeDisplay").textContent = code || "YOSHI-XXXXXX";
+  const codeDisplay = document.getElementById("couponCodeDisplay");
+  if (codeDisplay) codeDisplay.textContent = code || "YOSHI-XXXXXX";
   document.getElementById("expire-display").textContent = expireDate || "31/05/69";
 
   const badge = document.getElementById("statusBadge");
@@ -1540,7 +1573,8 @@ function showResult(amount, code, expireDate, isUsed) {
     badge.innerHTML = "✅ ใช้แล้ว";
     staffBtn.textContent = "คูปองนี้ถูกใช้งานแล้ว";
     staffBtn.disabled = true;
-    document.querySelector("#staffArea .warning").style.display = "none";
+    const warn = document.querySelector("#staffArea .warning");
+    if (warn) warn.style.display = "none";
     document.getElementById("gridSection").classList.add("hidden");
   } else {
     badge.className = "status-badge status-unused";
@@ -1551,13 +1585,35 @@ function showResult(amount, code, expireDate, isUsed) {
 }
 
 function useCoupon() {
-  const code = prompt("🔒 กรุณากรอกรหัสพนักงาน:");
-  if (code === null) return;
+  // เปิด Modal ใส่รหัสพนักงาน
+  document.getElementById("staffCodeInput").value = "";
+  document.getElementById("staffCodeModal").classList.add("show");
+  setTimeout(() => document.getElementById("staffCodeInput").focus(), 300);
+}
+
+function cancelStaffCode() {
+  document.getElementById("staffCodeModal").classList.remove("show");
+}
+
+function submitStaffCode() {
+  const code = document.getElementById("staffCodeInput").value;
   if (code !== STAFF_CODE) {
     showToast("❌ รหัสพนักงานไม่ถูกต้อง", "error");
     return;
   }
-  if (!confirm(`ยืนยันใช้สิทธิ์คูปองส่วนลด ${currentCouponData.amount} บาท?`)) return;
+  // ปิด Modal รหัส
+  document.getElementById("staffCodeModal").classList.remove("show");
+  // เปิด Modal ยืนยันการใช้สิทธิ์
+  document.getElementById("confirmUseAmount").textContent = currentCouponData.amount;
+  document.getElementById("confirmUseModal").classList.add("show");
+}
+
+function cancelUse() {
+  document.getElementById("confirmUseModal").classList.remove("show");
+}
+
+function confirmUse() {
+  document.getElementById("confirmUseModal").classList.remove("show");
   currentCouponData.isUsed = true;
   currentCouponData.usedDate = new Date().toISOString();
   savePlayData(currentCouponData);
@@ -1566,168 +1622,25 @@ function useCoupon() {
   document.getElementById("statusBadge").innerHTML = "✅ ใช้แล้ว";
   document.getElementById("staff-btn").textContent = "คูปองนี้ถูกใช้งานแล้ว";
   document.getElementById("staff-btn").disabled = true;
-  document.querySelector("#staffArea .warning").style.display = "none";
+  const warn = document.querySelector("#staffArea .warning");
+  if (warn) warn.style.display = "none";
 }
 
-// ===== 📸 ปุ่มแคปแชร์โชว์เพื่อน =====
-async function shareCoupon() {
-  const shareBtn = document.getElementById("share-btn");
-  const originalText = shareBtn.innerHTML;
-
-  try {
-    shareBtn.disabled = true;
-    shareBtn.innerHTML = "⏳ กำลังสร้างรูป...";
-
-    // สร้างกล่องคูปองชั่วคราวสำหรับแคป (ตัด UI ที่ไม่จำเป็นออก)
-    const captureBox = createCaptureCard();
-    document.body.appendChild(captureBox);
-
-    // รอให้ DOM render เสร็จ
-    await new Promise(resolve => setTimeout(resolve, 100));
-
-    // แปลงเป็น canvas
-    const canvas = await html2canvas(captureBox, {
-      backgroundColor: null,
-      scale: 2, // ความละเอียดสูง
-      logging: false,
-      useCORS: true,
-      allowTaint: true
-    });
-
-    // ลบกล่องชั่วคราวทิ้ง
-    captureBox.remove();
-
-    // แปลง canvas เป็น blob
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        showToast("❌ ไม่สามารถสร้างรูปได้", "error");
-        shareBtn.disabled = false;
-        shareBtn.innerHTML = originalText;
-        return;
-      }
-
-      const fileName = `yoshi-coupon-${currentCouponData.code}.png`;
-      const file = new File([blob], fileName, { type: "image/png" });
-
-      // ลอง Web Share API (ใช้ได้บน mobile + LINE)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: "Yoshi SPA - คูปองส่วนลด",
-            text: `🎉 ฉันได้ส่วนลด ${currentCouponData.amount} บาทจาก Yoshi SPA!`
-          });
-          showToast("✅ แชร์สำเร็จ!");
-        } catch (err) {
-          if (err.name !== "AbortError") {
-            // ถ้า share ไม่ได้ → fallback download
-            downloadImage(blob, fileName);
-          }
-        }
-      } else {
-        // Fallback - download รูปเก็บใน gallery
-        downloadImage(blob, fileName);
-      }
-
-      shareBtn.disabled = false;
-      shareBtn.innerHTML = originalText;
-    }, "image/png");
-
-  } catch (err) {
-    console.error("shareCoupon error:", err);
-    showToast("❌ เกิดข้อผิดพลาด: " + err.message, "error");
-    shareBtn.disabled = false;
-    shareBtn.innerHTML = originalText;
-  }
-}
-
-// สร้างกล่องคูปองสำหรับแคป (เวอร์ชั่นสะอาด ไม่มีปุ่ม)
-function createCaptureCard() {
-  const isJackpot = currentCouponData.amount === 300;
-  const box = document.createElement("div");
-  box.className = "capture-target";
-  box.style.position = "fixed";
-  box.style.top = "-10000px"; // ซ่อนจอ
-  box.style.left = "0";
-
-  const jackpotStyle = isJackpot ? `
-    background: linear-gradient(135deg, #fff8e7, #ffe8ec, #fff0d4);
-    border: 4px double #ffb84d;
-    box-shadow: 0 0 30px rgba(255, 184, 77, 0.6);
-  ` : "";
-
-  const jackpotBanner = isJackpot ? `
-    <div style="background: linear-gradient(90deg, #ffb84d, #ffd700, #ff9eb4, #ffd700, #ffb84d); color: #2a1a1a; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-size: 22px; letter-spacing: 3px; margin-bottom: 15px; display: inline-block;">
-      🏆 JACKPOT! 🏆
-    </div>
-    <div style="font-size: 22px; color: #d96e87; margin-bottom: 8px; font-weight: bold;">
-      🎊 ได้รางวัลใหญ่สุด! 🎊
-    </div>
-  ` : `
-    <div style="font-size: 22px; color: #d96e87; margin-bottom: 10px; font-weight: bold;">
-      🎉 ฉันได้ส่วนลด! 🎉
-    </div>
-  `;
-
-  const luckyBadge = isJackpot ? `
-    <div style="display: inline-block; background: linear-gradient(135deg, #ff6b9d, #d96e87); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 10px;">
-      ✨ ดวงดีมาก! ✨
-    </div>
-  ` : "";
-
-  box.style.cssText += jackpotStyle;
-  box.innerHTML = `
-    <!-- โลโก้ด้านบน -->
-    <div style="margin-bottom: 15px;">
-      <img src="yoshi-logo.png" alt="Yoshi SPA" style="max-width: 220px; width: 100%;"
-           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-      <div style="display:none;font-size:42px;font-weight:bold;color:#d96e87;letter-spacing:3px;font-family:Georgia,serif;text-shadow:2px 2px 0 rgba(255,200,220,0.5);">Yoshi <span style="font-size:0.55em;letter-spacing:2px;">SPA</span></div>
-    </div>
-
-    ${jackpotBanner}
-
-    <div style="font-size: ${isJackpot ? '80px' : '60px'}; font-weight: bold; color: #d96e87; line-height: 1; margin: 10px 0;">
-      ${currentCouponData.amount}
-    </div>
-    <div style="font-size: 16px; color: #d96e87; font-weight: bold;">บาท</div>
-    <div style="font-size: 14px; color: #8a6a6a; margin-top: 8px;">ส่วนลด</div>
-
-    ${luckyBadge}
-
-    <div style="background: linear-gradient(135deg, #d96e87, #b85070); color: #fff; padding: 12px; border-radius: 10px; margin-top: 15px; font-family: monospace; letter-spacing: 2px; font-size: 16px; font-weight: bold;">
-      ${currentCouponData.code}
-    </div>
-
-    <div style="font-size: 13px; color: #8a6a6a; margin-top: 12px;">
-      📅 หมดอายุ: ${currentCouponData.expireDate}
-    </div>
-    <div style="font-size: 13px; color: #8a6a6a;">
-      🏪 Yoshi SPA
-    </div>
-
-    <!-- ลายดอกซากุระประดับ -->
-    <div style="font-size: 24px; margin-top: 15px; letter-spacing: 8px;">
-      🌸 🌸 🌸
-    </div>
-  `;
-
-  return box;
-}
-
-// Fallback: ดาวน์โหลดรูปลงเครื่อง
-function downloadImage(blob, fileName) {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast("✅ ดาวน์โหลดรูปแล้ว! ดูในรูปภาพมือถือ");
-}
 
 window.addEventListener("load", main);
+
+// Enter ใน input รหัสพนักงาน = submit
+document.addEventListener("DOMContentLoaded", () => {
+  const staffInput = document.getElementById("staffCodeInput");
+  if (staffInput) {
+    staffInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitStaffCode();
+      }
+    });
+  }
+});
 </script>
 
 </body>
