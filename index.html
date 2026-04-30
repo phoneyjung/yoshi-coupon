@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoshi SPA - สุ่มส่วนลด</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Sarabun', 'Prompt', sans-serif;
+    /* ⭐ พื้นหลังโทนเดียวกับโลโก้ - ครีม+ชมพูจางๆ */
+    background:
+      radial-gradient(circle at 0% 0%, rgba(253, 224, 228, 0.6) 0%, transparent 35%),
+      radial-gradient(circle at 100% 100%, rgba(253, 224, 228, 0.5) 0%, transparent 35%),
+      radial-gradient(circle at 100% 0%, rgba(255, 235, 215, 0.4) 0%, transparent 30%),
+      linear-gradient(135deg, #fdf5e8 0%, #fdebe0 50%, #fdf5e8 100%);
+    min-height: 100vh;
+    color: #2a1a1a;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ดอกซากุระลอยอยู่ตามมุม */
+  body::before {
+    content: "🌸";
+    position: fixed;
+    top: 20px;
+    left: 15px;
+    font-size: 30px;
+    opacity: 0.6;
+    z-index: 0;
+    pointer-events: none;
+    animation: float 4s ease-in-out infinite;
+  }
+  body::after {
+    content: "🌸";
+    position: fixed;
+    bottom: 30px;
+    right: 15px;
+    font-size: 24px;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+    animation: float 5s ease-in-out infinite reverse;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(10deg); }
+  }
+
+  .container { max-width: 500px; width: 100%; text-align: center; position: relative; z-index: 1; }
+
+  .demo-banner {
+    background: linear-gradient(135deg, #ffb6c1, #ff9eb4);
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: 0 3px 10px rgba(255, 158, 180, 0.3);
+  }
+  .demo-banner .demo-text { text-align: left; flex: 1; }
+  .demo-banner .demo-reset {
+    background: #fff;
+    color: #d96e87;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  /* ⭐ กล่องโลโก้ - ไร้ขอบ พื้นเดียวกับเว็บ ดูเป็นธรรมชาติ */
+  .logo-box {
+    margin-bottom: 20px;
+    padding: 0;
+  }
+  .logo-inner {
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .logo-img {
+    max-width: 320px;
+    width: 100%;
+    height: auto;
+    /* เงาอ่อนๆ ใต้โลโก้ ให้ดูลอย */
+    filter: drop-shadow(0 4px 8px rgba(217, 110, 135, 0.15));
+  }
+  .logo-fallback {
+    font-size: 56px;
+    font-weight: bold;
+    color: #d96e87;
+    letter-spacing: 4px;
+    text-shadow: 2px 2px 0 rgba(255, 200, 220, 0.5);
+    font-family: 'Georgia', serif;
+    padding: 10px 30px;
+  }
+
+  .user-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(217, 110, 135, 0.2);
+    padding: 10px 15px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: #5a3a3a;
+  }
+  .user-info img { width: 30px; height: 30px; border-radius: 50%; }
+
+  .title { font-size: 22px; margin-bottom: 10px; color: #d96e87; font-weight: bold; }
+  .subtitle { font-size: 14px; margin-bottom: 20px; color: #8a6a6a; }
+
+  .btn {
+    background: linear-gradient(135deg, #ff9eb4, #d96e87);
+    color: #fff;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 15px;
+    box-shadow: 0 5px 15px rgba(217, 110, 135, 0.3);
+  }
+  .btn:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+  .btn-staff { background: linear-gradient(135deg, #6a4a4a, #4a2a2a); color: #fff; }
+
+  /* ปุ่มแชร์ - สีสันสดใส น่ากด */
+  .btn-share {
+    background: linear-gradient(135deg, #ff6b9d, #ffb84d);
+    color: #fff;
+    margin-top: 10px;
+    font-size: 16px;
+    box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4);
+    animation: shareBtnPulse 2.5s ease-in-out infinite;
+  }
+  @keyframes shareBtnPulse {
+    0%, 100% { box-shadow: 0 5px 15px rgba(255, 107, 157, 0.4); transform: scale(1); }
+    50% { box-shadow: 0 5px 25px rgba(255, 107, 157, 0.7); transform: scale(1.02); }
+  }
+  .btn-share:disabled {
+    animation: none;
+    background: #ccc;
+    color: #888;
+  }
+
+  /* กล่องที่จะถูกแคป (ซ่อนตอนปกติ) - คลอน result-box สำหรับ render */
+  .capture-target {
+    background: linear-gradient(135deg, #fff, #fff5f5);
+    color: #d96e87;
+    padding: 30px 25px;
+    border-radius: 20px;
+    border: 3px dashed #ff9eb4;
+    width: 380px;
+    text-align: center;
+  }
+
+  .info-box {
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px dashed #ff9eb4;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .scratch-instruction {
+    background: rgba(255, 218, 224, 0.5);
+    border: 1px dashed #d96e87;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    color: #8a4a5a;
+    font-size: 14px;
+  }
+  .scratch-instruction .big {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #d96e87;
+  }
+
+  .coupons-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  .coupon {
+    position: relative;
+    aspect-ratio: 1/1.2;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(217, 110, 135, 0.25);
+    border: 2px solid #ff9eb4;
+    /* พื้นซากุระ-ครีม */
+    background: linear-gradient(135deg, #ffc6d0 0%, #ffd6c0 50%, #ffc6d0 100%);
+    cursor: pointer;
+  }
+
+  .coupon.active-scratch {
+    animation: glowActive 1.5s ease-in-out infinite;
+    border-color: #d96e87;
+  }
+  @keyframes glowActive {
+    0%, 100% { box-shadow: 0 0 15px rgba(217, 110, 135, 0.5), 0 5px 15px rgba(217, 110, 135, 0.25); }
+    50% { box-shadow: 0 0 30px rgba(217, 110, 135, 0.9), 0 5px 15px rgba(217, 110, 135, 0.25); }
+  }
+
+  .coupon-prize {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #d96e87;
+    text-align: center;
+    padding: 10px;
+    background: linear-gradient(135deg, #fff, #fff5f5);
+    visibility: hidden;
+  }
+  .coupon.active-scratch .coupon-prize,
+  .coupon.revealed .coupon-prize,
+  .coupon.show-other .coupon-prize {
+    visibility: visible;
+  }
+
+  .coupon-prize .discount {
+    font-size: 38px;
+    font-weight: bold;
+    color: #d96e87;
+    line-height: 1;
+    text-shadow: 2px 2px 0 rgba(255, 200, 220, 0.5);
+  }
+  .coupon-prize .baht {
+    font-size: 18px;
+    color: #d96e87;
+    margin-top: 3px;
+    font-weight: bold;
+  }
+  .coupon-prize .label {
+    font-size: 11px;
+    color: #8a6a6a;
+    margin-top: 8px;
+  }
+  .coupon-prize .emoji-prize {
+    font-size: 28px;
+    margin-top: 6px;
+  }
+
+  .coupon-front-label {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #5a3a3a;
+    z-index: 1;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .coupon-front-label .num {
+    font-size: 60px;
+    font-weight: bold;
+    color: rgba(90, 58, 58, 0.4);
+    line-height: 1;
+  }
+  .coupon-front-label .hint {
+    font-size: 14px;
+    font-weight: bold;
+    color: #5a3a3a;
+    margin-top: 10px;
+  }
+  .coupon.canvas-ready .coupon-front-label,
+  .coupon.revealed .coupon-front-label,
+  .coupon.show-other .coupon-front-label {
+    opacity: 0;
+  }
+
+  .scratch-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+    z-index: 2;
+  }
+  .scratch-canvas:active { cursor: grabbing; }
+
+  .coupon.revealed .scratch-canvas,
+  .coupon.show-other .scratch-canvas {
+    opacity: 0;
+    transition: opacity 0.6s;
+    pointer-events: none;
+  }
+  .coupon.revealed { animation: revealPop 0.6s; }
+  @keyframes revealPop {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.08); }
+    100% { transform: scale(1); }
+  }
+
+  .coupon.show-other {
+    opacity: 0.7;
+    filter: grayscale(0.3);
+    animation: fadeInOther 0.5s;
+  }
+  @keyframes fadeInOther {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 0.7; transform: scale(1); }
+  }
+  .coupon.show-other:has(.coupon-prize.is-grand-prize)::after {
+    content: "เสียดาย!";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(217, 110, 135, 0.95);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 5;
+    animation: shake 0.6s ease-in-out;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+  }
+
+  .coupon.winner {
+    border-color: #d96e87;
+    border-width: 3px;
+    box-shadow: 0 0 25px rgba(217, 110, 135, 0.6), 0 5px 15px rgba(217, 110, 135, 0.25);
+  }
+  .coupon.winner::after {
+    content: "🌸 คุณได้รับ 🌸";
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #ff9eb4, #d96e87);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    z-index: 5;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(217, 110, 135, 0.15);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 15px;
+    display: none;
+  }
+  .progress-bar.show { display: block; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff9eb4, #d96e87);
+    width: 0%;
+    transition: width 0.2s;
+  }
+
+  .result-box {
+    display: none;
+    background: linear-gradient(135deg, #fff, #fff5f5);
+    color: #d96e87;
+    padding: 25px;
+    border-radius: 20px;
+    margin-top: 25px;
+    border: 3px dashed #ff9eb4;
+    animation: popIn 0.5s;
+    box-shadow: 0 5px 20px rgba(217, 110, 135, 0.2);
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .result-box h2 { font-size: 20px; margin-bottom: 10px; color: #d96e87; }
+  .result-box .amount {
+    font-size: 60px;
+    font-weight: bold;
+    color: #d96e87;
+    margin: 10px 0;
+    line-height: 1;
+  }
+  .result-box .valid { font-size: 14px; color: #8a6a6a; margin-top: 10px; }
+  .result-box .code {
+    background: linear-gradient(135deg, #d96e87, #b85070);
+    color: #fff;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .warning {
+    background: rgba(255, 158, 180, 0.15);
+    border: 2px solid #ff9eb4;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-size: 13px;
+    color: #d96e87;
+    font-weight: bold;
+  }
+
+  .rules {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(217, 110, 135, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+    margin-top: 20px;
+    font-size: 13px;
+    text-align: left;
+    color: #5a3a3a;
+  }
+  .rules h3 { color: #d96e87; margin-bottom: 8px; font-size: 14px; }
+  .rules ul { padding-left: 20px; }
+  .rules li { margin-bottom: 5px; }
+
+  .hidden { display: none !important; }
+
+  .loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #d96e87;
+  }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 4px solid rgba(217, 110, 135, 0.2);
+    border-top-color: #d96e87;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  .status-unused { background: #4caf50; color: #fff; }
+  .status-used { background: #999; color: #fff; }
+
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4caf50;
+    color: #fff;
+    padding: 12px 25px;
+    border-radius: 25px;
+    z-index: 9999;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    font-weight: bold;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.error { background: #f44336; }
+  .toast.warn { background: #ff9eb4; color: #fff; }
+
+  .others-banner {
+    background: linear-gradient(135deg, rgba(255, 158, 180, 0.2), rgba(255, 200, 220, 0.2));
+    border: 1px solid #ff9eb4;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-size: 14px;
+    color: #d96e87;
+    display: none;
+    animation: fadeIn 0.6s;
+  }
+  .others-banner.show { display: block; }
+  .others-banner .b1 { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(90, 58, 58, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    padding: 20px;
+  }
+  .modal-overlay.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .modal-box {
+    background: linear-gradient(135deg, #fff, #fff5f5);
+    color: #d96e87;
+    padding: 30px 25px;
+    border-radius: 20px;
+    max-width: 350px;
+    width: 100%;
+    text-align: center;
+    border: 3px solid #ff9eb4;
+    box-shadow: 0 10px 40px rgba(217, 110, 135, 0.3);
+    transform: scale(0.8);
+    transition: transform 0.3s;
+  }
+  .modal-overlay.show .modal-box { transform: scale(1); }
+  .modal-box .modal-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #d96e87;
+    margin-bottom: 10px;
+  }
+  .modal-box .modal-text {
+    font-size: 14px;
+    color: #8a6a6a;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+  .modal-box .modal-coupon-num {
+    background: linear-gradient(135deg, #ff9eb4, #d96e87);
+    color: #fff;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+    font-size: 32px;
+    font-weight: bold;
+    border: 3px solid #fff;
+    box-shadow: 0 3px 10px rgba(217, 110, 135, 0.3);
+  }
+  .modal-buttons { display: flex; gap: 10px; }
+  .modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+  }
+  .modal-btn-confirm {
+    background: linear-gradient(135deg, #ff9eb4, #d96e87);
+    color: #fff;
+  }
+  .modal-btn-cancel { background: #eee; color: #888; }
+
+  /* ===== JACKPOT 300 บาท - ฟีเจอร์พิเศษ ===== */
+  /* คอนเฟ็ตตี้ทั้งจอ */
+  .confetti-container {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 9998;
+    overflow: hidden;
+  }
+  .confetti {
+    position: absolute;
+    top: -20px;
+    font-size: 24px;
+    animation: confettiFall 4s linear forwards;
+  }
+  @keyframes confettiFall {
+    0% {
+      transform: translateY(-20px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+
+  /* กล่องผลลัพธ์ JACKPOT - เปล่งแสง + ขอบทอง */
+  .result-box.jackpot {
+    background: linear-gradient(135deg, #fff8e7, #ffe8ec, #fff0d4);
+    border: 4px double #ffb84d;
+    box-shadow:
+      0 0 30px rgba(255, 184, 77, 0.6),
+      0 0 60px rgba(217, 110, 135, 0.4),
+      inset 0 0 30px rgba(255, 245, 230, 0.5);
+    animation: jackpotPulse 2s ease-in-out infinite;
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes jackpotPulse {
+    0%, 100% { box-shadow: 0 0 30px rgba(255, 184, 77, 0.6), 0 0 60px rgba(217, 110, 135, 0.4); }
+    50% { box-shadow: 0 0 50px rgba(255, 184, 77, 1), 0 0 100px rgba(217, 110, 135, 0.6); }
+  }
+
+  /* ป้าย JACKPOT */
+  .jackpot-banner {
+    background: linear-gradient(90deg, #ffb84d 0%, #ffd700 25%, #ff9eb4 50%, #ffd700 75%, #ffb84d 100%);
+    background-size: 200% 100%;
+    color: #2a1a1a;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+    display: inline-block;
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+    animation: shimmer 2s linear infinite, bounceIn 0.8s;
+    box-shadow: 0 4px 15px rgba(255, 184, 77, 0.5);
+  }
+  @keyframes shimmer {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  @keyframes bounceIn {
+    0% { transform: scale(0) rotate(-180deg); opacity: 0; }
+    60% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  /* ตัวเลข 300 ใหญ่ + เอฟเฟกต์ทอง */
+  .result-box.jackpot .amount {
+    font-size: 80px;
+    background: linear-gradient(135deg, #ff6b9d, #d4af37, #ff6b9d);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradientMove 3s ease infinite;
+    text-shadow: none;
+  }
+  @keyframes gradientMove {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* ป้าย "ดวงดีมาก!" */
+  .lucky-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff6b9d, #d96e87);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 10px;
+    animation: wiggle 1s ease-in-out infinite;
+    box-shadow: 0 3px 10px rgba(217, 110, 135, 0.4);
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+  }
+
+  /* ปุ่ม "แชร์อวดเพื่อน" */
+  .share-btn {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    color: #fff;
+    border: none;
+    padding: 14px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    animation: shareBtnGlow 2s ease-in-out infinite;
+  }
+  @keyframes shareBtnGlow {
+    0%, 100% { box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4); }
+    50% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.8); }
+  }
+
+  /* รัศมีดาวรอบเลข */
+  .star-burst {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.3) 0%, transparent 60%);
+    pointer-events: none;
+    animation: starPulse 2s ease-in-out infinite;
+    z-index: -1;
+  }
+  @keyframes starPulse {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.2); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div id="demoBanner" class="demo-banner hidden">
+    <div class="demo-text">
+      🧪 <strong>โหมดทดสอบ</strong><br>
+      <small>กำลังเปิดในเบราว์เซอร์ปกติ (ไม่ได้เปิดผ่าน LINE)</small>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <button class="demo-reset" onclick="resetDemoData()">🔄 รีเซ็ต</button>
+      <button class="demo-reset" onclick="forceJackpot()" style="background: linear-gradient(135deg, #ffd700, #ffb84d); color: #5a2a00;">🏆 บังคับ 300</button>
+    </div>
+  </div>
+
+  <div class="logo-box">
+    <div class="logo-inner">
+      <img src="yoshi-logo.png" alt="Yoshi SPA" class="logo-img"
+           onerror="this.style.display='none';document.getElementById('logoFallback').style.display='block';">
+      <div id="logoFallback" class="logo-fallback" style="display:none;">Yoshi <span style="font-size:0.6em;letter-spacing:2px;">SPA</span></div>
+    </div>
+  </div>
+
+  <div id="loadingScreen" class="loading">
+    <div class="spinner"></div>
+    <div>กำลังเชื่อมต่อ Line...</div>
+  </div>
+
+  <div id="mainContent" class="hidden">
+
+    <div class="user-info">
+      <img id="userPic" src="" alt="">
+      <span id="userName">ผู้ใช้</span>
+    </div>
+
+    <div class="title">🌸 สุ่มส่วนลดสุดพิเศษ 🌸</div>
+    <div class="subtitle">ส่วนลด 50 - 300 บาท สำหรับราคาปกติ</div>
+
+    <div id="notPlayedBox">
+      <div class="info-box">
+        <div style="font-size: 18px; margin-bottom: 10px; color: #d96e87; font-weight: bold;">พร้อมขูดคูปองแล้ว!</div>
+        <div style="font-size: 13px; color: #8a6a6a;">สุ่มได้ 1 ครั้งเท่านั้นต่อบัญชี</div>
+        <button class="btn" onclick="showCoupons()">🎲 เริ่มขูดคูปอง</button>
+      </div>
+    </div>
+
+    <div id="gridSection" class="hidden">
+      <div class="scratch-instruction" id="instructionBox">
+        <div class="big">👆 เลือก 1 ใบ แล้วใช้นิ้วถูเพื่อขูด!</div>
+        <div>ขูดให้ได้ 60% ขึ้นไปจะเฉลยอัตโนมัติ</div>
+      </div>
+      <div class="coupons-grid" id="couponsGrid"></div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="others-banner" id="othersBanner">
+        <div class="b1">🎯 ใบที่เหลือถ้าคุณเลือก...</div>
+        <div>ดูซิ! รางวัลที่ใบอื่นซ่อนอยู่</div>
+      </div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <h2>🎉 ยินดีด้วย! คุณได้รับส่วนลด 🎉</h2>
+      <div class="amount"><span id="amount-display">0</span> บาท</div>
+      <div style="font-size: 14px;">ใช้ลดกับราคาปกติ</div>
+      <div class="code" id="couponCodeDisplay">YOSHI-XXXXXX</div>
+      <div class="valid">📅 หมดอายุ: <span id="expire-display">31/05/69</span></div>
+      <div class="valid">🏪 ใช้ได้ที่ Yoshi SPA เท่านั้น</div>
+
+      <div id="statusContainer">
+        <div id="statusBadge" class="status-badge status-unused">⏳ ยังไม่ได้ใช้</div>
+      </div>
+
+      <div id="staffArea">
+        <div class="warning">
+          ⚠️ ห้ามกดใช้สิทธิ์เอง!<br>
+          กรุณาให้พนักงานหน้าร้านกดให้เท่านั้น
+        </div>
+        <button id="staff-btn" class="btn btn-staff" onclick="useCoupon()">
+          🔒 พนักงานกดเพื่อใช้สิทธิ์
+        </button>
+        <button id="share-btn" class="btn btn-share" onclick="shareCoupon()">
+          📸 แคป แชร์ โชว์เพื่อน
+        </button>
+      </div>
+    </div>
+
+    <div class="rules">
+      <h3>📋 เงื่อนไขการใช้งาน</h3>
+      <ul>
+        <li>ส่วนลดใช้กับราคาปกติเท่านั้น</li>
+        <li>ใช้ได้ถึงวันที่ 31 พฤษภาคม 2569</li>
+        <li>สุ่มได้เพียง 1 ครั้ง ต่อ 1 Line ID</li>
+        <li><strong style="color:#d96e87;">ห้ามกด "ใช้คูปอง" ด้วยตนเอง</strong></li>
+        <li>ต้องให้พนักงานหน้าร้านเป็นผู้กดใช้เท่านั้น</li>
+        <li>ไม่สามารถใช้ร่วมกับโปรโมชั่นอื่นได้</li>
+        <li>ขอสงวนสิทธิ์ในการเปลี่ยนแปลงโดยไม่แจ้งล่วงหน้า</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-coupon-num" id="modalCouponNum">1</div>
+    <div class="modal-title">เลือกใบนี้ชัวร์นะคะ?</div>
+    <div class="modal-text">
+      ใบที่เลือกจะเป็น<strong style="color:#d96e87;">รางวัลที่คุณได้รับ</strong><br>
+      เลือกแล้วเปลี่ยนไม่ได้นะคะ!
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn modal-btn-cancel" onclick="cancelChoice()">❌ ไม่ใช่</button>
+      <button class="modal-btn modal-btn-confirm" onclick="confirmChoice()">✅ ใช่ค่ะ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const LIFF_ID = "2009881458-wioPjdS0";
+const REVEAL_THRESHOLD = 0.6;
+const TOTAL_COUPONS = 6;
+const STAFF_CODE = "yoshi2569";
+
+const discountRates = [
+  { amount: 50,  chance: 5  },
+  { amount: 100, chance: 15 },
+  { amount: 150, chance: 35 },
+  { amount: 200, chance: 35 },
+  { amount: 250, chance: 8  },
+  { amount: 300, chance: 2  }
+];
+const fakeDiscounts = [50, 100, 150, 200, 250, 300];
+
+let userLineId = "";
+let isDemoMode = false;
+let currentCouponData = null;
+let resultShown = false;
+let couponPrizes = [];
+let pendingChoiceIndex = -1;
+let chosenIndex = -1;
+let userPrizeAmount = 0;
+let userPrizeCode = "";
+
+let audioCtx = null;
+let scratchSource = null;
+let scratchGain = null;
+
+function initAudio() {
+  if (audioCtx) return;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {}
+}
+
+function startScratchSound() {
+  if (!audioCtx) initAudio();
+  if (!audioCtx) return;
+  if (scratchSource) return;
+  try {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const bufferSize = audioCtx.sampleRate * 0.5;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * 0.6;
+    scratchSource = audioCtx.createBufferSource();
+    scratchSource.buffer = buffer;
+    scratchSource.loop = true;
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 3500;
+    filter.Q.value = 0.8;
+    const filter2 = audioCtx.createBiquadFilter();
+    filter2.type = "highpass";
+    filter2.frequency.value = 1500;
+    scratchGain = audioCtx.createGain();
+    scratchGain.gain.value = 0;
+    scratchSource.connect(filter);
+    filter.connect(filter2);
+    filter2.connect(scratchGain);
+    scratchGain.connect(audioCtx.destination);
+    scratchSource.start();
+    const now = audioCtx.currentTime;
+    scratchGain.gain.cancelScheduledValues(now);
+    scratchGain.gain.setValueAtTime(0, now);
+    scratchGain.gain.linearRampToValueAtTime(0.25, now + 0.05);
+  } catch (e) {}
+}
+
+function stopScratchSound() {
+  if (!scratchSource || !audioCtx) return;
+  try {
+    const now = audioCtx.currentTime;
+    scratchGain.gain.cancelScheduledValues(now);
+    scratchGain.gain.linearRampToValueAtTime(0, now + 0.08);
+    const src = scratchSource;
+    setTimeout(() => { try { src.stop(); } catch(e) {} }, 100);
+    scratchSource = null;
+    scratchGain = null;
+  } catch (e) {}
+}
+
+function playRevealSound() {
+  if (!audioCtx) initAudio();
+  if (!audioCtx) return;
+  try {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const now = audioCtx.currentTime;
+    [800, 1200, 1600].forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = freq;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0, now + i * 0.1);
+      gain.gain.linearRampToValueAtTime(0.2, now + i * 0.1 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.4);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + i * 0.1);
+      osc.stop(now + i * 0.1 + 0.4);
+    });
+  } catch (e) {}
+}
+
+// 🎉 เสียง JACKPOT - fanfare ฉลองยาวๆ
+function playJackpotSound() {
+  if (!audioCtx) initAudio();
+  if (!audioCtx) return;
+  try {
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const now = audioCtx.currentTime;
+    // ทำนอง fanfare: C5, E5, G5, C6, E6 (ยาว)
+    const notes = [
+      { freq: 523,  time: 0,    dur: 0.15 },
+      { freq: 659,  time: 0.12, dur: 0.15 },
+      { freq: 784,  time: 0.24, dur: 0.15 },
+      { freq: 1047, time: 0.36, dur: 0.4  },
+      { freq: 1319, time: 0.7,  dur: 0.7  }
+    ];
+    notes.forEach(n => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = n.freq;
+      osc.type = "triangle";
+      gain.gain.setValueAtTime(0, now + n.time);
+      gain.gain.linearRampToValueAtTime(0.25, now + n.time + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + n.time + n.dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now + n.time);
+      osc.stop(now + n.time + n.dur);
+    });
+
+    // เสียงระฆังเอกซ์ตร้าตอนสุดท้าย
+    setTimeout(() => {
+      try {
+        const t = audioCtx.currentTime;
+        [2093, 2637].forEach((freq, i) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.frequency.value = freq;
+          osc.type = "sine";
+          gain.gain.setValueAtTime(0, t + i * 0.05);
+          gain.gain.linearRampToValueAtTime(0.15, t + i * 0.05 + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.05 + 0.8);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t + i * 0.05);
+          osc.stop(t + i * 0.05 + 0.8);
+        });
+      } catch(e) {}
+    }, 1300);
+  } catch (e) {}
+}
+
+// 🌸 คอนเฟ็ตตี้ดอกซากุระ + emoji ฉลอง
+function launchConfetti() {
+  const container = document.createElement("div");
+  container.className = "confetti-container";
+  document.body.appendChild(container);
+
+  const emojis = ["🌸", "🌸", "🌸", "🎉", "✨", "💖", "🎊", "⭐"];
+  const totalConfetti = 80;
+
+  for (let i = 0; i < totalConfetti; i++) {
+    setTimeout(() => {
+      const c = document.createElement("div");
+      c.className = "confetti";
+      c.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      c.style.left = Math.random() * 100 + "vw";
+      c.style.fontSize = (16 + Math.random() * 20) + "px";
+      c.style.animationDuration = (3 + Math.random() * 2) + "s";
+      c.style.animationDelay = Math.random() * 0.5 + "s";
+      container.appendChild(c);
+    }, i * 30);
+  }
+
+  // ลบ container ทิ้งหลัง 6 วินาที
+  setTimeout(() => container.remove(), 6500);
+}
+
+function showToast(msg, type) {
+  const existing = document.querySelector(".toast");
+  if (existing) existing.remove();
+  const toast = document.createElement("div");
+  toast.className = "toast" + (type ? " " + type : "");
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function randomDiscount() {
+  // 🏆 โหมดทดสอบ - บังคับให้ได้ 300
+  if (localStorage.getItem("force_jackpot") === "1") {
+    localStorage.removeItem("force_jackpot"); // ใช้ครั้งเดียว
+    return 300;
+  }
+
+  const total = discountRates.reduce((s, d) => s + d.chance, 0);
+  let r = Math.random() * total;
+  for (const d of discountRates) {
+    r -= d.chance;
+    if (r <= 0) return d.amount;
+  }
+  return 150;
+}
+
+function generateCode() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "YOSHI-";
+  for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+function getPlayData() {
+  const played = JSON.parse(localStorage.getItem("yoshi_played") || "{}");
+  return played[userLineId];
+}
+
+function savePlayData(data) {
+  const played = JSON.parse(localStorage.getItem("yoshi_played") || "{}");
+  played[userLineId] = data;
+  localStorage.setItem("yoshi_played", JSON.stringify(played));
+}
+
+function resetDemoData() {
+  if (!confirm("ลบข้อมูลคูปองและสุ่มใหม่?")) return;
+  localStorage.removeItem("yoshi_played");
+  localStorage.removeItem("force_jackpot");
+  showToast("✅ รีเซ็ตเรียบร้อย กำลังโหลดใหม่...");
+  setTimeout(() => location.reload(), 800);
+}
+
+// 🏆 บังคับให้ได้ 300 บาท (สำหรับทดสอบ)
+function forceJackpot() {
+  localStorage.setItem("force_jackpot", "1");
+  localStorage.removeItem("yoshi_played");
+  showToast("🏆 ตั้งค่าให้ได้ 300 บาท! กำลังโหลด...", "warn");
+  setTimeout(() => location.reload(), 800);
+}
+
+function detectMode() {
+  return !(navigator.userAgent.includes("Line/") || window.location.hostname === "liff.line.me");
+}
+
+async function main() {
+  isDemoMode = detectMode();
+  if (isDemoMode) {
+    document.getElementById("demoBanner").classList.remove("hidden");
+    userLineId = "demo_user_" + (localStorage.getItem("demo_user_id") || generateDemoId());
+    document.getElementById("userName").textContent = "ผู้ทดสอบ (Demo)";
+    document.getElementById("userPic").style.display = "none";
+    document.getElementById("loadingScreen").classList.add("hidden");
+    document.getElementById("mainContent").classList.remove("hidden");
+    const existing = getPlayData();
+    if (existing) {
+      currentCouponData = existing;
+      showResult(existing.amount, existing.code, existing.expireDate, existing.isUsed);
+    }
+    return;
+  }
+
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const profile = await liff.getProfile();
+    userLineId = profile.userId;
+    document.getElementById("userName").textContent = profile.displayName;
+    if (profile.pictureUrl) document.getElementById("userPic").src = profile.pictureUrl;
+    else document.getElementById("userPic").style.display = "none";
+    document.getElementById("loadingScreen").classList.add("hidden");
+    document.getElementById("mainContent").classList.remove("hidden");
+    const existing = getPlayData();
+    if (existing) {
+      currentCouponData = existing;
+      showResult(existing.amount, existing.code, existing.expireDate, existing.isUsed);
+    }
+  } catch (err) {
+    isDemoMode = true;
+    document.getElementById("demoBanner").classList.remove("hidden");
+    userLineId = "demo_user_" + (localStorage.getItem("demo_user_id") || generateDemoId());
+    document.getElementById("userName").textContent = "ผู้ทดสอบ (Demo)";
+    document.getElementById("userPic").style.display = "none";
+    document.getElementById("loadingScreen").classList.add("hidden");
+    document.getElementById("mainContent").classList.remove("hidden");
+    const existing = getPlayData();
+    if (existing) {
+      currentCouponData = existing;
+      showResult(existing.amount, existing.code, existing.expireDate, existing.isUsed);
+    }
+  }
+}
+
+function generateDemoId() {
+  const id = Math.random().toString(36).substring(2, 10);
+  localStorage.setItem("demo_user_id", id);
+  return id;
+}
+
+function showCoupons() {
+  if (getPlayData()) {
+    showToast("⚠️ คุณเคยสุ่มไปแล้ว", "error");
+    return;
+  }
+  initAudio();
+  document.getElementById("notPlayedBox").classList.add("hidden");
+  document.getElementById("gridSection").classList.remove("hidden");
+
+  userPrizeAmount = randomDiscount();
+  userPrizeCode = generateCode();
+  couponPrizes = generateUniquePrizes(userPrizeAmount);
+
+  chosenIndex = -1;
+  resultShown = false;
+
+  const grid = document.getElementById("couponsGrid");
+  grid.innerHTML = "";
+
+  for (let i = 0; i < TOTAL_COUPONS; i++) {
+    const div = document.createElement("div");
+    div.className = "coupon";
+    div.dataset.index = i;
+    const isGrand = couponPrizes[i] === 300 ? "is-grand-prize" : "";
+    div.innerHTML = `
+      <div class="coupon-prize ${isGrand}">
+        <div class="discount" id="prize-amount-${i}">${couponPrizes[i]}</div>
+        <div class="baht">บาท</div>
+        <div class="label">ส่วนลด</div>
+        <div class="emoji-prize">🌸</div>
+      </div>
+      <div class="coupon-front-label">
+        <div class="num">${i + 1}</div>
+        <div class="hint">👆 แตะเพื่อเลือก</div>
+      </div>
+      <canvas class="scratch-canvas" id="canvas-${i}"></canvas>
+    `;
+    grid.appendChild(div);
+    setupScratchCanvas(div, i);
+  }
+}
+
+function generateUniquePrizes(userAmount) {
+  const allValues = [...fakeDiscounts];
+  for (let i = allValues.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allValues[i], allValues[j]] = [allValues[j], allValues[i]];
+  }
+  if (!allValues.includes(userAmount)) allValues[0] = userAmount;
+  return allValues;
+}
+
+function showConfirmModal(index) {
+  pendingChoiceIndex = index;
+  document.getElementById("modalCouponNum").textContent = index + 1;
+  document.getElementById("confirmModal").classList.add("show");
+}
+
+function cancelChoice() {
+  pendingChoiceIndex = -1;
+  document.getElementById("confirmModal").classList.remove("show");
+}
+
+function confirmChoice() {
+  document.getElementById("confirmModal").classList.remove("show");
+  const idx = pendingChoiceIndex;
+  pendingChoiceIndex = -1;
+  if (idx === -1) return;
+
+  chosenIndex = idx;
+  const couponDiv = document.querySelector(`.coupon[data-index="${idx}"]`);
+  if (couponDiv) couponDiv.classList.add("active-scratch");
+
+  const targetIdx = couponPrizes.indexOf(userPrizeAmount);
+  if (targetIdx !== -1 && targetIdx !== idx) {
+    const temp = couponPrizes[idx];
+    couponPrizes[idx] = userPrizeAmount;
+    couponPrizes[targetIdx] = temp;
+    document.getElementById(`prize-amount-${idx}`).textContent = couponPrizes[idx];
+    document.getElementById(`prize-amount-${targetIdx}`).textContent = couponPrizes[targetIdx];
+    updateGrandPrizeClass(idx);
+    updateGrandPrizeClass(targetIdx);
+  }
+
+  currentCouponData = {
+    amount: userPrizeAmount,
+    code: userPrizeCode,
+    expireDate: "31/05/69",
+    isUsed: false,
+    date: new Date().toISOString()
+  };
+  savePlayData(currentCouponData);
+
+  showToast("✋ ขูดใบที่ " + (idx + 1) + " เพื่อรับรางวัล", "warn");
+
+  document.getElementById("instructionBox").innerHTML = `
+    <div class="big">✋ กำลังขูดใบที่ ${idx + 1}</div>
+    <div>ใช้นิ้วถูเพื่อเปิดเผยรางวัล</div>
+  `;
+}
+
+function updateGrandPrizeClass(idx) {
+  const couponDiv = document.querySelector(`.coupon[data-index="${idx}"]`);
+  if (!couponDiv) return;
+  const prizeBox = couponDiv.querySelector(".coupon-prize");
+  if (!prizeBox) return;
+  if (couponPrizes[idx] === 300) prizeBox.classList.add("is-grand-prize");
+  else prizeBox.classList.remove("is-grand-prize");
+}
+
+function setupScratchCanvas(couponDiv, index) {
+  const canvas = couponDiv.querySelector(".scratch-canvas");
+  const ctx = canvas.getContext("2d");
+
+  function initCanvas() {
+    const rect = couponDiv.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      setTimeout(initCanvas, 30);
+      return;
+    }
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = rect.height + "px";
+    ctx.scale(dpr, dpr);
+    drawScratchSurface(ctx, rect.width, rect.height, index + 1);
+    couponDiv.classList.add("canvas-ready");
+  }
+  requestAnimationFrame(() => initCanvas());
+
+  let isDrawing = false;
+  let lastPos = null;
+  const getPos = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const p = e.touches ? e.touches[0] : e;
+    return { x: p.clientX - rect.left, y: p.clientY - rect.top };
+  };
+  const scratch = (x, y) => {
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, Math.PI * 2);
+    ctx.fill();
+    if (lastPos) {
+      ctx.beginPath();
+      ctx.lineWidth = 44;
+      ctx.lineCap = "round";
+      ctx.moveTo(lastPos.x, lastPos.y);
+      ctx.lineTo(x, y);
+      ctx.stroke();
+    }
+    lastPos = { x, y };
+  };
+
+  let touchStartTime = 0;
+  let touchStartPos = null;
+  let movedDistance = 0;
+
+  const onPointerDown = (e) => {
+    e.preventDefault();
+    if (resultShown) return;
+    if (couponDiv.classList.contains("revealed")) return;
+    if (chosenIndex !== -1 && chosenIndex !== index) {
+      showToast("⚠️ คุณเลือกใบที่ " + (chosenIndex + 1) + " ไปแล้ว", "warn");
+      return;
+    }
+    if (chosenIndex !== index) {
+      touchStartTime = Date.now();
+      touchStartPos = getPos(e);
+      movedDistance = 0;
+      return;
+    }
+    isDrawing = true;
+    lastPos = null;
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+    startScratchSound();
+  };
+
+  const onPointerMove = (e) => {
+    if (resultShown) return;
+    if (couponDiv.classList.contains("revealed")) return;
+    if (chosenIndex !== index) {
+      if (touchStartPos) {
+        const pos = getPos(e);
+        const dx = pos.x - touchStartPos.x;
+        const dy = pos.y - touchStartPos.y;
+        movedDistance = Math.sqrt(dx*dx + dy*dy);
+      }
+      return;
+    }
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getPos(e);
+    scratch(pos.x, pos.y);
+    updateProgress(canvas, ctx, couponDiv, index);
+  };
+
+  const onPointerUp = (e) => {
+    if (resultShown) return;
+    if (couponDiv.classList.contains("revealed")) return;
+    if (chosenIndex !== index) {
+      const elapsed = Date.now() - touchStartTime;
+      if (touchStartPos && elapsed < 800 && movedDistance < 15) {
+        showConfirmModal(index);
+      }
+      touchStartPos = null;
+      touchStartTime = 0;
+      movedDistance = 0;
+      return;
+    }
+    isDrawing = false;
+    lastPos = null;
+    stopScratchSound();
+    checkRevealComplete(canvas, ctx, couponDiv, index);
+  };
+
+  canvas.addEventListener("mousedown", onPointerDown);
+  canvas.addEventListener("mousemove", onPointerMove);
+  canvas.addEventListener("mouseup", onPointerUp);
+  canvas.addEventListener("mouseleave", onPointerUp);
+  canvas.addEventListener("touchstart", onPointerDown, { passive: false });
+  canvas.addEventListener("touchmove", onPointerMove, { passive: false });
+  canvas.addEventListener("touchend", onPointerUp);
+  canvas.addEventListener("touchcancel", onPointerUp);
+}
+
+// ⭐ พื้นผิวขูด - โทนชมพูซากุระ
+function drawScratchSurface(ctx, w, h, num) {
+  const grad = ctx.createLinearGradient(0, 0, w, h);
+  grad.addColorStop(0, "#ffc6d0");
+  grad.addColorStop(0.3, "#ffd6c0");
+  grad.addColorStop(0.6, "#ffe6d0");
+  grad.addColorStop(1, "#ffc6d0");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // จุดดอกซากุระลอย
+  ctx.fillStyle = "rgba(255, 158, 180, 0.35)";
+  for (let i = 0; i < 25; i++) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const r = 2 + Math.random() * 4;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // เลขใหญ่กลาง
+  ctx.fillStyle = "rgba(217, 110, 135, 0.35)";
+  ctx.font = "bold 60px sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(num, w / 2, h / 2 - 15);
+
+  // ข้อความ
+  ctx.fillStyle = "#8a4a5a";
+  ctx.font = "bold 14px sans-serif";
+  ctx.fillText("👆 แตะเพื่อเลือก", w / 2, h / 2 + 35);
+
+  // กรอบ
+  ctx.strokeStyle = "rgba(217, 110, 135, 0.4)";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(8, 8, w - 16, h - 16);
+}
+
+function calcScratchedPercent(canvas, ctx) {
+  try {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const pixels = imageData.data;
+    let transparent = 0;
+    for (let i = 3; i < pixels.length; i += 40) {
+      if (pixels[i] === 0) transparent++;
+    }
+    const total = pixels.length / 40;
+    return transparent / total;
+  } catch (e) { return 0; }
+}
+
+let progressUpdateTimer = null;
+function updateProgress(canvas, ctx, couponDiv, index) {
+  if (index !== chosenIndex) return;
+  if (progressUpdateTimer) return;
+  progressUpdateTimer = setTimeout(() => {
+    const pct = calcScratchedPercent(canvas, ctx);
+    const bar = document.getElementById("progressFill");
+    document.getElementById("progressBar").classList.add("show");
+    bar.style.width = Math.min(100, (pct / REVEAL_THRESHOLD) * 100) + "%";
+    progressUpdateTimer = null;
+  }, 100);
+}
+
+function checkRevealComplete(canvas, ctx, couponDiv, index) {
+  const pct = calcScratchedPercent(canvas, ctx);
+  if (pct >= REVEAL_THRESHOLD) revealCoupon(couponDiv, index);
+}
+
+function revealCoupon(couponDiv, index) {
+  if (couponDiv.classList.contains("revealed")) return;
+  couponDiv.classList.add("revealed");
+  couponDiv.classList.remove("active-scratch");
+  couponDiv.classList.add("winner");
+
+  document.getElementById("progressBar").classList.remove("show");
+  document.getElementById("progressFill").style.width = "0%";
+
+  // 🎉 ถ้าเป็นรางวัลใหญ่ 300 → เสียง JACKPOT
+  if (currentCouponData && currentCouponData.amount === 300) {
+    playJackpotSound();
+  } else {
+    playRevealSound();
+  }
+
+  setTimeout(() => {
+    document.getElementById("othersBanner").classList.add("show");
+    let delay = 0;
+    document.querySelectorAll(".coupon").forEach((c, i) => {
+      if (i === index) return;
+      setTimeout(() => c.classList.add("show-other"), delay);
+      delay += 200;
+    });
+  }, 800);
+
+  setTimeout(() => {
+    if (currentCouponData) {
+      showResult(currentCouponData.amount, currentCouponData.code, currentCouponData.expireDate, false);
+    }
+  }, 2500);
+}
+
+function showResult(amount, code, expireDate, isUsed) {
+  resultShown = true;
+  document.getElementById("notPlayedBox").classList.add("hidden");
+  const resultBox = document.getElementById("resultBox");
+  resultBox.style.display = "block";
+
+  // 🎉 ตรวจว่าเป็น JACKPOT (300 บาท)
+  const isJackpot = amount === 300;
+
+  if (isJackpot) {
+    resultBox.classList.add("jackpot");
+
+    // เปลี่ยน h2 เป็นข้อความพิเศษ + เพิ่ม banner JACKPOT
+    const h2 = resultBox.querySelector("h2");
+    h2.innerHTML = `
+      <div class="jackpot-banner">🏆 JACKPOT! 🏆</div>
+      <div style="font-size: 22px; color: #d96e87; margin-top: 8px;">
+        🎊 ยินดีด้วย! รางวัลใหญ่สุด! 🎊
+      </div>
+    `;
+
+    // เพิ่มป้าย "ดวงดีมาก" ใต้จำนวนเงิน
+    const luckyBadge = document.createElement("div");
+    luckyBadge.className = "lucky-badge";
+    luckyBadge.innerHTML = "✨ ดวงดีมาก! ✨";
+    // ใส่หลังจำนวนเงิน
+    const validDivs = resultBox.querySelectorAll(".valid");
+    if (validDivs.length > 0 && !resultBox.querySelector(".lucky-badge")) {
+      validDivs[0].insertAdjacentElement("beforebegin", luckyBadge);
+    }
+  } else {
+    // กรณีอื่น - ใช้ข้อความปกติ
+    resultBox.classList.remove("jackpot");
+    const h2 = resultBox.querySelector("h2");
+    h2.innerHTML = "🎉 ยินดีด้วย! คุณได้รับส่วนลด 🎉";
+    const existingBadge = resultBox.querySelector(".lucky-badge");
+    if (existingBadge) existingBadge.remove();
+  }
+
+  // 🎊 ยิงคอนเฟ็ตตี้ + เสียงพิเศษ (เฉพาะ JACKPOT)
+  if (isJackpot && !isUsed) {
+    setTimeout(() => {
+      launchConfetti();
+      playJackpotSound();
+    }, 300);
+    // ยิงคอนเฟ็ตตี้รอบที่ 2 หลัง 1.5 วิ
+    setTimeout(() => launchConfetti(), 1800);
+  }
+
+  setTimeout(() => {
+    resultBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 200);
+
+  document.getElementById("amount-display").textContent = amount;
+  document.getElementById("couponCodeDisplay").textContent = code || "YOSHI-XXXXXX";
+  document.getElementById("expire-display").textContent = expireDate || "31/05/69";
+
+  const badge = document.getElementById("statusBadge");
+  const staffBtn = document.getElementById("staff-btn");
+  if (isUsed) {
+    badge.className = "status-badge status-used";
+    badge.innerHTML = "✅ ใช้แล้ว";
+    staffBtn.textContent = "คูปองนี้ถูกใช้งานแล้ว";
+    staffBtn.disabled = true;
+    document.querySelector("#staffArea .warning").style.display = "none";
+    document.getElementById("gridSection").classList.add("hidden");
+  } else {
+    badge.className = "status-badge status-unused";
+    badge.innerHTML = "⏳ ยังไม่ได้ใช้";
+    staffBtn.textContent = "🔒 พนักงานกดเพื่อใช้สิทธิ์";
+    staffBtn.disabled = false;
+  }
+}
+
+function useCoupon() {
+  const code = prompt("🔒 กรุณากรอกรหัสพนักงาน:");
+  if (code === null) return;
+  if (code !== STAFF_CODE) {
+    showToast("❌ รหัสพนักงานไม่ถูกต้อง", "error");
+    return;
+  }
+  if (!confirm(`ยืนยันใช้สิทธิ์คูปองส่วนลด ${currentCouponData.amount} บาท?`)) return;
+  currentCouponData.isUsed = true;
+  currentCouponData.usedDate = new Date().toISOString();
+  savePlayData(currentCouponData);
+  showToast("✅ ใช้คูปองเรียบร้อย");
+  document.getElementById("statusBadge").className = "status-badge status-used";
+  document.getElementById("statusBadge").innerHTML = "✅ ใช้แล้ว";
+  document.getElementById("staff-btn").textContent = "คูปองนี้ถูกใช้งานแล้ว";
+  document.getElementById("staff-btn").disabled = true;
+  document.querySelector("#staffArea .warning").style.display = "none";
+}
+
+// ===== 📸 ปุ่มแคปแชร์โชว์เพื่อน =====
+async function shareCoupon() {
+  const shareBtn = document.getElementById("share-btn");
+  const originalText = shareBtn.innerHTML;
+
+  try {
+    shareBtn.disabled = true;
+    shareBtn.innerHTML = "⏳ กำลังสร้างรูป...";
+
+    // สร้างกล่องคูปองชั่วคราวสำหรับแคป (ตัด UI ที่ไม่จำเป็นออก)
+    const captureBox = createCaptureCard();
+    document.body.appendChild(captureBox);
+
+    // รอให้ DOM render เสร็จ
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // แปลงเป็น canvas
+    const canvas = await html2canvas(captureBox, {
+      backgroundColor: null,
+      scale: 2, // ความละเอียดสูง
+      logging: false,
+      useCORS: true,
+      allowTaint: true
+    });
+
+    // ลบกล่องชั่วคราวทิ้ง
+    captureBox.remove();
+
+    // แปลง canvas เป็น blob
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        showToast("❌ ไม่สามารถสร้างรูปได้", "error");
+        shareBtn.disabled = false;
+        shareBtn.innerHTML = originalText;
+        return;
+      }
+
+      const fileName = `yoshi-coupon-${currentCouponData.code}.png`;
+      const file = new File([blob], fileName, { type: "image/png" });
+
+      // ลอง Web Share API (ใช้ได้บน mobile + LINE)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "Yoshi SPA - คูปองส่วนลด",
+            text: `🎉 ฉันได้ส่วนลด ${currentCouponData.amount} บาทจาก Yoshi SPA!`
+          });
+          showToast("✅ แชร์สำเร็จ!");
+        } catch (err) {
+          if (err.name !== "AbortError") {
+            // ถ้า share ไม่ได้ → fallback download
+            downloadImage(blob, fileName);
+          }
+        }
+      } else {
+        // Fallback - download รูปเก็บใน gallery
+        downloadImage(blob, fileName);
+      }
+
+      shareBtn.disabled = false;
+      shareBtn.innerHTML = originalText;
+    }, "image/png");
+
+  } catch (err) {
+    console.error("shareCoupon error:", err);
+    showToast("❌ เกิดข้อผิดพลาด: " + err.message, "error");
+    shareBtn.disabled = false;
+    shareBtn.innerHTML = originalText;
+  }
+}
+
+// สร้างกล่องคูปองสำหรับแคป (เวอร์ชั่นสะอาด ไม่มีปุ่ม)
+function createCaptureCard() {
+  const isJackpot = currentCouponData.amount === 300;
+  const box = document.createElement("div");
+  box.className = "capture-target";
+  box.style.position = "fixed";
+  box.style.top = "-10000px"; // ซ่อนจอ
+  box.style.left = "0";
+
+  const jackpotStyle = isJackpot ? `
+    background: linear-gradient(135deg, #fff8e7, #ffe8ec, #fff0d4);
+    border: 4px double #ffb84d;
+    box-shadow: 0 0 30px rgba(255, 184, 77, 0.6);
+  ` : "";
+
+  const jackpotBanner = isJackpot ? `
+    <div style="background: linear-gradient(90deg, #ffb84d, #ffd700, #ff9eb4, #ffd700, #ffb84d); color: #2a1a1a; padding: 12px 20px; border-radius: 30px; font-weight: bold; font-size: 22px; letter-spacing: 3px; margin-bottom: 15px; display: inline-block;">
+      🏆 JACKPOT! 🏆
+    </div>
+    <div style="font-size: 22px; color: #d96e87; margin-bottom: 8px; font-weight: bold;">
+      🎊 ได้รางวัลใหญ่สุด! 🎊
+    </div>
+  ` : `
+    <div style="font-size: 22px; color: #d96e87; margin-bottom: 10px; font-weight: bold;">
+      🎉 ฉันได้ส่วนลด! 🎉
+    </div>
+  `;
+
+  const luckyBadge = isJackpot ? `
+    <div style="display: inline-block; background: linear-gradient(135deg, #ff6b9d, #d96e87); color: #fff; padding: 8px 18px; border-radius: 20px; font-size: 14px; font-weight: bold; margin-top: 10px;">
+      ✨ ดวงดีมาก! ✨
+    </div>
+  ` : "";
+
+  box.style.cssText += jackpotStyle;
+  box.innerHTML = `
+    <!-- โลโก้ด้านบน -->
+    <div style="margin-bottom: 15px;">
+      <img src="yoshi-logo.png" alt="Yoshi SPA" style="max-width: 220px; width: 100%;"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+      <div style="display:none;font-size:42px;font-weight:bold;color:#d96e87;letter-spacing:3px;font-family:Georgia,serif;text-shadow:2px 2px 0 rgba(255,200,220,0.5);">Yoshi <span style="font-size:0.55em;letter-spacing:2px;">SPA</span></div>
+    </div>
+
+    ${jackpotBanner}
+
+    <div style="font-size: ${isJackpot ? '80px' : '60px'}; font-weight: bold; color: #d96e87; line-height: 1; margin: 10px 0;">
+      ${currentCouponData.amount}
+    </div>
+    <div style="font-size: 16px; color: #d96e87; font-weight: bold;">บาท</div>
+    <div style="font-size: 14px; color: #8a6a6a; margin-top: 8px;">ส่วนลด</div>
+
+    ${luckyBadge}
+
+    <div style="background: linear-gradient(135deg, #d96e87, #b85070); color: #fff; padding: 12px; border-radius: 10px; margin-top: 15px; font-family: monospace; letter-spacing: 2px; font-size: 16px; font-weight: bold;">
+      ${currentCouponData.code}
+    </div>
+
+    <div style="font-size: 13px; color: #8a6a6a; margin-top: 12px;">
+      📅 หมดอายุ: ${currentCouponData.expireDate}
+    </div>
+    <div style="font-size: 13px; color: #8a6a6a;">
+      🏪 Yoshi SPA
+    </div>
+
+    <!-- ลายดอกซากุระประดับ -->
+    <div style="font-size: 24px; margin-top: 15px; letter-spacing: 8px;">
+      🌸 🌸 🌸
+    </div>
+  `;
+
+  return box;
+}
+
+// Fallback: ดาวน์โหลดรูปลงเครื่อง
+function downloadImage(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("✅ ดาวน์โหลดรูปแล้ว! ดูในรูปภาพมือถือ");
+}
+
+window.addEventListener("load", main);
+</script>
+
+</body>
+</html>
