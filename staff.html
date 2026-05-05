@@ -608,12 +608,26 @@ async function confirmUseFromScan() {
     const { doc, setDoc } = window.firebaseHelpers;
     const collectionName = "coupons_yoshi_" + (currentScannedData.campaign || "may2026");
     const docRef = doc(window.firebaseDB, collectionName, currentScannedData.lineId);
+    const usedDateStr = new Date().toISOString();
 
+    // 1. อัพเดท collection หลัก (coupons_yoshi_xxx)
     await setDoc(docRef, {
       isUsed: true,
-      usedDate: new Date().toISOString(),
+      usedDate: usedDateStr,
       usedByStaff: true
     }, { merge: true });
+
+    // 2. อัพเดท customers collection ด้วย (เพื่อให้ Owner Dashboard เห็น)
+    try {
+      const custRef = doc(window.firebaseDB, "customers", currentScannedData.lineId);
+      await setDoc(custRef, {
+        yoshi_isUsed: true,
+        yoshi_usedDate: usedDateStr,
+        lastUpdated: usedDateStr
+      }, { merge: true });
+    } catch (custErr) {
+      console.warn("customers update warning:", custErr);
+    }
 
     showResult("success", "🎉", "ใช้คูปองสำเร็จ!", currentScannedData.amount, "บันทึกในระบบเรียบร้อย");
     confirmBtn.style.display = "none";
