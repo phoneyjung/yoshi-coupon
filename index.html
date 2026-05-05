@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Yoshi SPA - สุ่มส่วนลด</title>
+<title>Yoshi SPA - สุ่มส่วนลด v2.1</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -815,28 +815,32 @@
       <div class="valid">📅 หมดอายุ: <span id="expire-display">31/05/69</span></div>
       <div class="valid">🏪 ใช้ได้ที่ Yoshi SPA เท่านั้น</div>
 
-      <!-- ⭐ รหัสคูปองโชว์เด่นๆ -->
+      <!-- ⭐ รหัสคูปองโชว์เด่นๆ (v2.1 - 5/5/2569) -->
       <div id="couponCodeBox" style="
         background: linear-gradient(135deg, #fff, #fff5f7);
-        border: 2px dashed #d96e87;
+        border: 3px dashed #d96e87;
         border-radius: 14px;
-        padding: 14px 16px;
+        padding: 18px 16px;
         margin-top: 18px;
+        box-shadow: 0 4px 12px rgba(217, 110, 135, 0.15);
       ">
-        <div style="font-size: 12px; color: #888; margin-bottom: 6px;">
+        <div style="font-size: 13px; color: #888; margin-bottom: 8px; font-weight: bold;">
           🎫 รหัสคูปองของคุณ
         </div>
         <div id="couponCodeMain" style="
           font-family: 'Courier New', monospace;
-          font-size: 28px;
+          font-size: 30px;
           font-weight: bold;
           color: #d96e87;
           letter-spacing: 3px;
           text-align: center;
-          padding: 4px 0;
-        ">-</div>
-        <div style="font-size: 11px; color: #888; margin-top: 6px;">
-          แจ้งรหัสนี้ให้พนักงาน หรือใช้ QR Code ด้านล่าง
+          padding: 10px;
+          background: #fff;
+          border-radius: 10px;
+          border: 1px solid #ffc6d0;
+        ">YOSHI-XXXXXX</div>
+        <div style="font-size: 11px; color: #888; margin-top: 8px;">
+          📝 แจ้งรหัสนี้ให้พนักงาน หรือใช้ QR Code ด้านล่าง
         </div>
       </div>
 
@@ -858,28 +862,6 @@
             📱 โชว์ QR Code นี้ให้พนักงานสแกน
           </div>
           <div id="qrcode" style="display: flex; justify-content: center; padding: 10px;"></div>
-
-          <!-- ⭐ รหัสคูปอง (Backup ถ้าสแกนไม่ติด) -->
-          <div style="
-            margin-top: 12px;
-            padding: 12px 15px;
-            background: linear-gradient(135deg, #fef9f1, #fff);
-            border: 1px dashed #d96e87;
-            border-radius: 12px;
-          ">
-            <div style="font-size: 11px; color: #888; margin-bottom: 4px;">
-              📝 หรือบอกรหัสนี้กับพนักงาน
-            </div>
-            <div id="couponCodeDisplay" style="
-              font-family: 'Courier New', monospace;
-              font-size: 22px;
-              font-weight: bold;
-              color: #d96e87;
-              letter-spacing: 3px;
-              text-align: center;
-              padding: 6px 0;
-            ">-</div>
-          </div>
 
           <div style="font-size: 11px; color: #999; margin-top: 8px;">
             ⚠️ ห้ามแคปแชร์ให้คนอื่น - ใช้ได้ครั้งเดียว
