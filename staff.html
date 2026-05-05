@@ -416,10 +416,27 @@ function startScanner() {
   }
 
   const config = {
-    fps: 10,
-    qrbox: { width: 240, height: 240 },
-    aspectRatio: 1.0
+    fps: 30,
+    qrbox: function(viewfinderWidth, viewfinderHeight) {
+      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+      const size = Math.floor(minEdge * 0.7);
+      return { width: size, height: size };
+    },
+    aspectRatio: 1.0,
+    disableFlip: false,
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true
+    },
+    videoConstraints: {
+      facingMode: "environment",
+      width: { ideal: 1920 },
+      height: { ideal: 1080 }
+    }
   };
+
+  if (typeof Html5QrcodeSupportedFormats !== "undefined") {
+    config.formatsToSupport = [ Html5QrcodeSupportedFormats.QR_CODE ];
+  }
 
   html5QrCode.start(
     { facingMode: "environment" }, // กล้องหลัง
@@ -428,10 +445,51 @@ function startScanner() {
     () => {} // ไม่ต้องแสดง error ระหว่างสแกน
   ).then(() => {
     status.textContent = "🟢 พร้อมสแกน - เล็งที่ QR Code";
+    setTimeout(() => addTorchButton(), 1000);
   }).catch((err) => {
     console.error("Camera error:", err);
-    status.innerHTML = "❌ เปิดกล้องไม่ได้<br><small>กรุณาอนุญาตการเข้าถึงกล้อง</small>";
+    status.innerHTML = "❌ เปิดกล้องไม่ได้<br><small>" + err.message + "</small>";
   });
+}
+
+// ⭐ ปุ่มไฟฉาย
+function addTorchButton() {
+  if (!html5QrCode) return;
+  try {
+    const cap = html5QrCode.getRunningTrackCapabilities();
+    if (cap && cap.torch) {
+      const existingBtn = document.getElementById("torchBtn");
+      if (existingBtn) return;
+
+      const btn = document.createElement("button");
+      btn.id = "torchBtn";
+      btn.textContent = "🔦 เปิดไฟฉาย";
+      btn.style.cssText = "position:absolute;bottom:15px;right:15px;padding:10px 16px;background:#fbbf24;color:#000;border:none;border-radius:25px;font-weight:bold;cursor:pointer;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.3);";
+
+      let torchOn = false;
+      btn.onclick = async () => {
+        try {
+          torchOn = !torchOn;
+          await html5QrCode.applyVideoConstraints({
+            advanced: [{ torch: torchOn }]
+          });
+          btn.textContent = torchOn ? "💡 ปิดไฟฉาย" : "🔦 เปิดไฟฉาย";
+          btn.style.background = torchOn ? "#374151" : "#fbbf24";
+          btn.style.color = torchOn ? "#fff" : "#000";
+        } catch (e) {
+          console.warn("Torch toggle failed:", e);
+        }
+      };
+
+      const reader = document.getElementById("qr-reader");
+      if (reader) {
+        reader.style.position = "relative";
+        reader.appendChild(btn);
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
 }
 
 function stopScanner() {
