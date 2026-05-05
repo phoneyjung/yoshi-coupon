@@ -4,21 +4,27 @@
   "description": "ระบบสแกน QR สำหรับพนักงาน Yoshi SPA",
   "start_url": "./staff.html",
   "display": "standalone",
-  "background_color": "#faf6f0",
-  "theme_color": "#1f7a3f",
+  "background_color": "#15532b",
+  "theme_color": "#15532b",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "staff-logo.png",
+      "src": "staff-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "staff-logo.png",
+      "src": "staff-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "staff-icon-maskable.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
