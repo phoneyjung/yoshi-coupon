@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Geisha SPA - พนักงานสแกน QR</title>
+<title>Yoshi SPA - พนักงานสแกน QR</title>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -257,7 +257,7 @@
     <img src="staff-logo.png" alt="Staff" class="staff-logo">
     <h1>Staff Portal</h1>
     <div class="sub">ระบบสแกน QR Code สำหรับพนักงาน</div>
-    <div class="shop-tag">🌸 Geisha SPA</div>
+    <div class="shop-tag">🍱 Yoshi SPA</div>
   </div>
 
   <!-- ===== Login ===== -->
@@ -283,7 +283,7 @@
 
       <div class="manual-entry">
         <div class="title">หรือกรอกรหัสคูปองด้วยมือ:</div>
-        <input type="text" id="manualCode" placeholder="GEISHA-XXXXXX">
+        <input type="text" id="manualCode" placeholder="YOSHI-XXXXXX">
         <button onclick="lookupByCode()">🔍 ค้นหา</button>
       </div>
     </div>
@@ -315,7 +315,7 @@
   </div>
 
   <div class="footer">
-    🌸 Geisha SPA - Staff Portal v1.0
+    🍱 Yoshi SPA - Staff Portal v1.0
   </div>
 </div>
 
@@ -345,7 +345,7 @@ const STAFF_CODE = "0000";
 const SESSION_HOURS = 8;
 let html5QrCode = null;
 let currentScannedData = null;
-let currentCollection = "coupons_geisha_may2026"; // ⭐ เปลี่ยนตาม campaign ปัจจุบัน
+let currentCollection = "coupons_yoshi_may2026"; // ⭐ เปลี่ยนตาม campaign ปัจจุบัน
 
 // ===== Toast =====
 function showToast(msg, type) {
@@ -440,12 +440,12 @@ async function onScanSuccess(decodedText) {
   try {
     data = JSON.parse(decodedText);
   } catch (e) {
-    showResult("error", "❌", "QR Code ไม่ถูกต้อง", null, "นี่ไม่ใช่ QR ของคูปอง Geisha SPA");
+    showResult("error", "❌", "QR Code ไม่ถูกต้อง", null, "นี่ไม่ใช่ QR ของคูปอง Yoshi SPA");
     return;
   }
 
-  if (data.type !== "geisha_coupon") {
-    showResult("error", "❌", "QR Code ไม่ถูกต้อง", null, "นี่ไม่ใช่ QR ของคูปอง Geisha SPA");
+  if (data.type !== "yoshi_coupon") {
+    showResult("error", "❌", "QR Code ไม่ถูกต้อง", null, "นี่ไม่ใช่ QR ของคูปอง Yoshi SPA");
     return;
   }
 
@@ -488,11 +488,11 @@ async function lookupByCode() {
     }
 
     currentScannedData = {
-      type: "geisha_coupon",
+      type: "yoshi_coupon",
       code: found.code,
       lineId: found.userLineId,
       amount: found.amount,
-      campaign: currentCollection.replace("coupons_geisha_", "")
+      campaign: currentCollection.replace("coupons_yoshi_", "")
     };
 
     if (found.isUsed) {
@@ -521,7 +521,7 @@ async function verifyAndShow(data) {
 
   try {
     const { doc, getDoc } = window.firebaseHelpers;
-    const collectionName = "coupons_geisha_" + (data.campaign || "may2026");
+    const collectionName = "coupons_yoshi_" + (data.campaign || "may2026");
     const docRef = doc(window.firebaseDB, collectionName, data.lineId);
     const docSnap = await getDoc(docRef);
 
@@ -598,7 +598,7 @@ async function confirmUseFromScan() {
 
   try {
     const { doc, setDoc } = window.firebaseHelpers;
-    const collectionName = "coupons_geisha_" + (currentScannedData.campaign || "may2026");
+    const collectionName = "coupons_yoshi_" + (currentScannedData.campaign || "may2026");
     const docRef = doc(window.firebaseDB, collectionName, currentScannedData.lineId);
 
     await setDoc(docRef, {
