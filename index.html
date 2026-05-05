@@ -833,6 +833,29 @@
             📱 โชว์ QR Code นี้ให้พนักงานสแกน
           </div>
           <div id="qrcode" style="display: flex; justify-content: center; padding: 10px;"></div>
+
+          <!-- ⭐ รหัสคูปอง (Backup ถ้าสแกนไม่ติด) -->
+          <div style="
+            margin-top: 12px;
+            padding: 12px 15px;
+            background: linear-gradient(135deg, #fef9f1, #fff);
+            border: 1px dashed #d96e87;
+            border-radius: 12px;
+          ">
+            <div style="font-size: 11px; color: #888; margin-bottom: 4px;">
+              📝 หรือบอกรหัสนี้กับพนักงาน
+            </div>
+            <div id="couponCodeDisplay" style="
+              font-family: 'Courier New', monospace;
+              font-size: 22px;
+              font-weight: bold;
+              color: #d96e87;
+              letter-spacing: 3px;
+              text-align: center;
+              padding: 6px 0;
+            ">-</div>
+          </div>
+
           <div style="font-size: 11px; color: #999; margin-top: 8px;">
             ⚠️ ห้ามแคปแชร์ให้คนอื่น - ใช้ได้ครั้งเดียว
           </div>
@@ -1861,6 +1884,10 @@ function generateQRCode(amount, code) {
 
   // ล้าง QR เดิม
   qrContainer.innerHTML = "";
+
+  // ⭐ แสดงรหัสคูปองให้พนักงานพิมพ์ (ถ้าสแกนไม่ติด)
+  const codeDisplay = document.getElementById("couponCodeDisplay");
+  if (codeDisplay) codeDisplay.textContent = code;
 
   // ข้อมูลใน QR (JSON)
   const qrData = JSON.stringify({
