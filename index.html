@@ -294,13 +294,14 @@
     width: 100%;
     height: 100%;
     cursor: grab;
-    touch-action: pan-y;
+    touch-action: none;
     z-index: 2;
+    pointer-events: none;
   }
   .scratch-canvas:active { cursor: grabbing; }
-  /* เฉพาะการ์ดที่เลือกแล้วเท่านั้นที่ block scroll */
+  /* เปิด pointer-events เฉพาะการ์ดที่เลือกแล้ว → ขูดได้ */
   .coupon.active-scratch .scratch-canvas {
-    touch-action: none;
+    pointer-events: auto;
   }
 
   .coupon.revealed .scratch-canvas,
@@ -1451,6 +1452,19 @@ async function showCoupons() {
       <canvas class="scratch-canvas" id="canvas-${i}"></canvas>
     `;
     grid.appendChild(div);
+
+    // ⭐ Click handler บน .coupon (canvas pointer-events: none ก่อนเลือก)
+    div.addEventListener("click", (e) => {
+      if (resultShown) return;
+      if (chosenIndex !== -1) {
+        if (chosenIndex !== i) {
+          showToast("⚠️ คุณเลือกใบที่ " + (chosenIndex + 1) + " ไปแล้ว", "warn");
+        }
+        return;
+      }
+      showConfirmModal(i);
+    });
+
     setupScratchCanvas(div, i);
   }
 }
@@ -1587,25 +1601,11 @@ function setupScratchCanvas(couponDiv, index) {
     lastPos = { x, y };
   };
 
-  let touchStartTime = 0;
-  let touchStartPos = null;
-  let movedDistance = 0;
-
   const onPointerDown = (e) => {
     if (resultShown) return;
     if (couponDiv.classList.contains("revealed")) return;
-    if (chosenIndex !== -1 && chosenIndex !== index) {
-      showToast("⚠️ คุณเลือกใบที่ " + (chosenIndex + 1) + " ไปแล้ว", "warn");
-      return;
-    }
-    if (chosenIndex !== index) {
-      // ยังไม่เลือก - ไม่ block scroll
-      touchStartTime = Date.now();
-      touchStartPos = getPos(e);
-      movedDistance = 0;
-      return;
-    }
-    // เลือกแล้ว - เริ่มขูด (touch-action: none จะ block scroll อัตโนมัติ)
+    if (chosenIndex !== index) return;
+    // เลือกแล้ว - เริ่มขูด
     isDrawing = true;
     lastPos = null;
     const pos = getPos(e);
@@ -1616,15 +1616,7 @@ function setupScratchCanvas(couponDiv, index) {
   const onPointerMove = (e) => {
     if (resultShown) return;
     if (couponDiv.classList.contains("revealed")) return;
-    if (chosenIndex !== index) {
-      if (touchStartPos) {
-        const pos = getPos(e);
-        const dx = pos.x - touchStartPos.x;
-        const dy = pos.y - touchStartPos.y;
-        movedDistance = Math.sqrt(dx*dx + dy*dy);
-      }
-      return;
-    }
+    if (chosenIndex !== index) return;
     if (!isDrawing) return;
     const pos = getPos(e);
     scratch(pos.x, pos.y);
@@ -1634,16 +1626,7 @@ function setupScratchCanvas(couponDiv, index) {
   const onPointerUp = (e) => {
     if (resultShown) return;
     if (couponDiv.classList.contains("revealed")) return;
-    if (chosenIndex !== index) {
-      const elapsed = Date.now() - touchStartTime;
-      if (touchStartPos && elapsed < 800 && movedDistance < 15) {
-        showConfirmModal(index);
-      }
-      touchStartPos = null;
-      touchStartTime = 0;
-      movedDistance = 0;
-      return;
-    }
+    if (chosenIndex !== index) return;
     isDrawing = false;
     lastPos = null;
     stopScratchSound();
