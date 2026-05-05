@@ -815,6 +815,31 @@
       <div class="valid">📅 หมดอายุ: <span id="expire-display">31/05/69</span></div>
       <div class="valid">🏪 ใช้ได้ที่ Yoshi SPA เท่านั้น</div>
 
+      <!-- ⭐ รหัสคูปองโชว์เด่นๆ -->
+      <div id="couponCodeBox" style="
+        background: linear-gradient(135deg, #fff, #fff5f7);
+        border: 2px dashed #d96e87;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-top: 18px;
+      ">
+        <div style="font-size: 12px; color: #888; margin-bottom: 6px;">
+          🎫 รหัสคูปองของคุณ
+        </div>
+        <div id="couponCodeMain" style="
+          font-family: 'Courier New', monospace;
+          font-size: 28px;
+          font-weight: bold;
+          color: #d96e87;
+          letter-spacing: 3px;
+          text-align: center;
+          padding: 4px 0;
+        ">-</div>
+        <div style="font-size: 11px; color: #888; margin-top: 6px;">
+          แจ้งรหัสนี้ให้พนักงาน หรือใช้ QR Code ด้านล่าง
+        </div>
+      </div>
+
       <div id="statusContainer">
         <div id="statusBadge" class="status-badge status-unused">⏳ ยังไม่ได้ใช้</div>
       </div>
@@ -1855,6 +1880,9 @@ function showResult(amount, code, expireDate, isUsed) {
   document.getElementById("amount-display").textContent = amount;
   const codeDisplay = document.getElementById("couponCodeDisplay");
   if (codeDisplay) codeDisplay.textContent = code || "YOSHI-XXXXXX";
+  // ⭐ Update รหัสคูปองตัวใหญ่
+  const codeMain = document.getElementById("couponCodeMain");
+  if (codeMain) codeMain.textContent = code || "YOSHI-XXXXXX";
   document.getElementById("expire-display").textContent = expireDate || "31/05/69";
 
   const badge = document.getElementById("statusBadge");
