@@ -36,11 +36,6 @@
 </script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    -webkit-overflow-scrolling: touch;
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-  }
   body {
     font-family: 'Sarabun', 'Prompt', sans-serif;
     /* ⭐ พื้นหลังโทนเดียวกับโลโก้ - ครีม+ชมพูจางๆ */
@@ -56,12 +51,40 @@
     flex-direction: column;
     align-items: center;
     -webkit-tap-highlight-color: transparent;
-    touch-action: pan-y;
-  }
-  .coupon, .coupons-grid, h1, .info-box {
     user-select: none;
     -webkit-user-select: none;
   }
+
+  /* ปุ่มเลื่อนขึ้น-ลง ลอยขวาล่าง */
+  .scroll-btns {
+    position: fixed;
+    right: 12px;
+    bottom: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 90;
+  }
+  .scroll-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff9eb4, #d96e87);
+    border: 2px solid #fff;
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(217, 110, 135, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, opacity 0.2s;
+    opacity: 0.85;
+  }
+  .scroll-btn:hover { opacity: 1; }
+  .scroll-btn:active { transform: scale(0.92); }
+  .scroll-btn.hidden { opacity: 0; pointer-events: none; }
 
   /* ดอกซากุระลอยอยู่ตามมุม */
   body::before {
@@ -1946,7 +1969,36 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ⭐ ปุ่มเลื่อนขึ้น-ลง
+function scrollByAmount(direction) {
+  const amount = window.innerHeight * 0.7;
+  window.scrollBy({ top: direction * amount, behavior: "smooth" });
+}
+
+function updateScrollButtons() {
+  const upBtn = document.getElementById("scrollUpBtn");
+  const downBtn = document.getElementById("scrollDownBtn");
+  if (!upBtn || !downBtn) return;
+  const scrollY = window.scrollY;
+  const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+  upBtn.classList.toggle("hidden", scrollY < 100);
+  downBtn.classList.toggle("hidden", scrollY >= maxScroll - 50);
+  if (maxScroll < 100) {
+    upBtn.classList.add("hidden");
+    downBtn.classList.add("hidden");
+  }
+}
+window.addEventListener("scroll", updateScrollButtons, { passive: true });
+window.addEventListener("resize", updateScrollButtons);
+window.addEventListener("load", () => setTimeout(updateScrollButtons, 500));
 </script>
+
+<!-- ปุ่มเลื่อนขึ้น-ลง -->
+<div class="scroll-btns">
+  <button id="scrollUpBtn" class="scroll-btn hidden" onclick="scrollByAmount(-1)" aria-label="เลื่อนขึ้น">↑</button>
+  <button id="scrollDownBtn" class="scroll-btn" onclick="scrollByAmount(1)" aria-label="เลื่อนลง">↓</button>
+</div>
 
 </body>
 </html>
