@@ -294,10 +294,14 @@
     width: 100%;
     height: 100%;
     cursor: grab;
-    touch-action: none;
+    touch-action: pan-y;
     z-index: 2;
   }
   .scratch-canvas:active { cursor: grabbing; }
+  /* เฉพาะการ์ดที่เลือกแล้วเท่านั้นที่ block scroll */
+  .coupon.active-scratch .scratch-canvas {
+    touch-action: none;
+  }
 
   .coupon.revealed .scratch-canvas,
   .coupon.show-other .scratch-canvas {
@@ -1588,7 +1592,6 @@ function setupScratchCanvas(couponDiv, index) {
   let movedDistance = 0;
 
   const onPointerDown = (e) => {
-    e.preventDefault();
     if (resultShown) return;
     if (couponDiv.classList.contains("revealed")) return;
     if (chosenIndex !== -1 && chosenIndex !== index) {
@@ -1596,11 +1599,13 @@ function setupScratchCanvas(couponDiv, index) {
       return;
     }
     if (chosenIndex !== index) {
+      // ยังไม่เลือก - ไม่ block scroll
       touchStartTime = Date.now();
       touchStartPos = getPos(e);
       movedDistance = 0;
       return;
     }
+    // เลือกแล้ว - เริ่มขูด (touch-action: none จะ block scroll อัตโนมัติ)
     isDrawing = true;
     lastPos = null;
     const pos = getPos(e);
@@ -1621,7 +1626,6 @@ function setupScratchCanvas(couponDiv, index) {
       return;
     }
     if (!isDrawing) return;
-    e.preventDefault();
     const pos = getPos(e);
     scratch(pos.x, pos.y);
     updateProgress(canvas, ctx, couponDiv, index);
@@ -1650,8 +1654,8 @@ function setupScratchCanvas(couponDiv, index) {
   canvas.addEventListener("mousemove", onPointerMove);
   canvas.addEventListener("mouseup", onPointerUp);
   canvas.addEventListener("mouseleave", onPointerUp);
-  canvas.addEventListener("touchstart", onPointerDown, { passive: false });
-  canvas.addEventListener("touchmove", onPointerMove, { passive: false });
+  canvas.addEventListener("touchstart", onPointerDown, { passive: true });
+  canvas.addEventListener("touchmove", onPointerMove, { passive: true });
   canvas.addEventListener("touchend", onPointerUp);
   canvas.addEventListener("touchcancel", onPointerUp);
 }
