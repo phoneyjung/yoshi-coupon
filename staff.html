@@ -447,7 +447,13 @@ function startScanner() {
     videoConstraints: {
       facingMode: "environment",
       width: { ideal: 1920 },
-      height: { ideal: 1080 }
+      height: { ideal: 1080 },
+      // ⭐ Auto-focus settings (สำคัญมาก!)
+      focusMode: "continuous",
+      advanced: [
+        { focusMode: "continuous" },
+        { focusMode: "auto" }
+      ]
     }
   };
 
@@ -461,12 +467,130 @@ function startScanner() {
     onScanSuccess,
     () => {} // ไม่ต้องแสดง error ระหว่างสแกน
   ).then(() => {
-    status.textContent = "🟢 พร้อมสแกน - เล็งที่ QR Code";
-    setTimeout(() => addTorchButton(), 1000);
+    status.textContent = "🟢 พร้อมสแกน - เล็งที่ QR Code (ห่างประมาณ 15-25 ซม.)";
+    setTimeout(() => {
+      addTorchButton();
+      applyOptimalFocus();
+      addTapToFocus();
+    }, 1000);
   }).catch((err) => {
     console.error("Camera error:", err);
     status.innerHTML = "❌ เปิดกล้องไม่ได้<br><small>" + err.message + "</small>";
   });
+}
+
+// ⭐ ปรับ focus ให้เหมาะกับ QR ใกล้ๆ
+async function applyOptimalFocus() {
+  if (!html5QrCode) return;
+  try {
+    const cap = html5QrCode.getRunningTrackCapabilities();
+    if (!cap) return;
+
+    const constraints = { advanced: [] };
+
+    if (cap.focusMode && cap.focusMode.includes("continuous")) {
+      constraints.advanced.push({ focusMode: "continuous" });
+    }
+
+    if (cap.focusDistance) {
+      const min = cap.focusDistance.min || 0;
+      const max = cap.focusDistance.max || 1;
+      const optimal = min + (max - min) * 0.25;
+      constraints.advanced.push({ focusDistance: optimal });
+    }
+
+    if (cap.exposureMode && cap.exposureMode.includes("continuous")) {
+      constraints.advanced.push({ exposureMode: "continuous" });
+    }
+
+    if (cap.whiteBalanceMode && cap.whiteBalanceMode.includes("continuous")) {
+      constraints.advanced.push({ whiteBalanceMode: "continuous" });
+    }
+
+    if (constraints.advanced.length > 0) {
+      await html5QrCode.applyVideoConstraints(constraints);
+    }
+  } catch (e) {
+    console.warn("Focus settings failed:", e);
+  }
+}
+
+// ⭐ แตะที่กล้องเพื่อโฟกัส
+function addTapToFocus() {
+  const reader = document.getElementById("qr-reader");
+  if (!reader) return;
+
+  const video = reader.querySelector("video");
+  if (!video) return;
+
+  video.style.cursor = "pointer";
+
+  video.addEventListener("click", async (e) => {
+    e.preventDefault();
+    if (!html5QrCode) return;
+
+    try {
+      const rect = video.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      showFocusIndicator(x, y);
+
+      const cap = html5QrCode.getRunningTrackCapabilities();
+      if (cap && cap.focusMode) {
+        await html5QrCode.applyVideoConstraints({
+          advanced: [{ focusMode: "single-shot" }]
+        });
+        setTimeout(async () => {
+          await html5QrCode.applyVideoConstraints({
+            advanced: [{ focusMode: "continuous" }]
+          });
+        }, 300);
+      }
+    } catch (err) {
+      console.warn("Tap-to-focus failed:", err);
+    }
+  });
+}
+
+// ⭐ แสดง animation วงกลมโฟกัส
+function showFocusIndicator(x, y) {
+  const reader = document.getElementById("qr-reader");
+  if (!reader) return;
+
+  const old = reader.querySelector(".focus-indicator");
+  if (old) old.remove();
+
+  const ind = document.createElement("div");
+  ind.className = "focus-indicator";
+  ind.style.cssText = `
+    position: absolute;
+    left: ${x - 30}px;
+    top: ${y - 30}px;
+    width: 60px;
+    height: 60px;
+    border: 2px solid #ffeb3b;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 11;
+    animation: focusPulse 0.8s ease-out;
+  `;
+
+  if (!document.getElementById("focus-anim-style")) {
+    const style = document.createElement("style");
+    style.id = "focus-anim-style";
+    style.textContent = `
+      @keyframes focusPulse {
+        0% { transform: scale(1.5); opacity: 0; }
+        50% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  reader.style.position = "relative";
+  reader.appendChild(ind);
+  setTimeout(() => ind.remove(), 800);
 }
 
 // ⭐ ปุ่มไฟฉาย
