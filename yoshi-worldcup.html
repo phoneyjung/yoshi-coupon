@@ -492,7 +492,10 @@ let game=null, selectedZone=null, rafId=null, busy=false, curPower=0, keeperAnim
 
 window.addEventListener('load', initLine);
 async function initLine(){
-  if(/test/i.test(location.hash+location.search)) document.getElementById('testbar').classList.add('on');
+  const isTest = /test/i.test(location.hash+location.search);
+  const isPreview = /preview/i.test(location.search);  // ⭐ โหมดดูแบบลูกค้าจริง (ไม่มี testbar)
+
+  if(isTest) document.getElementById('testbar').classList.add('on');
 
   // ⭐ Check: แคมเปญหมดอายุ? (หลัง 20 ก.ค. → auto ปิด)
   if(isCampaignExpired()){ showCampaignExpired(); return; }
@@ -506,9 +509,14 @@ async function initLine(){
       const p = await liff.getProfile();
       lineUserId = p.userId; lineDisplayName = p.displayName; linePictureUrl = p.pictureUrl;
       console.log("[liff] Logged in:", lineDisplayName);
-    } else if(!/test/i.test(location.hash+location.search)){
+    } else if(!isTest && !isPreview){
       showErrorScreen("กรุณาเปิดผ่าน LINE", "ระบบรองรับเฉพาะการเปิดผ่าน LINE OA เท่านั้น");
       return;
+    } else if(isPreview){
+      // ⭐ Preview: id ใหม่ทุกครั้งที่โหลด → refresh เพื่อเล่นใหม่ได้ (เหมือนลูกค้าจริงแต่ดูซ้ำได้)
+      lineUserId = "test_preview_" + Date.now();
+      lineDisplayName = "พรีวิว";
+      console.log("[preview mode]", lineUserId);
     } else {
       lineUserId = localStorage.getItem("test_user_id") || generateTestId();
       lineDisplayName = "ทดสอบ";
