@@ -207,7 +207,7 @@
   @keyframes gf{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
 
   /* result */
-  #result{justify-content:center;align-items:center;text-align:center;gap:5px;}
+  #result{justify-content:flex-start;align-items:center;text-align:center;gap:5px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 2px 24px;}
   .restitle{font-family:'Kanit',sans-serif;font-weight:800;font-size:30px;color:var(--emerald-bright);animation:pop .5s ease;}
   .wc-bar{width:120px;height:5px;border-radius:999px;margin:3px 0 2px;
     background:linear-gradient(90deg,#e23744,#ff7a18,#b6e000,#1aa64b,#1f9fe0,#1f4fd6);box-shadow:0 1px 4px rgba(0,0,0,.3);}
@@ -494,10 +494,9 @@ window.addEventListener('load', initLine);
 async function initLine(){
   if(/test/i.test(location.hash+location.search)) document.getElementById('testbar').classList.add('on');
 
-  // ⭐ Check: แคมเปญหมดอายุ? (หลัง 20 ก.ค.)
+  // ⭐ Check: แคมเปญหมดอายุ? (หลัง 20 ก.ค. → auto ปิด)
   if(isCampaignExpired()){ showCampaignExpired(); return; }
-  // ⭐ Check: ก่อนเริ่ม? (ของจริง Endpoint ชี้มาที่นี่แค่ 11 มิ.ย. — ทดสอบใช้ ?mockdate=2026-06-05)
-  if(isCampaignNotStarted()){ showCampaignNotStarted(); return; }
+  // หมายเหตุ: ไม่เช็ค "ก่อนเริ่ม" — เล่นได้ทันที (ลูกค้าไม่เห็นเพราะ Endpoint ยังชี้ index.html ถึง 11 มิ.ย.)
 
   // ⭐ LIFF Login
   try{
