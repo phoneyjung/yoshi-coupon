@@ -403,7 +403,7 @@
     <!-- ⭐ QR Code สำหรับให้พนักงานสแกน -->
     <div id="qrcodeBox" style="margin:10px auto;text-align:center;"></div>
 
-    <div class="expiry">📅 ใช้ได้ถึง 20 ก.ค. 2569 · 1 สิทธิ์/ID LINE · แสดง QR ที่ร้าน</div>
+    <div class="expiry">📅 ใช้คูปองได้ถึง 31 ก.ค. 2569 · 1 สิทธิ์/ID LINE · แสดง QR ที่ร้าน</div>
     <div id="replayBtn" style="width:100%;margin-top:14px;display:none;"><button class="btn ghost" onclick="resetGame()">เล่นอีกครั้ง (Test Mode)</button></div>
     <div class="foot">⚽ World Cup Edition · Yoshi SPA · เล่นได้ <b>1 ครั้ง/LINE ID</b></div>
   </section>
@@ -460,7 +460,7 @@ const SHOP_EMOJI = "🍱";
 const CAMPAIGN_ID = "worldcup_jun2026";
 const COLLECTION_NAME = "coupons_" + SHOP_ID + "_" + CAMPAIGN_ID;
 const CAMPAIGN_START_DATE = "2026-06-11";
-const CAMPAIGN_EXPIRE_DATE = "2026-07-21";
+const CAMPAIGN_EXPIRE_DATE = "2026-07-20";
 
 /* Mock Date สำหรับทดสอบ — ใส่ ?mockdate=2026-06-15 ใน URL */
 function getNow(){
@@ -497,7 +497,7 @@ async function initLine(){
 
   if(isTest) document.getElementById('testbar').classList.add('on');
 
-  // ⭐ Check: แคมเปญหมดอายุ? (หลัง 20 ก.ค. → auto ปิด)
+  // ⭐ Check: เกมหมดเขต? (เล่นได้ถึง 19 ก.ค. · 20 ก.ค. 00:00 auto ปิด · คูปองยังใช้ได้ถึง 31 ก.ค.)
   if(isCampaignExpired()){ showCampaignExpired(); return; }
   // หมายเหตุ: ไม่เช็ค "ก่อนเริ่ม" — เล่นได้ทันที (ลูกค้าไม่เห็นเพราะ Endpoint ยังชี้ index.html ถึง 11 มิ.ย.)
 
@@ -635,7 +635,7 @@ function showCampaignNotStarted(){
 }
 function showCampaignExpired(){
   const el=document.getElementById('intro'); if(!el) return;
-  el.innerHTML=`<div style="text-align:center;padding:30px 20px;"><div style="font-size:64px;margin-bottom:16px;">${SHOP_EMOJI}</div><div style="font-size:24px;font-weight:bold;color:var(--gold,#ffd24d);margin-bottom:12px;">${SHOP_NAME}</div><div style="font-size:60px;margin:20px 0;">😢</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">โปรโมชั่นจบแล้วค่ะ</div><div style="font-size:14px;opacity:.8;line-height:1.6;">แคมเปญ World Cup สิ้นสุดเมื่อ<br><strong style="color:var(--gold,#ffd24d);">20 กรกฎาคม 2569</strong></div><div style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,210,77,.4);border-radius:14px;padding:16px;margin:24px 0;"><div style="font-size:13px;opacity:.8;margin-bottom:6px;">📢 ติดตามโปรโมชั่นใหม่ๆ</div><div style="font-size:14px;">ทาง LINE OA: <strong style="color:var(--gold,#ffd24d);">${SHOP_NAME}</strong></div></div><div style="font-size:13px;opacity:.6;">ขอบคุณที่ติดตามนะคะ 🍱</div></div>`;
+  el.innerHTML=`<div style="text-align:center;padding:30px 20px;"><div style="font-size:64px;margin-bottom:16px;">${SHOP_EMOJI}</div><div style="font-size:24px;font-weight:bold;color:var(--gold,#ffd24d);margin-bottom:12px;">${SHOP_NAME}</div><div style="font-size:60px;margin:20px 0;">😢</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">โปรโมชั่นจบแล้วค่ะ</div><div style="font-size:14px;opacity:.8;line-height:1.6;">แคมเปญ World Cup สิ้นสุดเมื่อ<br><strong style="color:var(--gold,#ffd24d);">19 กรกฎาคม 2569</strong></div><div style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,210,77,.4);border-radius:14px;padding:16px;margin:24px 0;"><div style="font-size:13px;opacity:.8;margin-bottom:6px;">📢 ติดตามโปรโมชั่นใหม่ๆ</div><div style="font-size:14px;">ทาง LINE OA: <strong style="color:var(--gold,#ffd24d);">${SHOP_NAME}</strong></div></div><div style="font-size:13px;opacity:.6;">ขอบคุณที่ติดตามนะคะ 🍱</div></div>`;
 }
 function showErrorScreen(title,msg){
   const el=document.getElementById('intro'); if(!el) return;
@@ -939,7 +939,7 @@ async function saveToFirebase(code, amount, goals){
       shop:SHOP_ID, shopId:SHOP_ID, campaignId:CAMPAIGN_ID,
       createdAt:serverTimestamp(), date:new Date().toISOString(),
       isUsed:false, usedAt:null,
-      expireDate:"20/07/69", gameType:"worldcup_penalty"
+      expireDate:"31/07/69", gameType:"worldcup_penalty"
     };
     await setDoc(ref, couponData);
     currentCouponData = couponData;
