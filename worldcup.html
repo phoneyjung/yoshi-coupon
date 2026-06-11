@@ -11,7 +11,7 @@
 <!-- LINE LIFF SDK -->
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <!-- QR Code Generator -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="qrcode.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';document.head.appendChild(s);"></script>
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -524,11 +524,29 @@ async function initLine(){
     }
   }catch(e){
     console.error("LIFF error:", e);
+    // ⭐ FIX: ลูกค้าจริงห้าม fallback เป็น test id (คูปองจะหลงคนละ doc) → ให้เปิดใหม่
+    if(!isTest && !isPreview){
+      showErrorScreen("เชื่อมต่อ LINE ไม่สำเร็จ", "สัญญาณอาจขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง");
+      return;
+    }
     lineUserId = localStorage.getItem("test_user_id") || generateTestId();
   }
 
-  // ⭐ เคยเล่นแล้วหรือยัง? (anti-cheat)
-  await checkExistingResult();
+  // ⭐ เคยเล่นแล้วหรือยัง? (anti-cheat) — FIX: เช็คไม่ได้ = ห้ามปล่อยเล่น + กู้คูปองจากเครื่อง
+  const chk = await checkExistingResult();
+  if(chk === 'found') return;
+  const localBak = loadLocalCoupon();
+  if(localBak && localBak.code){
+    console.log("[recover] local coupon:", localBak.code);
+    if(chk === 'none') await resyncLocalCoupon(localBak);
+    if(!currentCouponData) currentCouponData = { code:localBak.code, amount:localBak.amount, goals:localBak.goals||0, isUsed:false };
+    showExistingResult(currentCouponData);
+    return;
+  }
+  if(chk === 'error' && lineUserId && !String(lineUserId).startsWith("test_")){
+    showErrorScreen("ตรวจสอบสิทธิ์ไม่สำเร็จ", "สัญญาณขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง (สิทธิ์ของคุณยังอยู่)");
+    return;
+  }
 }
 
 function generateTestId(){
@@ -539,21 +557,51 @@ function generateTestId(){
 
 /* ⭐ เช็ค Firebase ว่าเคยเล่นแล้วหรือยัง */
 async function checkExistingResult(){
-  if(!window.firebaseReady || !lineUserId) return;
+  if(!window.firebaseReady || !lineUserId) return 'error';
   try{
     const { doc, getDoc } = window.firebaseHelpers;
     const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
     const snap = await Promise.race([
       getDoc(ref),
-      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),5000))
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),8000))
     ]);
     if(snap.exists()){
       const data = snap.data();
       console.log("[firebase] Existing:", data.code);
       currentCouponData = data;
       showExistingResult(data);
+      return 'found';
     }
-  }catch(e){ console.warn("[firebase] check failed:", e); }
+    return 'none';
+  }catch(e){ console.warn("[firebase] check failed:", e); return 'error'; }
+}
+
+/* ⭐ FIX: กู้คูปองที่เคยบันทึกออนไลน์ไม่สำเร็จ (จาก localStorage) */
+function loadLocalCoupon(){
+  try{
+    const raw = localStorage.getItem(SHOP_ID+"_worldcup_"+(lineUserId||"guest"));
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+async function resyncLocalCoupon(bak){
+  if(!window.firebaseReady || !lineUserId) return false;
+  try{
+    const { doc, setDoc, serverTimestamp } = window.firebaseHelpers;
+    const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+    const couponData = {
+      amount:bak.amount, code:bak.code, goals:bak.goals||0, shots:SHOTS,
+      lineUserId, lineDisplayName, linePictureUrl,
+      displayName:lineDisplayName, userId:lineUserId,
+      shop:SHOP_ID, shopId:SHOP_ID, campaignId:CAMPAIGN_ID,
+      createdAt:serverTimestamp(), date:new Date(bak.ts||Date.now()).toISOString(),
+      isUsed:false, usedAt:null,
+      expireDate:"31/07/69", gameType:"worldcup_penalty", resynced:true
+    };
+    await setDoc(ref, couponData);
+    currentCouponData = couponData;
+    console.log("[recover] resynced:", bak.code);
+    return true;
+  }catch(e){ console.warn("[recover] resync failed:", e); return false; }
 }
 
 /* ⭐ แสดงผลที่เคยได้ */
@@ -580,17 +628,30 @@ function generateCouponQR(code, amount, isUsed){
   if(isUsed){ box.innerHTML = '<div style="padding:20px;text-align:center;opacity:.5;">QR Code ถูกใช้แล้ว</div>'; return; }
   box.innerHTML = '<div id="qrcode" style="display:flex;justify-content:center;padding:14px;background:#fff;border-radius:14px;margin:10px auto;width:fit-content;"></div>';
   const qd = document.getElementById('qrcode');
-  if(typeof QRCode!=='undefined' && qd){
-    // ⭐ format เดียวกับคูปองขูดบัตร: type + lineId จำเป็นสำหรับเครื่องสแกน
-    const qrData = JSON.stringify({
-      type: SHOP_ID + "_coupon",   // geisha_coupon / yoshi_coupon
-      code: code,
-      lineId: lineUserId,          // doc ID — เครื่องสแกนใช้หา doc
-      amount: amount,
-      campaign: CAMPAIGN_ID        // worldcup_jun2026
-    });
+  if(!qd) return;
+  // ⭐ format เดียวกับคูปองขูดบัตร: type + lineId จำเป็นสำหรับเครื่องสแกน
+  const qrData = JSON.stringify({
+    type: SHOP_ID + "_coupon",   // geisha_coupon / yoshi_coupon
+    code: code,
+    lineId: lineUserId,          // doc ID — เครื่องสแกนใช้หา doc
+    amount: amount,
+    campaign: CAMPAIGN_ID        // worldcup_jun2026
+  });
+  const renderNow = () => {
+    qd.innerHTML = '';
     new QRCode(qd, { text: qrData, width:200, height:200, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.H });
-  }
+  };
+  if(typeof QRCode!=='undefined'){ renderNow(); return; }
+  // ⭐ Library ยังไม่มา (เน็ตสะดุด) → แสดง ⏳ + โหลดซ้ำ + retry ทุก 500ms
+  qd.innerHTML = '<div style="padding:24px;color:#666;font-size:13px;">⏳ กำลังสร้าง QR...</div>';
+  let _qrTries = 0;
+  const _qrTimer = setInterval(()=>{
+    _qrTries++;
+    if(typeof QRCode!=='undefined'){ clearInterval(_qrTimer); renderNow(); return; }
+    if(_qrTries===1){ const s=document.createElement('script'); s.src='qrcode.min.js?r='+Date.now(); document.head.appendChild(s); }
+    if(_qrTries===6){ const s2=document.createElement('script'); s2.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; document.head.appendChild(s2); }
+    if(_qrTries>20){ clearInterval(_qrTimer); qd.innerHTML='<div style="padding:18px;color:#b45309;font-size:13px;line-height:1.6;">⚠️ สร้าง QR ไม่สำเร็จ (เน็ตขัดข้อง)<br>ปิดแล้วเปิดหน้านี้ใหม่ หรือแจ้งรหัสด้านล่างกับพนักงาน</div>'; }
+  }, 500);
 }
 
 /* ⭐ Real-time — ลูกค้าเห็นทันทีเมื่อพนักงานสแกน */
@@ -920,7 +981,7 @@ async function finishGame(){
 
 /* ⭐ บันทึก Firebase (กัน race condition) */
 async function saveToFirebase(code, amount, goals){
-  if(!window.firebaseReady || !lineUserId){ saveToLocalStorage(code,amount,goals); return; }
+  if(!window.firebaseReady || !lineUserId){ saveToLocalStorage(code,amount,goals); showSaveWarning(); return; }
   const { doc, getDoc, setDoc, serverTimestamp } = window.firebaseHelpers;
   const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
   try{
@@ -941,11 +1002,32 @@ async function saveToFirebase(code, amount, goals){
       isUsed:false, usedAt:null,
       expireDate:"31/07/69", gameType:"worldcup_penalty"
     };
-    await setDoc(ref, couponData);
+    // ⭐ FIX: retry 3 ครั้ง (กันเน็ตสะดุด) — fail จริงค่อยเก็บ local + เตือนลูกค้า
+    let saved = false;
+    for(let i=0;i<3;i++){
+      try{ await setDoc(ref, couponData); saved = true; break; }
+      catch(err){ console.warn("[firebase] save attempt", i+1, "failed:", err); await new Promise(r=>setTimeout(r,1200)); }
+    }
+    if(!saved) throw new Error("save failed after 3 attempts");
     currentCouponData = couponData;
     console.log("[firebase] Saved:", code);
     await updateCustomerMaster(amount);
-  }catch(e){ console.error("[firebase] save failed:", e); saveToLocalStorage(code,amount,goals); }
+  }catch(e){
+    console.error("[firebase] save failed:", e);
+    saveToLocalStorage(code,amount,goals);
+    showSaveWarning();
+  }
+}
+
+/* ⭐ FIX: เตือนเมื่อบันทึกออนไลน์ไม่สำเร็จ (เดิมเงียบ → รหัสหายจากระบบ) */
+function showSaveWarning(){
+  const box = document.getElementById('qrcodeBox');
+  if(!box || document.getElementById('saveWarn')) return;
+  const d = document.createElement('div');
+  d.id = 'saveWarn';
+  d.style.cssText = 'margin:8px auto;padding:10px 14px;background:rgba(255,180,60,.15);border:1px solid rgba(255,180,60,.5);border-radius:10px;font-size:12.5px;line-height:1.6;color:#ffd24d;max-width:320px;text-align:center;';
+  d.innerHTML = '⚠️ สัญญาณขัดข้อง — คูปองยังไม่เข้าระบบร้าน<br>เปิดหน้านี้ใหม่เมื่อสัญญาณดี ระบบจะบันทึกซ้ำอัตโนมัติ (รหัสเดิม ไม่ต้องเล่นใหม่)';
+  box.parentNode.insertBefore(d, box.nextSibling);
 }
 
 function saveToLocalStorage(code, amount, goals){
