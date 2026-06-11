@@ -258,7 +258,7 @@
       <div class="chip">ลุ้นสูงสุด <b>฿300</b></div>
       <div class="chip"><b>ใส่ให้เต็มข้อ!</b> 🔥</div>
     </div>
-    <div style="width:100%;margin-top:16px;"><button class="btn" id="startBtn" onclick="startGame()">เริ่มยิง ⚽</button></div>
+    <div style="width:100%;margin-top:16px;"><button class="btn" id="startBtn" onclick="startGame()" disabled style="opacity:.55;">⏳ กำลังตรวจสอบสิทธิ์...</button></div>
   </section>
 
   <!-- PLAY -->
@@ -547,6 +547,15 @@ async function initLine(){
     showErrorScreen("ตรวจสอบสิทธิ์ไม่สำเร็จ", "สัญญาณขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง (สิทธิ์ของคุณยังอยู่)");
     return;
   }
+  // ⭐ ผ่านการเช็คทุกชั้น (ยังไม่เคยเล่น) → ปลดปุ่มเริ่มยิง
+  enableStartBtn();
+}
+
+/* ⭐ ปลดปุ่มเริ่มเล่น หลังเช็คสิทธิ์เสร็จ (เคยเล่นแล้ว = ไม่ปลด — เด้งหน้า QR แทน) */
+function enableStartBtn(){
+  window._initDone = true;
+  const b = document.getElementById('startBtn');
+  if(b){ b.disabled = false; b.style.opacity = ''; b.textContent = 'เริ่มยิง ⚽'; }
 }
 
 function generateTestId(){
@@ -629,17 +638,16 @@ function generateCouponQR(code, amount, isUsed){
   box.innerHTML = '<div id="qrcode" style="display:flex;justify-content:center;padding:14px;background:#fff;border-radius:14px;margin:10px auto;width:fit-content;"></div>';
   const qd = document.getElementById('qrcode');
   if(!qd) return;
-  // ⭐ format เดียวกับคูปองขูดบัตร: type + lineId จำเป็นสำหรับเครื่องสแกน
+  // ⭐ ย่อ payload ให้ QR โปร่ง สแกนง่ายทุกเครื่อง — ตัด lineId/amount ออก
+  //    (เครื่องสแกน query Firebase ด้วย field code อยู่แล้ว ไม่ใช้ lineId)
   const qrData = JSON.stringify({
-    type: SHOP_ID + "_coupon",   // geisha_coupon / yoshi_coupon
     code: code,
-    lineId: lineUserId,          // doc ID — เครื่องสแกนใช้หา doc
-    amount: amount,
-    campaign: CAMPAIGN_ID        // worldcup_jun2026
+    campaign: CAMPAIGN_ID,       // worldcup_jun2026
+    type: SHOP_ID + "_coupon"    // geisha_coupon / yoshi_coupon
   });
   const renderNow = () => {
     qd.innerHTML = '';
-    new QRCode(qd, { text: qrData, width:200, height:200, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.H });
+    new QRCode(qd, { text: qrData, width:220, height:220, colorDark:"#000000", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M });  // ⭐ M+220px = ช่องใหญ่ สแกนง่าย
   };
   if(typeof QRCode!=='undefined'){ renderNow(); return; }
   // ⭐ Library ยังไม่มา (เน็ตสะดุด) → แสดง ⏳ + โหลดซ้ำ + retry ทุก 500ms
@@ -706,6 +714,7 @@ function showErrorScreen(title,msg){
 function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.getElementById(id).classList.add('on'); }
 
 function startGame(resumed){
+  if(!window._initDone) return;  // ⭐ กันกดก่อนเช็คสิทธิ์เสร็จ
   audio();
   if(keeperAnim){ keeperAnim.cancel(); } if(ballAnim){ ballAnim.cancel(); } if(shadowAnim){ shadowAnim.cancel(); }
   keeperAnim=ballAnim=shadowAnim=null; keeperEndPose='none';
