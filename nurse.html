@@ -238,23 +238,25 @@ async function initLine(){
   // ⭐ หมดเขตเล่น — ห้ามตัดจบตรงนี้: คนมีคูปองต้องเข้าดู QR ได้ถึง 31 ส.ค. (บทเรียนบอลโลก)
   const _expired = isCampaignExpired();
 
-  // ⭐ LIFF Login
+  // ⭐ LIFF Login — FIX: โหมดทดสอบต้องมาก่อนเสมอ (กัน LINE ที่ล็อกอินค้างในเบราว์เซอร์แซง → เขียนทับสิทธิ์จริง)
   try{
-    if(LIFF_ID && window.liff){
+    if(isPreview){
+      lineUserId = "test_preview_" + Date.now();
+      lineDisplayName = "พรีวิว";
+      console.log("[preview mode]", lineUserId);
+    } else if(isTest){
+      lineUserId = localStorage.getItem("test_user_id") || generateTestId();
+      lineDisplayName = "ทดสอบ";
+      console.log("[test mode]", lineUserId);
+    } else if(LIFF_ID && window.liff){
       await liff.init({ liffId: LIFF_ID });
       if(!liff.isLoggedIn()){ liff.login(); return; }
       const p = await liff.getProfile();
       lineUserId = p.userId; lineDisplayName = p.displayName; linePictureUrl = p.pictureUrl;
       console.log("[liff] Logged in:", lineDisplayName);
-    } else if(!isTest && !isPreview){
+    } else {
       showErrorScreen("กรุณาเปิดผ่าน LINE", "ระบบรองรับเฉพาะการเปิดผ่าน LINE OA เท่านั้น");
       return;
-    } else if(isPreview){
-      lineUserId = "test_preview_" + Date.now();
-      lineDisplayName = "พรีวิว";
-    } else {
-      lineUserId = localStorage.getItem("test_user_id") || generateTestId();
-      lineDisplayName = "ทดสอบ";
     }
   }catch(e){
     console.error("LIFF error:", e);
@@ -418,7 +420,11 @@ function showUsedToast(){
   setTimeout(() => { t.style.opacity = '1'; t.style.transform = 'translate(-50%,-50%) scale(1)'; }, 50);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
 }
-window.addEventListener("beforeunload", () => { if(realtimeUnsubscribe){ realtimeUnsubscribe(); realtimeUnsubscribe = null; } });
+window.addEventListener("beforeunload", () => {
+  if(realtimeUnsubscribe){ realtimeUnsubscribe(); realtimeUnsubscribe = null; }
+  if(typeof stopHeartLoop === 'function') stopHeartLoop();
+  try{ if(_actx) _actx.close(); }catch(e){}
+});
 
 /* ⭐ หน้าหมดเขต / error */
 function showCampaignExpired(){
@@ -553,6 +559,7 @@ function revive(){
 }
 
 async function finishGame(bpm, avgAcc){
+  stopHeartLoop();
   const final = G.prize;
   const jackpot = final >= CAP;
   const code = genCode();
@@ -765,6 +772,11 @@ function sfxFlat(){
     o.connect(g); g.connect(_actx.destination);
     o.start(); o.stop(_actx.currentTime + 0.7);
   }catch(e){}
+}
+function stopHeartLoop(){   // ⭐ หยุดบี๊บ/สั่น/วาดกราฟ ทันทีที่ออกจากจอเกม
+  if(window._ekgSinus){ clearInterval(window._ekgSinus); window._ekgSinus = null; }
+  ekgMode = 'flat';
+  if(ekgRaf){ cancelAnimationFrame(ekgRaf); ekgRaf = null; }
 }
 function ekgRevive(){
   ekgMode = 'sinus';
