@@ -443,6 +443,7 @@ function drawPrize(){
 }
 
 function startGame(){
+  try{ _actx = _actx || new (window.AudioContext || window.webkitAudioContext)(); if(_actx.state === 'suspended') _actx.resume(); }catch(e){}
   G = {
     prize: drawPrize(),        // 🎲 สุ่มไว้ตั้งแต่ต้น — เกมคือการเดินเรื่อง
     set: 0, taps: 0, lastTap: 0,
@@ -477,10 +478,14 @@ function nextSet(){
   b.disabled = false;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+/* ⭐ FIX: ผูกปุ่มตรงๆ (สคริปต์อยู่ท้าย body — element มีแล้ว) · pointerdown = ตอบสนองทันที กดรัวไม่หลุด */
+(function(){
   const b = document.getElementById('pumpBtn');
-  b.addEventListener('click', onPump);
-});
+  if(b){
+    b.addEventListener('pointerdown', (e) => { e.preventDefault(); onPump(); });
+    b.addEventListener('keydown', (e) => { if(e.key === ' ' || e.key === 'Enter') onPump(); });
+  }
+})();
 
 function onPump(){
   if(!G || G.busy) return;
@@ -493,8 +498,8 @@ function onPump(){
   G.taps++;
   document.getElementById('tapCount').textContent = `${G.taps}/${TAPS_PER_SET}`;
   ekgSpike(G.set / SETS);
-  try{ if(navigator.vibrate) navigator.vibrate(18); }catch(e){}
-  sfxBeep();
+  try{ if(navigator.vibrate) navigator.vibrate(30); }catch(e){}
+  sfxThump();
   if(G.taps >= TAPS_PER_SET) endSet();
 }
 
@@ -565,6 +570,8 @@ async function finishGame(bpm, avgAcc){
   document.getElementById('codeTxt').textContent = code;
   document.getElementById('copied').textContent = '';
   heartBurst(jackpot ? 26 : 12);
+  sfxFanfare(jackpot);
+  try{ if(navigator.vibrate) navigator.vibrate(jackpot ? [80, 60, 80, 60, 160] : [60, 40, 120]); }catch(e){}
 
   await saveToFirebase(code, final, bpm, avgAcc);
   generateCouponQR(code, final, false);
@@ -643,14 +650,15 @@ async function updateCustomerMaster(amount){
 }
 
 /* ── คัดลอกรหัส ── */
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('copyBtn').addEventListener('click', async () => {
+(function(){
+  const c = document.getElementById('copyBtn');
+  if(c) c.addEventListener('click', async () => {
     const code = document.getElementById('codeTxt').textContent;
     try{ await navigator.clipboard.writeText(code); document.getElementById('copied').textContent = '✓ คัดลอกแล้ว'; }
     catch(e){ document.getElementById('copied').textContent = code; }
     setTimeout(() => { document.getElementById('copied').textContent = ''; }, 2200);
   });
-});
+})();
 
 /* ── ❤️ เอฟเฟกต์ ── */
 function heartBurst(n){
@@ -669,6 +677,35 @@ function heartBurst(n){
 
 /* ── 🔊 เสียงมอนิเตอร์ (WebAudio สั้นๆ) ── */
 let _actx = null;
+function sfxThump(){   // 🫀 ตุบ CPR — เบสหนักสองจังหวะสั้น
+  try{
+    _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = _actx.currentTime;
+    const o = _actx.createOscillator(), g = _actx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(150, t0);
+    o.frequency.exponentialRampToValueAtTime(52, t0 + 0.14);
+    g.gain.setValueAtTime(0.5, t0);
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.16);
+    o.connect(g); g.connect(_actx.destination);
+    o.start(t0); o.stop(t0 + 0.17);
+  }catch(e){}
+}
+function sfxFanfare(big){   // 🎉 ตอนฟื้น/แจ็คพอต
+  try{
+    _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
+    const notes = big ? [523, 659, 784, 1047, 1319] : [523, 659, 784];
+    notes.forEach((f, i) => {
+      const t0 = _actx.currentTime + i * 0.13;
+      const o = _actx.createOscillator(), g = _actx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.16, t0);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.34);
+      o.connect(g); g.connect(_actx.destination);
+      o.start(t0); o.stop(t0 + 0.35);
+    });
+  }catch(e){}
+}
 function sfxBeep(){
   try{
     _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
@@ -732,7 +769,7 @@ function sfxFlat(){
 function ekgRevive(){
   ekgMode = 'sinus';
   if(window._ekgSinus) clearInterval(window._ekgSinus);
-  window._ekgSinus = setInterval(() => { if(ekgMode === 'sinus') ekgSpike(1); }, 545);
+  window._ekgSinus = setInterval(() => { if(ekgMode === 'sinus'){ ekgSpike(1); sfxBeep(); try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){} } }, 545);
 }
 function ekgLoop(){
   ekgRaf = requestAnimationFrame(ekgLoop);
