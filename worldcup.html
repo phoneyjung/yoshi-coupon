@@ -497,8 +497,9 @@ async function initLine(){
 
   if(isTest) document.getElementById('testbar').classList.add('on');
 
-  // ⭐ Check: เกมหมดเขต? (เล่นได้ถึง 19 ก.ค. · 20 ก.ค. 00:00 auto ปิด · คูปองยังใช้ได้ถึง 31 ก.ค.)
-  if(isCampaignExpired()){ showCampaignExpired(); return; }
+  // ⭐ Check: เกมหมดเขต? (เล่นได้ถึง 19 ก.ค. · คูปองยังใช้ได้ถึง 31 ก.ค.)
+  //    FIX: ห้ามตัดจบตรงนี้ — คนที่มีคูปองแล้วต้องล็อกอินเข้ามาดู QR ได้จนหมดอายุคูปอง
+  const _expired = isCampaignExpired();
   // หมายเหตุ: ไม่เช็ค "ก่อนเริ่ม" — เล่นได้ทันที (ลูกค้าไม่เห็นเพราะ Endpoint ยังชี้ index.html ถึง 11 มิ.ย.)
 
   // ⭐ LIFF Login
@@ -547,7 +548,8 @@ async function initLine(){
     showErrorScreen("ตรวจสอบสิทธิ์ไม่สำเร็จ", "สัญญาณขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง (สิทธิ์ของคุณยังอยู่)");
     return;
   }
-  // ⭐ ผ่านการเช็คทุกชั้น (ยังไม่เคยเล่น) → ปลดปุ่มเริ่มยิง
+  // ⭐ ผ่านการเช็คทุกชั้น (ยังไม่เคยเล่น)
+  if(_expired){ showCampaignExpired(); return; }   // หมดเขตเล่น + ไม่มีคูปองเดิม → ค่อยแจ้งจบแคมเปญ
   enableStartBtn();
 }
 
@@ -704,7 +706,7 @@ function showCampaignNotStarted(){
 }
 function showCampaignExpired(){
   const el=document.getElementById('intro'); if(!el) return;
-  el.innerHTML=`<div style="text-align:center;padding:30px 20px;"><div style="font-size:64px;margin-bottom:16px;">${SHOP_EMOJI}</div><div style="font-size:24px;font-weight:bold;color:var(--gold,#ffd24d);margin-bottom:12px;">${SHOP_NAME}</div><div style="font-size:60px;margin:20px 0;">😢</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">โปรโมชั่นจบแล้วค่ะ</div><div style="font-size:14px;opacity:.8;line-height:1.6;">แคมเปญ World Cup สิ้นสุดเมื่อ<br><strong style="color:var(--gold,#ffd24d);">19 กรกฎาคม 2569</strong></div><div style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,210,77,.4);border-radius:14px;padding:16px;margin:24px 0;"><div style="font-size:13px;opacity:.8;margin-bottom:6px;">📢 ติดตามโปรโมชั่นใหม่ๆ</div><div style="font-size:14px;">ทาง LINE OA: <strong style="color:var(--gold,#ffd24d);">${SHOP_NAME}</strong></div></div><div style="font-size:13px;opacity:.6;">ขอบคุณที่ติดตามนะคะ 🍱</div></div>`;
+  el.innerHTML=`<div style="text-align:center;padding:30px 20px;"><div style="font-size:64px;margin-bottom:16px;">${SHOP_EMOJI}</div><div style="font-size:24px;font-weight:bold;color:var(--gold,#ffd24d);margin-bottom:12px;">${SHOP_NAME}</div><div style="font-size:60px;margin:20px 0;">😢</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">โปรโมชั่นจบแล้วค่ะ</div><div style="font-size:14px;opacity:.8;line-height:1.6;">แคมเปญ World Cup สิ้นสุดเมื่อ<br><strong style="color:var(--gold,#ffd24d);">19 กรกฎาคม 2569</strong></div><div style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,210,77,.4);border-radius:14px;padding:16px;margin:24px 0;"><div style="font-size:13px;opacity:.8;margin-bottom:6px;">📢 ติดตามโปรโมชั่นใหม่ๆ</div><div style="font-size:14px;">ทาง LINE OA: <strong style="color:var(--gold,#ffd24d);">${SHOP_NAME}</strong></div></div><div style="font-size:12.5px;opacity:.75;margin-bottom:10px;">🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<strong>ผ่าน LINE</strong> ระบบจะแสดง QR คูปองของคุณ (ใช้ได้ถึง 31 ก.ค.)</div><div style="font-size:13px;opacity:.6;">ขอบคุณที่ติดตามนะคะ 🍱</div></div>`;
 }
 function showErrorScreen(title,msg){
   const el=document.getElementById('intro'); if(!el) return;
