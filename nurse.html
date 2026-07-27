@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yoshi SPA - ใจวาย...ให้น้องช่วยปั๊ม 💓</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;800&family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- LINE LIFF SDK -->
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<!-- QR Code Generator -->
+<script src="qrcode.min.js" onerror="var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';document.head.appendChild(s);"></script>
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+    collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyBhkUyMQLhWiwGIF7yTSnageSNXmJim6FQ",
+    authDomain: "geisha-coupon.firebaseapp.com",
+    projectId: "geisha-coupon",
+    storageBucket: "geisha-coupon.firebasestorage.app",
+    messagingSenderId: "620548410470",
+    appId: "1:620548410470:web:d85dcc91390882fef4f1a7"
+  };
+  const app = initializeApp(firebaseConfig);
+  window.firebaseDB = getFirestore(app);
+  window.firebaseHelpers = { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot };
+  window.firebaseReady = true;
+  console.log("[firebase] ready");
+</script>
+
+<style>
+:root{ --pink:#ff5d9e; --pink-deep:#e0407f; --gold:#ffd24d; --bg1:#12061c; --bg2:#26102f; --mon:#04140a; --ekg:#2bff88; }
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ font-family:'Sarabun',sans-serif; background:radial-gradient(120% 100% at 50% 0%, var(--bg2) 0%, var(--bg1) 62%); color:#fff; overflow-x:hidden; }
+h1,h2,.kanit{ font-family:'Kanit',sans-serif; }
+.wrap{ max-width:440px; margin:0 auto; min-height:100dvh; display:flex; flex-direction:column; padding:18px 16px 26px; }
+.screen{ display:none; flex:1; flex-direction:column; }
+.screen.on{ display:flex; }
+.foot{ text-align:center; font-size:11.5px; opacity:.55; margin-top:16px; }
+
+/* intro */
+.hero{ text-align:center; padding:14px 4px 6px; }
+.hero .big{ font-size:56px; line-height:1; }
+.hero h1{ font-size:26px; color:var(--pink); margin:10px 0 2px; text-shadow:0 2px 18px rgba(255,93,158,.45); }
+.hero .sub{ font-size:14px; opacity:.85; line-height:1.7; }
+.card{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:16px; margin-top:14px; }
+.rule{ font-size:13.5px; line-height:1.9; opacity:.92; }
+.btn-main{ display:block; width:100%; margin-top:16px; padding:16px; border:none; border-radius:16px; background:linear-gradient(135deg,var(--pink),var(--pink-deep)); color:#fff; font-family:'Kanit'; font-size:19px; font-weight:600; box-shadow:0 8px 26px rgba(255,93,158,.4); cursor:pointer; transition:transform .12s; }
+.btn-main:active{ transform:scale(.96); }
+.btn-main:disabled{ opacity:.5; }
+
+/* monitor */
+.monitor{ background:var(--mon); border:2px solid #123522; border-radius:16px; padding:10px 10px 6px; margin-top:12px; box-shadow:inset 0 0 22px rgba(0,0,0,.7), 0 4px 18px rgba(0,0,0,.4); }
+.mon-top{ display:flex; justify-content:space-between; align-items:baseline; font-family:'Kanit'; padding:0 4px 4px; }
+.mon-top .bpm{ color:var(--ekg); font-size:24px; }
+.mon-top .bpm small{ font-size:11px; opacity:.7; }
+.mon-top .stat{ font-size:12px; color:#8fd8ae; opacity:.85; }
+canvas#ekg{ width:100%; height:110px; display:block; }
+
+.setbar{ display:flex; gap:6px; margin-top:12px; }
+.setchip{ flex:1; text-align:center; padding:7px 4px; border-radius:10px; font-family:'Kanit'; font-size:13px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); opacity:.55; }
+.setchip.on{ background:rgba(255,93,158,.18); border-color:var(--pink); opacity:1; }
+.setchip.done{ background:rgba(43,255,136,.12); border-color:rgba(43,255,136,.5); opacity:.9; }
+
+.prompt{ text-align:center; font-size:15px; line-height:1.7; margin-top:12px; min-height:48px; }
+.prompt b{ color:var(--gold); }
+
+/* pump zone */
+.pumpzone{ position:relative; display:flex; justify-content:center; align-items:center; margin:14px auto 4px; width:190px; height:190px; }
+.guide{ position:absolute; inset:0; border-radius:50%; border:3px solid rgba(255,93,158,.55); animation:none; }
+.guide.beat{ animation:guidePulse .545s ease-out infinite; }
+@keyframes guidePulse{ 0%{ transform:scale(.86); opacity:.95; } 55%{ transform:scale(1.06); opacity:.35; } 100%{ transform:scale(.86); opacity:.95; } }
+.pump{ width:150px; height:150px; border-radius:50%; border:none; background:radial-gradient(circle at 34% 30%, #ff8db9, var(--pink) 46%, var(--pink-deep)); color:#fff; font-size:56px; box-shadow:0 10px 30px rgba(255,93,158,.5), inset 0 -8px 18px rgba(0,0,0,.25); cursor:pointer; transition:transform .07s; touch-action:manipulation; user-select:none; }
+.pump:active{ transform:scale(.9); }
+.pump:disabled{ filter:grayscale(.6); opacity:.6; }
+.taps{ text-align:center; font-family:'Kanit'; font-size:14px; opacity:.85; margin-top:6px; }
+
+/* result (โครงเดียวกับบอลโลก — สแกน/พฤติกรรมเดิม) */
+.res-head{ text-align:center; margin-top:6px; }
+.res-head h2{ font-size:26px; color:var(--pink); }
+#champ{ display:none; justify-content:center; gap:8px; font-size:30px; margin-top:4px; }
+#scoreLine{ text-align:center; font-size:14px; opacity:.85; margin-top:4px; }
+#grade{ text-align:center; font-size:15px; color:var(--gold); margin-top:6px; min-height:22px; }
+.amtbox{ text-align:center; margin:10px 0 2px; }
+#amt{ font-family:'Kanit'; font-size:64px; font-weight:800; color:var(--gold); text-shadow:0 3px 22px rgba(255,210,77,.4); }
+#amt small{ font-size:26px; }
+.amt-cap{ font-size:13px; opacity:.8; }
+#jackpot{ display:none; text-align:center; background:linear-gradient(135deg,rgba(255,210,77,.2),rgba(255,93,158,.2)); border:1px dashed var(--gold); border-radius:12px; padding:10px; margin:10px 0; font-size:14px; }
+.codebox{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px; }
+#codeTxt{ font-family:'Kanit'; font-size:20px; letter-spacing:1.5px; background:rgba(255,255,255,.08); border:1px dashed rgba(255,255,255,.35); padding:8px 14px; border-radius:10px; }
+.copybtn{ padding:9px 13px; border-radius:10px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.08); color:#fff; font-size:13px; cursor:pointer; }
+#copied{ text-align:center; font-size:12px; color:var(--ekg); min-height:16px; margin-top:4px; }
+.expnote{ text-align:center; font-size:12.5px; opacity:.75; margin-top:8px; line-height:1.7; }
+
+.heart-fx{ position:fixed; font-size:22px; pointer-events:none; z-index:9999; animation:heartUp 1.15s ease-out forwards; }
+@keyframes heartUp{ 0%{ transform:translateY(0) scale(.6); opacity:1; } 100%{ transform:translateY(-130px) scale(1.25); opacity:0; } }
+
+#testbar{ display:none; position:fixed; top:0; left:0; right:0; background:#7c2d12; color:#ffd; font-size:11px; padding:4px 8px; z-index:99999; }
+#testbar.on{ display:block; }
+</style>
+</head>
+<body>
+<div id="testbar"></div>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div class="screen on" id="intro">
+    <div class="hero">
+      <div class="big">👩‍⚕️💓</div>
+      <h1>ใจวาย...ให้น้องช่วยปั๊ม</h1>
+      <div class="sub">เดินเข้าร้านมาเจอน้องพยาบาล Yoshi SPA<br>น่ารักจน<b style="color:var(--pink);">หัวใจหยุดเต้น!</b> 🫨</div>
+    </div>
+    <div class="card">
+      <div class="rule">
+        🫀 ปั๊มหัวใจตามจังหวะวงชมพู <b>3 เซ็ต</b><br>
+        💓 หัวใจฟื้นเต้นแรงแค่ไหน = <b style="color:var(--gold);">รับส่วนลดเท่านั้น</b> (สูงสุด ฿300)<br>
+        🎫 เล่นได้ <b>1 ครั้ง/LINE</b> · คูปองใช้ได้ถึง <b>31 ส.ค. 69</b>
+      </div>
+      <button class="btn-main" id="startBtn" disabled style="opacity:.5;">⏳ กำลังตรวจสอบสิทธิ์…</button>
+    </div>
+    <div class="foot">💓 Nurse Edition · Yoshi SPA · เล่นได้ <b>1 ครั้ง/LINE ID</b></div>
+  </div>
+
+  <!-- GAME -->
+  <div class="screen" id="game">
+    <div class="monitor">
+      <div class="mon-top">
+        <span class="bpm"><span id="bpmNum">0</span> <small>BPM</small></span>
+        <span class="stat" id="monStat">● FLATLINE</span>
+      </div>
+      <canvas id="ekg"></canvas>
+    </div>
+    <div class="setbar">
+      <div class="setchip" id="set1">เซ็ต 1</div>
+      <div class="setchip" id="set2">เซ็ต 2</div>
+      <div class="setchip" id="set3">เซ็ต 3</div>
+    </div>
+    <div class="prompt" id="prompt"></div>
+    <div class="pumpzone">
+      <div class="guide" id="guide"></div>
+      <button class="pump" id="pumpBtn" disabled>🫀</button>
+    </div>
+    <div class="taps" id="tapCount"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="result">
+    <div class="res-head"><h2 id="resTitle">ฟื้นแล้ว!</h2></div>
+    <div id="champ">💘💘💘</div>
+    <div id="scoreLine"></div>
+    <div id="grade"></div>
+    <div class="amtbox"><div id="amt"><small>฿</small>0</div><div class="amt-cap">ส่วนลดค่าบริการ Yoshi SPA</div></div>
+    <div id="jackpot">💘 หัวใจเต้นทะลุสเกล! รางวัลสูงสุด — บอกน้องว่า "ใจวายเพราะหนู" 😉</div>
+    <div class="codebox"><span id="codeTxt">-</span><button class="copybtn" id="copyBtn">📋 คัดลอก</button></div>
+    <div id="copied"></div>
+    <div id="qrcodeBox"></div>
+    <div class="expnote">📱 แคปหน้าจอนี้เก็บไว้ หรือเปิดลิงก์เดิมผ่าน LINE ดูซ้ำได้ตลอด<br>ใช้ได้ถึง <b style="color:var(--gold);">31 สิงหาคม 2569</b> · แสดง QR กับพนักงานที่ร้าน</div>
+    <div class="foot">💓 Nurse Edition · Yoshi SPA</div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   🍱 SHOP & CAMPAIGN CONFIG — 💓 Nurse CPR (ส.ค. 69)
+   ============================================================ */
+const SHOP_ID = "yoshi";
+const SHOP_NAME = "Yoshi SPA";
+const SHOP_EMOJI = "🍱";
+const CAMPAIGN_ID = "nurse_aug2026";
+const COLLECTION_NAME = "coupons_" + SHOP_ID + "_" + CAMPAIGN_ID;
+const CAMPAIGN_START_DATE = "2026-08-01";      // (ไม่ gate ก่อนเริ่ม — endpoint คุมการปล่อยเหมือนเดิม)
+const CAMPAIGN_EXPIRE_DATE = "2026-08-24";     // เล่นได้ถึง 23 ส.ค. 23:59 · คูปองใช้ได้ถึง 31 ส.ค.
+const COUPON_EXPIRE_TH = "31/08/69";
+
+/* 🎲 สัดส่วนรางวัล (รวม 100) */
+const PRIZES = [
+  { a: 50,  w: 10 },
+  { a: 100, w: 15 },
+  { a: 150, w: 45 },
+  { a: 200, w: 25 },
+  { a: 250, w: 3 },
+  { a: 300, w: 2 },
+];
+const TIERS = [50, 100, 150, 200, 250, 300];
+const CAP = 300;
+const BPM_MAP = { 50: 96, 100: 108, 150: 124, 200: 142, 250: 158, 300: 177 };
+const SETS = 3, TAPS_PER_SET = 8, BEAT_MS = 545;   // ~110 ครั้ง/นาที ตามหลัก CPR จริง
+const SKILL_MAX_UP = 0.10;                          // ฝีมือเป๊ะสุด = โอกาสอัพ 1 ขั้น 10%
+
+/* Mock Date สำหรับทดสอบ — ?mockdate=2026-08-10 */
+function getNow(){
+  const params = new URLSearchParams(location.search);
+  const mock = params.get('mockdate');
+  if(mock){
+    const d = new Date(mock + "T12:00:00+07:00");
+    if(!isNaN(d.getTime())){ console.log("[MOCK DATE]", mock); return d; }
+  }
+  return new Date();
+}
+function isCampaignExpired(){
+  return getNow() >= new Date(CAMPAIGN_EXPIRE_DATE + "T00:00:00+07:00");
+}
+
+/* --- LINE LIFF Config --- */
+const LIFF_ID = "2009938597-22F8x0Zf";
+let lineUserId = null;
+let lineDisplayName = "";
+let linePictureUrl = "";
+let currentCouponData = null;
+let realtimeUnsubscribe = null;
+
+/* --- game state --- */
+let G = null;
+let forceDiscount = null;
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('on');
+}
+
+window.addEventListener('load', initLine);
+async function initLine(){
+  const isTest = /test/i.test(location.hash + location.search);
+  const isPreview = /preview/i.test(location.search);
+  if(isTest) document.getElementById('testbar').classList.add('on');
+  const pf = new URLSearchParams(location.search).get('force');
+  if(pf && TIERS.includes(+pf)) forceDiscount = +pf;
+
+  // ⭐ หมดเขตเล่น — ห้ามตัดจบตรงนี้: คนมีคูปองต้องเข้าดู QR ได้ถึง 31 ส.ค. (บทเรียนบอลโลก)
+  const _expired = isCampaignExpired();
+
+  // ⭐ LIFF Login
+  try{
+    if(LIFF_ID && window.liff){
+      await liff.init({ liffId: LIFF_ID });
+      if(!liff.isLoggedIn()){ liff.login(); return; }
+      const p = await liff.getProfile();
+      lineUserId = p.userId; lineDisplayName = p.displayName; linePictureUrl = p.pictureUrl;
+      console.log("[liff] Logged in:", lineDisplayName);
+    } else if(!isTest && !isPreview){
+      showErrorScreen("กรุณาเปิดผ่าน LINE", "ระบบรองรับเฉพาะการเปิดผ่าน LINE OA เท่านั้น");
+      return;
+    } else if(isPreview){
+      lineUserId = "test_preview_" + Date.now();
+      lineDisplayName = "พรีวิว";
+    } else {
+      lineUserId = localStorage.getItem("test_user_id") || generateTestId();
+      lineDisplayName = "ทดสอบ";
+    }
+  }catch(e){
+    console.error("LIFF error:", e);
+    if(!isTest && !isPreview){
+      showErrorScreen("เชื่อมต่อ LINE ไม่สำเร็จ", "สัญญาณอาจขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง");
+      return;
+    }
+    lineUserId = localStorage.getItem("test_user_id") || generateTestId();
+  }
+  if(document.getElementById('testbar').classList.contains('on')){
+    document.getElementById('testbar').textContent = "TEST · " + (lineUserId || "-") + " · ?force=300 บังคับรางวัล · ?mockdate=YYYY-MM-DD";
+  }
+
+  // ⭐ เคยเล่นแล้ว? (anti-cheat + กู้คูปอง)
+  const chk = await checkExistingResult();
+  if(chk === 'found') return;
+  const localBak = loadLocalCoupon();
+  if(localBak && localBak.code){
+    console.log("[recover] local coupon:", localBak.code);
+    if(chk === 'none') await resyncLocalCoupon(localBak);
+    if(!currentCouponData) currentCouponData = { code: localBak.code, amount: localBak.amount, bpm: localBak.bpm || 0, isUsed: false };
+    showExistingResult(currentCouponData);
+    return;
+  }
+  if(chk === 'error' && lineUserId && !String(lineUserId).startsWith("test_")){
+    showErrorScreen("ตรวจสอบสิทธิ์ไม่สำเร็จ", "สัญญาณขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง (สิทธิ์ของคุณยังอยู่)");
+    return;
+  }
+  // ⭐ ยังไม่เคยเล่น
+  if(_expired){ showCampaignExpired(); return; }
+  enableStartBtn();
+}
+
+function enableStartBtn(){
+  window._initDone = true;
+  const b = document.getElementById('startBtn');
+  if(b){ b.disabled = false; b.style.opacity = ''; b.textContent = 'เริ่มปั๊มหัวใจ 💓'; b.onclick = startGame; }
+}
+
+function generateTestId(){
+  const id = "test_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem("test_user_id", id);
+  return id;
+}
+
+/* ⭐ เช็ค Firebase ว่าเคยเล่นแล้วหรือยัง */
+async function checkExistingResult(){
+  if(!window.firebaseReady || !lineUserId) return 'error';
+  try{
+    const { doc, getDoc } = window.firebaseHelpers;
+    const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+    const snap = await Promise.race([
+      getDoc(ref),
+      new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000))
+    ]);
+    if(snap.exists()){
+      const data = snap.data();
+      currentCouponData = data;
+      showExistingResult(data);
+      return 'found';
+    }
+    return 'none';
+  }catch(e){ console.warn("[firebase] check failed:", e); return 'error'; }
+}
+
+/* ⭐ กู้คูปองจาก localStorage (เน็ตหลุดตอนบันทึก) */
+function loadLocalCoupon(){
+  try{
+    const raw = localStorage.getItem(SHOP_ID + "_nurse_" + (lineUserId || "guest"));
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+async function resyncLocalCoupon(bak){
+  if(!window.firebaseReady || !lineUserId) return false;
+  try{
+    const { doc, setDoc, serverTimestamp } = window.firebaseHelpers;
+    const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+    const couponData = {
+      amount: bak.amount, code: bak.code, bpm: bak.bpm || 0, accuracy: bak.accuracy || 0, upgraded: !!bak.upgraded, sets: SETS,
+      lineUserId, lineDisplayName, linePictureUrl,
+      displayName: lineDisplayName, userId: lineUserId,
+      shop: SHOP_ID, shopId: SHOP_ID, campaignId: CAMPAIGN_ID,
+      createdAt: serverTimestamp(), date: new Date(bak.ts || Date.now()).toISOString(),
+      isUsed: false, usedAt: null,
+      expireDate: COUPON_EXPIRE_TH, gameType: "nurse_cpr", resynced: true
+    };
+    await setDoc(ref, couponData);
+    currentCouponData = couponData;
+    return true;
+  }catch(e){ console.warn("[recover] resync failed:", e); return false; }
+}
+
+/* ⭐ แสดงผลที่เคยได้ */
+function showExistingResult(data){
+  show('result');
+  const jackpot = data.amount >= CAP;
+  document.getElementById('resTitle').textContent = jackpot ? '💘 ทะลุสเกล!' : 'คุณเคยช่วยชีวิตแล้ว!';
+  document.getElementById('champ').style.display = jackpot ? 'flex' : 'none';
+  document.getElementById('scoreLine').textContent = data.bpm ? `หัวใจฟื้นที่ ${data.bpm} BPM 💓` : '';
+  document.getElementById('grade').textContent = data.isUsed ? '✅ ใช้คูปองเรียบร้อยแล้ว' : '⏳ ยังไม่ได้ใช้ — แสดง QR ที่ร้าน';
+  document.getElementById('amt').innerHTML = `<small>฿</small>${data.amount}`;
+  document.getElementById('jackpot').style.display = (jackpot && !data.isUsed) ? 'block' : 'none';
+  document.getElementById('codeTxt').textContent = data.code;
+  document.getElementById('copied').textContent = '';
+  generateCouponQR(data.code, data.amount, data.isUsed);
+  if(!data.isUsed){ subscribeToChanges(); } else { markAsUsedUI(); }
+}
+
+/* ⭐ QR — payload กระชับแบบเดียวกับบอลโลก (เครื่องสแกนร้านรองรับ) */
+function generateCouponQR(code, amount, isUsed){
+  const box = document.getElementById('qrcodeBox');
+  if(!box) return;
+  if(isUsed){ box.innerHTML = '<div style="padding:20px;text-align:center;opacity:.5;">QR Code ถูกใช้แล้ว</div>'; return; }
+  box.innerHTML = '<div id="qrcode" style="display:flex;justify-content:center;padding:14px;background:#fff;border-radius:14px;margin:10px auto;width:fit-content;"></div>';
+  const qd = document.getElementById('qrcode');
+  if(!qd) return;
+  const qrData = JSON.stringify({ code: code, campaign: CAMPAIGN_ID, type: SHOP_ID + "_coupon" });
+  const renderNow = () => {
+    qd.innerHTML = '';
+    new QRCode(qd, { text: qrData, width: 220, height: 220, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M });
+  };
+  if(typeof QRCode !== 'undefined'){ renderNow(); return; }
+  qd.innerHTML = '<div style="padding:24px;color:#666;font-size:13px;">⏳ กำลังสร้าง QR...</div>';
+  let _t = 0;
+  const _timer = setInterval(() => {
+    _t++;
+    if(typeof QRCode !== 'undefined'){ clearInterval(_timer); renderNow(); return; }
+    if(_t === 1){ const s = document.createElement('script'); s.src = 'qrcode.min.js?r=' + Date.now(); document.head.appendChild(s); }
+    if(_t === 6){ const s2 = document.createElement('script'); s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'; document.head.appendChild(s2); }
+    if(_t > 20){ clearInterval(_timer); qd.innerHTML = '<div style="padding:18px;color:#b45309;font-size:13px;line-height:1.6;">⚠️ สร้าง QR ไม่สำเร็จ (เน็ตขัดข้อง)<br>ปิดแล้วเปิดหน้านี้ใหม่ หรือแจ้งรหัสด้านล่างกับพนักงาน</div>'; }
+  }, 500);
+}
+
+/* ⭐ Real-time — เห็นทันทีเมื่อพนักงานสแกน */
+function subscribeToChanges(){
+  if(realtimeUnsubscribe || !window.firebaseReady || !lineUserId) return;
+  try{
+    const { doc, onSnapshot } = window.firebaseHelpers;
+    const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+    realtimeUnsubscribe = onSnapshot(ref, (snap) => {
+      if(!snap.exists()) return;
+      const data = snap.data();
+      if(data.isUsed === true && currentCouponData && !currentCouponData.isUsed){
+        currentCouponData.isUsed = true;
+        markAsUsedUI(); showUsedToast();
+        if(realtimeUnsubscribe){ realtimeUnsubscribe(); realtimeUnsubscribe = null; }
+      }
+    }, (err) => console.error("[realtime]", err));
+  }catch(e){ console.error("[realtime] setup:", e); }
+}
+function markAsUsedUI(){
+  const g = document.getElementById('grade'); if(g) g.textContent = '✅ ใช้คูปองเรียบร้อยแล้ว';
+  const j = document.getElementById('jackpot'); if(j) j.style.display = 'none';
+  const q = document.getElementById('qrcodeBox'); if(q){ q.style.transition = 'opacity .5s'; q.style.opacity = '.3'; }
+}
+function showUsedToast(){
+  const t = document.createElement('div');
+  t.innerHTML = `<div style="font-size:32px;margin-bottom:8px;">✅</div><div style="font-size:18px;font-weight:bold;">คูปองถูกใช้แล้ว!</div><div style="font-size:13px;opacity:.9;margin-top:4px;">ขอบคุณที่ใช้บริการ ${SHOP_EMOJI} ${SHOP_NAME}</div>`;
+  t.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);background:linear-gradient(135deg,#4caf50,#388e3c);color:#fff;padding:24px 32px;border-radius:16px;box-shadow:0 8px 32px rgba(76,175,80,.4);text-align:center;z-index:99999;min-width:260px;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);`;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '1'; t.style.transform = 'translate(-50%,-50%) scale(1)'; }, 50);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
+}
+window.addEventListener("beforeunload", () => { if(realtimeUnsubscribe){ realtimeUnsubscribe(); realtimeUnsubscribe = null; } });
+
+/* ⭐ หน้าหมดเขต / error */
+function showCampaignExpired(){
+  const el = document.getElementById('intro'); if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px 20px;"><div style="font-size:64px;margin-bottom:16px;">${SHOP_EMOJI}</div><div style="font-size:24px;font-weight:bold;color:var(--gold);margin-bottom:12px;font-family:'Kanit';">${SHOP_NAME}</div><div style="font-size:60px;margin:20px 0;">😢</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">โปรโมชั่นจบแล้วค่ะ</div><div style="font-size:14px;opacity:.8;line-height:1.6;">แคมเปญ ใจวาย...ให้น้องช่วยปั๊ม สิ้นสุดเมื่อ<br><strong style="color:var(--gold);">23 สิงหาคม 2569</strong></div><div style="font-size:12.5px;opacity:.75;margin:18px 0 0;">🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<strong>ผ่าน LINE</strong> ระบบจะแสดง QR คูปองของคุณ (ใช้ได้ถึง 31 ส.ค.)</div><div style="background:rgba(255,255,255,.05);border:1px dashed rgba(255,210,77,.4);border-radius:14px;padding:16px;margin:20px 0;"><div style="font-size:13px;opacity:.8;margin-bottom:6px;">📢 ติดตามโปรโมชั่นใหม่ๆ</div><div style="font-size:14px;">ทาง LINE OA: <strong style="color:var(--gold);">${SHOP_NAME}</strong></div></div><div style="font-size:13px;opacity:.6;">ขอบคุณที่ติดตามนะคะ ${SHOP_EMOJI}</div></div>`;
+  show('intro');
+}
+function showErrorScreen(title, msg){
+  const el = document.getElementById('intro'); if(!el) return;
+  el.innerHTML = `<div style="text-align:center;padding:30px 20px;"><div style="font-size:48px;margin-bottom:16px;">⚠️</div><div style="font-size:20px;font-weight:bold;margin-bottom:12px;">${title}</div><div style="font-size:14px;opacity:.8;line-height:1.6;">${msg}</div></div>`;
+  show('intro');
+}
+
+/* ============================================================
+   💓 GAME — CPR 3 เซ็ต · รางวัลสุ่มถ่วงน้ำหนัก + ฝีมืออัพ 1 ขั้น (สูงสุด 10%)
+   ============================================================ */
+function drawPrize(){
+  if(forceDiscount) return forceDiscount;
+  let r = Math.random() * 100, acc = 0;
+  for(const p of PRIZES){ acc += p.w; if(r < acc) return p.a; }
+  return 150;
+}
+
+function startGame(){
+  G = {
+    prize: drawPrize(),        // 🎲 สุ่มไว้ตั้งแต่ต้น — เกมคือการเดินเรื่อง
+    set: 0, taps: 0, lastTap: 0,
+    accs: [], curIntervals: [],
+    busy: false, upgraded: false,
+  };
+  console.log("[game] base prize:", G.prize);
+  show('game');
+  ekgInit();
+  nextSet();
+}
+
+function nextSet(){
+  G.set++;
+  G.taps = 0; G.lastTap = 0; G.curIntervals = [];
+  for(let i = 1; i <= SETS; i++){
+    const c = document.getElementById('set' + i);
+    c.classList.toggle('on', i === G.set);
+    c.classList.toggle('done', i < G.set);
+  }
+  const stories = {
+    1: `🚨 <b>คนไข้หัวใจหยุดเต้น!</b><br>ปั๊มตามจังหวะวงชมพู ${TAPS_PER_SET} ครั้ง!`,
+    2: `😰 <b>ยังไม่ฟื้น!</b> น้องพยาบาลลุ้นสุดตัว<br>ปั๊มต่อ เซ็ต 2!`,
+    3: `⚡ <b>เกือบแล้ว!! ครั้งสุดท้าย</b><br>สุดแรงเลยพี่!!`,
+  };
+  document.getElementById('prompt').innerHTML = stories[G.set];
+  document.getElementById('tapCount').textContent = `0/${TAPS_PER_SET}`;
+  document.getElementById('monStat').textContent = '● CPR SET ' + G.set;
+  const g = document.getElementById('guide');
+  g.classList.add('beat');
+  const b = document.getElementById('pumpBtn');
+  b.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const b = document.getElementById('pumpBtn');
+  b.addEventListener('click', onPump);
+});
+
+function onPump(){
+  if(!G || G.busy) return;
+  const now = performance.now();
+  if(G.lastTap){
+    const iv = now - G.lastTap;
+    if(iv > 120 && iv < 2500) G.curIntervals.push(iv);
+  }
+  G.lastTap = now;
+  G.taps++;
+  document.getElementById('tapCount').textContent = `${G.taps}/${TAPS_PER_SET}`;
+  ekgSpike(G.set / SETS);
+  try{ if(navigator.vibrate) navigator.vibrate(18); }catch(e){}
+  sfxBeep();
+  if(G.taps >= TAPS_PER_SET) endSet();
+}
+
+function endSet(){
+  G.busy = true;
+  document.getElementById('pumpBtn').disabled = true;
+  document.getElementById('guide').classList.remove('beat');
+  // ความแม่นจังหวะเซ็ตนี้ (เทียบ 545ms)
+  let acc = 0;
+  if(G.curIntervals.length){
+    const errs = G.curIntervals.map(iv => Math.min(1, Math.abs(iv - BEAT_MS) / BEAT_MS));
+    acc = 1 - (errs.reduce((a, b) => a + b, 0) / errs.length);
+  }
+  G.accs.push(Math.max(0, Math.min(1, acc)));
+  const pct = Math.round(G.accs[G.accs.length - 1] * 100);
+
+  if(G.set < SETS){
+    const teaseLv = G.set === 1 ? 0.4 : 0.75;
+    ekgTease(teaseLv, () => {
+      document.getElementById('prompt').innerHTML = G.set === 1
+        ? `💔 <b>เต้นแป๊บเดียวแล้วแผ่ว...</b> (จังหวะเป๊ะ ${pct}%)<br>อย่ายอมแพ้!`
+        : `💓💦 <b>เกือบฟื้นแล้ว!!</b> (จังหวะเป๊ะ ${pct}%)<br>อีกเซ็ตเดียว!!`;
+      setTimeout(() => { G.busy = false; nextSet(); }, 1400);
+    });
+  } else {
+    revive();
+  }
+}
+
+function revive(){
+  // ⭐ ฝีมือ: ความแม่นเฉลี่ย 3 เซ็ต → โอกาสอัพ 1 ขั้น (สูงสุด 10%)
+  const avgAcc = G.accs.reduce((a, b) => a + b, 0) / G.accs.length;
+  const upChance = avgAcc * SKILL_MAX_UP;
+  if(G.prize < CAP && Math.random() < upChance){
+    const i = TIERS.indexOf(G.prize);
+    if(i >= 0 && i < TIERS.length - 1){ G.prize = TIERS[i + 1]; G.upgraded = true; }
+  }
+  console.log("[game] acc:", avgAcc.toFixed(2), "upChance:", (upChance * 100).toFixed(1) + "%", "upgraded:", G.upgraded, "final:", G.prize);
+
+  const bpm = BPM_MAP[G.prize] || 120;
+  document.getElementById('prompt').innerHTML = `💓 <b>กลับมาแล้ว!!</b>`;
+  document.getElementById('monStat').textContent = '● SINUS RHYTHM';
+  ekgRevive();
+  // BPM ไต่ขึ้น
+  let cur = 0;
+  const t = setInterval(() => {
+    cur += Math.max(1, Math.ceil((bpm - cur) / 9));
+    if(cur >= bpm){ cur = bpm; clearInterval(t); setTimeout(() => finishGame(bpm, avgAcc), 900); }
+    document.getElementById('bpmNum').textContent = cur;
+  }, 60);
+}
+
+async function finishGame(bpm, avgAcc){
+  const final = G.prize;
+  const jackpot = final >= CAP;
+  const code = genCode();
+  show('result');
+
+  document.getElementById('resTitle').textContent = jackpot ? '💘 ทะลุสเกล!' : 'ฟื้นแล้ว! ขอบคุณที่ช่วยชีวิต 🙏';
+  document.getElementById('champ').style.display = jackpot ? 'flex' : 'none';
+  document.getElementById('scoreLine').textContent = `หัวใจฟื้นที่ ${bpm} BPM 💓 · จังหวะเป๊ะ ${Math.round(avgAcc * 100)}%`;
+  const gradeEl = document.getElementById('grade');
+  gradeEl.textContent = G.upgraded
+    ? `🌟 มือปั๊มทอง! หัวใจเต้นแรงขึ้นอีกขั้น`
+    : (avgAcc >= 0.8 ? 'จังหวะระดับพยาบาลมืออาชีพ ✨' : avgAcc >= 0.5 ? 'ฟอร์มใช้ได้เลย 💪' : 'ฟื้นได้ก็บุญแล้ว 😅');
+  document.getElementById('amt').innerHTML = `<small>฿</small>${final}`;
+  document.getElementById('jackpot').style.display = jackpot ? 'block' : 'none';
+  document.getElementById('codeTxt').textContent = code;
+  document.getElementById('copied').textContent = '';
+  heartBurst(jackpot ? 26 : 12);
+
+  await saveToFirebase(code, final, bpm, avgAcc);
+  generateCouponQR(code, final, false);
+  if(currentCouponData && !currentCouponData.isUsed) subscribeToChanges();
+}
+
+function genCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for(let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return SHOP_ID.toUpperCase() + "-" + s;
+}
+
+/* ⭐ บันทึก Firebase (retry 3 + local backup — แพทเทิร์นบอลโลก) */
+async function saveToFirebase(code, amount, bpm, accuracy){
+  if(!window.firebaseReady || !lineUserId){ saveToLocalStorage(code, amount, bpm, accuracy); showSaveWarning(); return; }
+  const { doc, getDoc, setDoc, serverTimestamp } = window.firebaseHelpers;
+  const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+  try{
+    const existing = await getDoc(ref);
+    if(existing.exists()){
+      const data = existing.data(); currentCouponData = data;
+      document.getElementById('amt').innerHTML = `<small>฿</small>${data.amount}`;
+      document.getElementById('codeTxt').textContent = data.code;
+      generateCouponQR(data.code, data.amount, data.isUsed);
+      return;
+    }
+    const couponData = {
+      amount, code, bpm, accuracy: Math.round(accuracy * 100) / 100, upgraded: !!G.upgraded, sets: SETS,
+      lineUserId, lineDisplayName, linePictureUrl,
+      displayName: lineDisplayName, userId: lineUserId,
+      shop: SHOP_ID, shopId: SHOP_ID, campaignId: CAMPAIGN_ID,
+      createdAt: serverTimestamp(), date: new Date().toISOString(),
+      isUsed: false, usedAt: null,
+      expireDate: COUPON_EXPIRE_TH, gameType: "nurse_cpr"
+    };
+    let saved = false;
+    for(let i = 0; i < 3; i++){
+      try{ await setDoc(ref, couponData); saved = true; break; }
+      catch(err){ console.warn("[firebase] save attempt", i + 1, "failed:", err); await new Promise(r => setTimeout(r, 1200)); }
+    }
+    if(!saved) throw new Error("save failed after 3 attempts");
+    currentCouponData = couponData;
+    await updateCustomerMaster(amount);
+  }catch(e){
+    console.error("[firebase] save failed:", e);
+    saveToLocalStorage(code, amount, bpm, accuracy);
+    showSaveWarning();
+  }
+}
+function showSaveWarning(){
+  const box = document.getElementById('qrcodeBox');
+  if(!box || document.getElementById('saveWarn')) return;
+  const d = document.createElement('div');
+  d.id = 'saveWarn';
+  d.style.cssText = 'margin:8px auto;padding:10px 14px;background:rgba(255,180,60,.15);border:1px solid rgba(255,180,60,.5);border-radius:10px;font-size:12.5px;line-height:1.6;color:#ffd24d;max-width:320px;text-align:center;';
+  d.innerHTML = '⚠️ สัญญาณขัดข้อง — คูปองยังไม่เข้าระบบร้าน<br>เปิดหน้านี้ใหม่เมื่อสัญญาณดี ระบบจะบันทึกซ้ำอัตโนมัติ (รหัสเดิม ไม่ต้องเล่นใหม่)';
+  box.parentNode.insertBefore(d, box.nextSibling);
+}
+function saveToLocalStorage(code, amount, bpm, accuracy){
+  try{ localStorage.setItem(SHOP_ID + "_nurse_" + (lineUserId || "guest"), JSON.stringify({ code, amount, bpm, accuracy, upgraded: G && G.upgraded, ts: Date.now() })); }catch(e){}
+}
+async function updateCustomerMaster(amount){
+  if(!window.firebaseReady || !lineUserId) return;
+  try{
+    const { doc, setDoc, serverTimestamp, increment, arrayUnion } = window.firebaseHelpers;
+    const ref = doc(window.firebaseDB, "customers", lineUserId);
+    await setDoc(ref, {
+      displayName: lineDisplayName, pictureUrl: linePictureUrl,
+      shops: arrayUnion(SHOP_ID), lastVisit: serverTimestamp(), visitCount: increment(1),
+      [SHOP_ID + "_nurse_amount"]: amount,
+      [SHOP_ID + "_nurse_couponDate"]: serverTimestamp(),
+      [SHOP_ID + "_nurse_used"]: false
+    }, { merge: true });
+  }catch(e){ console.warn("[firebase] customer update:", e); }
+}
+
+/* ── คัดลอกรหัส ── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('copyBtn').addEventListener('click', async () => {
+    const code = document.getElementById('codeTxt').textContent;
+    try{ await navigator.clipboard.writeText(code); document.getElementById('copied').textContent = '✓ คัดลอกแล้ว'; }
+    catch(e){ document.getElementById('copied').textContent = code; }
+    setTimeout(() => { document.getElementById('copied').textContent = ''; }, 2200);
+  });
+});
+
+/* ── ❤️ เอฟเฟกต์ ── */
+function heartBurst(n){
+  for(let i = 0; i < n; i++){
+    setTimeout(() => {
+      const h = document.createElement('div');
+      h.className = 'heart-fx';
+      h.textContent = ['💗','💓','💘','💕'][i % 4];
+      h.style.left = (10 + Math.random() * 80) + '%';
+      h.style.top = (35 + Math.random() * 40) + '%';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 1200);
+    }, i * 90);
+  }
+}
+
+/* ── 🔊 เสียงมอนิเตอร์ (WebAudio สั้นๆ) ── */
+let _actx = null;
+function sfxBeep(){
+  try{
+    _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = _actx.createOscillator(), g = _actx.createGain();
+    o.type = 'sine'; o.frequency.value = 880;
+    g.gain.setValueAtTime(0.08, _actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, _actx.currentTime + 0.09);
+    o.connect(g); g.connect(_actx.destination);
+    o.start(); o.stop(_actx.currentTime + 0.1);
+  }catch(e){}
+}
+
+/* ── 📈 EKG มอนิเตอร์ ── */
+let ekgC, ekgX, ekgBuf = [], ekgMode = 'flat', ekgRaf = null, ekgLevel = 0;
+function ekgInit(){
+  ekgC = document.getElementById('ekg');
+  const r = window.devicePixelRatio || 1;
+  ekgC.width = ekgC.clientWidth * r;
+  ekgC.height = 110 * r;
+  ekgX = ekgC.getContext('2d');
+  ekgX.scale(r, r);
+  ekgBuf = new Array(Math.ceil(ekgC.clientWidth)).fill(0);
+  ekgMode = 'flat'; ekgLevel = 0;
+  document.getElementById('bpmNum').textContent = '0';
+  if(!ekgRaf) ekgLoop();
+}
+function ekgSpike(strength){
+  // QRS สั้นๆ ตามแรงปั๊ม
+  const s = 18 + strength * 22;
+  ekgBuf.push(4, -s, s * 0.55, -4, 0);
+}
+function ekgTease(level, done){
+  ekgMode = 'tease'; ekgLevel = level;
+  let beats = 0;
+  const iv = setInterval(() => {
+    ekgSpike(level * 0.8);
+    document.getElementById('bpmNum').textContent = Math.round(40 + level * 60 + Math.random() * 8);
+    if(++beats >= 3){
+      clearInterval(iv);
+      setTimeout(() => {   // แผ่วลง → flatline
+        ekgMode = 'flat';
+        document.getElementById('bpmNum').textContent = '0';
+        document.getElementById('monStat').textContent = '● FLATLINE';
+        sfxFlat();
+        done && done();
+      }, 700);
+    }
+  }, 480);
+}
+function sfxFlat(){
+  try{
+    _actx = _actx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = _actx.createOscillator(), g = _actx.createGain();
+    o.type = 'sine'; o.frequency.value = 620;
+    g.gain.setValueAtTime(0.05, _actx.currentTime);
+    g.gain.linearRampToValueAtTime(0.0001, _actx.currentTime + 0.7);
+    o.connect(g); g.connect(_actx.destination);
+    o.start(); o.stop(_actx.currentTime + 0.7);
+  }catch(e){}
+}
+function ekgRevive(){
+  ekgMode = 'sinus';
+  if(window._ekgSinus) clearInterval(window._ekgSinus);
+  window._ekgSinus = setInterval(() => { if(ekgMode === 'sinus') ekgSpike(1); }, 545);
+}
+function ekgLoop(){
+  ekgRaf = requestAnimationFrame(ekgLoop);
+  if(!ekgX) return;
+  if(ekgBuf.length < ekgC.clientWidth) ekgBuf.push(ekgMode === 'flat' ? (Math.random() * 1.2 - 0.6) : 0);
+  while(ekgBuf.length > ekgC.clientWidth) ekgBuf.shift();
+  const w = ekgC.clientWidth, h = 110, mid = h * 0.58;
+  ekgX.clearRect(0, 0, w, h);
+  // grid
+  ekgX.strokeStyle = 'rgba(43,255,136,.08)';
+  ekgX.lineWidth = 1;
+  for(let gx = 0; gx < w; gx += 22){ ekgX.beginPath(); ekgX.moveTo(gx, 0); ekgX.lineTo(gx, h); ekgX.stroke(); }
+  for(let gy = 0; gy < h; gy += 22){ ekgX.beginPath(); ekgX.moveTo(0, gy); ekgX.lineTo(w, gy); ekgX.stroke(); }
+  // trace
+  ekgX.strokeStyle = '#2bff88';
+  ekgX.lineWidth = 2;
+  ekgX.shadowColor = 'rgba(43,255,136,.6)'; ekgX.shadowBlur = 6;
+  ekgX.beginPath();
+  for(let i = 0; i < ekgBuf.length; i++){
+    const y = mid - ekgBuf[i];
+    if(i === 0) ekgX.moveTo(i, y); else ekgX.lineTo(i, y);
+  }
+  ekgX.stroke();
+  ekgX.shadowBlur = 0;
+}
+</script>
+</body>
+</html>
