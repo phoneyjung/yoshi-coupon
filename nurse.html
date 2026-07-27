@@ -74,7 +74,7 @@ canvas#ekg{ width:100%; height:110px; display:block; }
 
 /* pump zone */
 .pumpzone{ position:relative; display:flex; justify-content:center; align-items:center; margin:14px auto 4px; width:190px; height:190px; }
-.guide{ position:absolute; inset:0; border-radius:50%; border:3px solid rgba(255,93,158,.55); animation:none; }
+.guide{ position:absolute; inset:0; border-radius:50%; border:3px solid rgba(255,93,158,.55); animation:none; pointer-events:none; }  /* ⭐ FIX: วงจังหวะห้ามบังปุ่ม — นิ้วทะลุผ่าน */
 .guide.beat{ animation:guidePulse .545s ease-out infinite; }
 @keyframes guidePulse{ 0%{ transform:scale(.86); opacity:.95; } 55%{ transform:scale(1.06); opacity:.35; } 100%{ transform:scale(.86); opacity:.95; } }
 .pump{ width:150px; height:150px; border-radius:50%; border:none; background:radial-gradient(circle at 34% 30%, #ff8db9, var(--pink) 46%, var(--pink-deep)); color:#fff; font-size:56px; box-shadow:0 10px 30px rgba(255,93,158,.5), inset 0 -8px 18px rgba(0,0,0,.25); cursor:pointer; transition:transform .07s; touch-action:manipulation; user-select:none; }
@@ -481,10 +481,10 @@ function nextSet(){
 /* ⭐ FIX: ผูกปุ่มตรงๆ (สคริปต์อยู่ท้าย body — element มีแล้ว) · pointerdown = ตอบสนองทันที กดรัวไม่หลุด */
 (function(){
   const b = document.getElementById('pumpBtn');
-  if(b){
-    b.addEventListener('pointerdown', (e) => { e.preventDefault(); onPump(); });
-    b.addEventListener('keydown', (e) => { if(e.key === ' ' || e.key === 'Enter') onPump(); });
-  }
+  const z = document.querySelector('.pumpzone');
+  const fire = (e) => { e.preventDefault(); if(b && !b.disabled) onPump(); };
+  if(z) z.addEventListener('pointerdown', fire);          // แตะตรงไหนในโซนหัวใจก็นับ
+  if(b) b.addEventListener('keydown', (e) => { if(e.key === ' ' || e.key === 'Enter') onPump(); });
 })();
 
 function onPump(){
