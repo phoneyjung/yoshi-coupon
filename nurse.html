@@ -642,8 +642,16 @@ async function finishGame(bpm, avgAcc){
   sfxFanfare(jackpot);
   try{ if(navigator.vibrate) navigator.vibrate(jackpot ? [80, 60, 80, 60, 160] : [60, 40, 120]); }catch(e){}
 
-  await saveToFirebase(code, final, bpm, avgAcc);
+  // ⭐ FIX-1: แสดง QR ทันที ไม่รอ Firebase (เน็ตช้า → เดิม QR ไม่ขึ้นเลย)
   generateCouponQR(code, final, false);
+  const _eff = await saveToFirebase(code, final, bpm, avgAcc);
+  // ⭐ FIX-2: ถ้าระบบมีคูปองเดิมอยู่แล้ว → ใช้ "รหัสเดิม" ทั้งข้อความและ QR
+  //   บั๊กเดิม: QR ถูกวาดด้วยรหัสใหม่ที่ไม่เคยบันทึกลง DB → พนักงานสแกนแล้วไม่เจอ
+  if(_eff && _eff.code && _eff.code !== code){
+    const _c = document.getElementById('codeTxt'); if(_c) _c.textContent = _eff.code;
+    const _a = document.getElementById('amt'); if(_a) _a.innerHTML = `<small>฿</small>${_eff.amount}`;
+    generateCouponQR(_eff.code, _eff.amount, _eff.isUsed);
+  }
   if(currentCouponData && !currentCouponData.isUsed) subscribeToChanges();
 }
 
@@ -656,17 +664,19 @@ function genCode(){
 
 /* ⭐ บันทึก Firebase (retry 3 + local backup — แพทเทิร์นบอลโลก) */
 async function saveToFirebase(code, amount, bpm, accuracy){
-  if(!window.firebaseReady || !lineUserId){ saveToLocalStorage(code, amount, bpm, accuracy); showSaveWarning(); return; }
+  if(!window.firebaseReady || !lineUserId){ saveToLocalStorage(code, amount, bpm, accuracy); showSaveWarning(); return null; }
   const { doc, getDoc, setDoc, serverTimestamp } = window.firebaseHelpers;
   const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
+  // ⭐ FIX-3: กัน Firestore ค้าง (เน็ตอ่อน) — เดิมหน้าจอค้างรอไม่มีกำหนด
+  const _to = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), ms))]);
   try{
-    const existing = await getDoc(ref);
+    const existing = await _to(getDoc(ref), 9000);
     if(existing.exists()){
       const data = existing.data(); currentCouponData = data;
       document.getElementById('amt').innerHTML = `<small>฿</small>${data.amount}`;
       document.getElementById('codeTxt').textContent = data.code;
       generateCouponQR(data.code, data.amount, data.isUsed);
-      return;
+      return { code: data.code, amount: data.amount, isUsed: !!data.isUsed };
     }
     const couponData = {
       amount, code, bpm, accuracy: Math.round(accuracy * 100) / 100, upgraded: !!G.upgraded, sets: SETS,
@@ -679,16 +689,18 @@ async function saveToFirebase(code, amount, bpm, accuracy){
     };
     let saved = false;
     for(let i = 0; i < 3; i++){
-      try{ await setDoc(ref, couponData); saved = true; break; }
+      try{ await _to(setDoc(ref, couponData), 9000); saved = true; break; }
       catch(err){ console.warn("[firebase] save attempt", i + 1, "failed:", err); await new Promise(r => setTimeout(r, 1200)); }
     }
     if(!saved) throw new Error("save failed after 3 attempts");
     currentCouponData = couponData;
-    await updateCustomerMaster(amount);
+    updateCustomerMaster(amount);   // ⭐ ไม่ await — ไม่ให้บล็อกการแสดงผล
+    return { code, amount, isUsed: false };
   }catch(e){
     console.error("[firebase] save failed:", e);
     saveToLocalStorage(code, amount, bpm, accuracy);
     showSaveWarning();
+    return null;
   }
 }
 function showSaveWarning(){
