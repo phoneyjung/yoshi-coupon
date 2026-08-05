@@ -303,7 +303,18 @@ async function initLine(){
       console.log("[test mode]", lineUserId);
     } else if(LIFF_ID && window.liff){
       await liff.init({ liffId: LIFF_ID });
-      if(!liff.isLoggedIn()){ liff.login(); return; }
+      if(!liff.isLoggedIn()){
+        // ⭐ FIX-4: เปิดนอกแอป LINE → เดิมเด้งไปหน้ากรอกอีเมล/รหัสผ่าน (ลูกค้างง เลิกเล่น)
+        //   แก้: ส่งต่อไป LIFF URL ให้เปิดในแอป LINE เอง = ล็อกอินอัตโนมัติ
+        try{
+          if(!liff.isInClient() && !sessionStorage.getItem('_liff_redir')){
+            sessionStorage.setItem('_liff_redir', '1');
+            location.replace('https://liff.line.me/' + LIFF_ID);
+            return;
+          }
+        }catch(_e){}
+        liff.login(); return;
+      }
       const p = await liff.getProfile();
       lineUserId = p.userId; lineDisplayName = p.displayName; linePictureUrl = p.pictureUrl;
       console.log("[liff] Logged in:", lineDisplayName);
