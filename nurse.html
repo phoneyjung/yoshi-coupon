@@ -16,7 +16,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+    getFirestore, initializeFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
     collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   const firebaseConfig = {
@@ -28,7 +28,10 @@
     appId: "1:620548410470:web:d85dcc91390882fef4f1a7"
   };
   const app = initializeApp(firebaseConfig);
-  window.firebaseDB = getFirestore(app);
+  // ⭐ FIX-5: LIFF/WebView ในแอป LINE บล็อก WebChannel → บันทึกคูปองค้าง/ไม่สำเร็จ
+  //    บังคับ long-polling ให้ต่อ Firestore ได้ทุกเครื่อง
+  try { window.firebaseDB = initializeFirestore(app, { experimentalForceLongPolling: true, useFetchStreams: false }); }
+  catch (e) { window.firebaseDB = getFirestore(app); }
   window.firebaseHelpers = { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot };
   window.firebaseReady = true;
   console.log("[firebase] ready");
