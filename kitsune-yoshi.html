@@ -40,7 +40,6 @@
   h1{ font-family:'Kanit'; font-weight:800; font-size:27px; margin:6px 0 2px; text-align:center; color:#fff; text-shadow:0 3px 0 var(--torii-deep), 0 0 18px rgba(127,180,255,.55); letter-spacing:.3px; }
   .jp{ font-family:'Shippori Mincho',serif; }
   .sub{ text-align:center; font-size:13px; color:#cfd3ff; margin-bottom:8px; }
-  #introFox{ display:block; margin:0 auto; width:200px; height:170px; }
   .dialog{ font-size:14.5px; line-height:1.65; }
   .dialog .who{ font-family:'Kanit'; color:var(--fire); font-size:13px; margin-bottom:2px; }
   .dialog b{ color:var(--gold); }
@@ -77,8 +76,10 @@
   #hint{ position:absolute; left:0; right:0; bottom:calc(30% + var(--safe-b)); text-align:center; font-size:13px; color:#e8ebff; text-shadow:0 2px 0 #000; pointer-events:none; transition:opacity .6s; }
 
   /* OMIKUJI */
-  .omi-title{ text-align:center; font-family:'Kanit'; font-size:21px; font-weight:800; margin:8px 0 2px; text-shadow:0 2px 0 #000; }
-  .omi-sub{ text-align:center; font-size:13px; color:#cfd3ff; }
+  .omi-head{ text-align:center; padding:10px 12px 12px; margin:6px 0 10px; }
+  .omi-title{ font-family:'Kanit'; font-size:20px; font-weight:800; margin:0 0 2px; color:#fff; }
+  .omi-sub{ font-size:13px; color:#cfd3ff; }
+  .omi-foot{ padding:10px 12px; margin-top:10px; }
   #slips{ display:grid; grid-template-columns:repeat(3, 84px); justify-content:center; gap:10px 12px; margin:14px 0 8px; perspective:900px; }
   .slip{ width:84px; height:128px; position:relative; transform-style:preserve-3d; transition:transform .6s cubic-bezier(.3,1.4,.5,1); cursor:pointer; }
   .slip .face{ transition:opacity .5s, filter .5s, box-shadow .5s; }
@@ -104,14 +105,18 @@
   .slip.mine .back::before{ content:'✋ ใบของคุณ'; position:absolute; top:0; left:0; right:0; background:var(--torii); color:#fff; font-size:9.5px; font-weight:700; text-align:center; padding:1px 0; }
   .slip.missed{ transform:rotateY(180deg) scale(.9); }
   .slip.missed .back{ opacity:.62; border-style:dashed; }
+  html[lang=en] .slip.mine .back::before{ content:'✋ yours'; }
+  html[lang=en] .slip.missed .back::after{ content:'not picked'; }
   .slip.missed .back::after{ content:'ไม่ได้เลือก'; position:absolute; bottom:4px; font-size:9px; color:#8a7a5a; }
   .slip.tease .back{ opacity:1; box-shadow:0 0 0 3px #ff4d5a; animation:tease 1s ease-in-out infinite; }
   @keyframes tease{ 0%,100%{ box-shadow:0 0 0 3px #ff4d5a, 0 0 6px rgba(255,77,90,.4); } 50%{ box-shadow:0 0 0 3px #ff4d5a, 0 0 22px rgba(255,77,90,.9); } }
   .slip.shake{ animation:shk .09s linear infinite; }
   @keyframes shk{ 0%{ transform:translateY(-8px) rotate(-2deg) } 50%{ transform:translateY(-8px) rotate(2deg) } 100%{ transform:translateY(-8px) rotate(-2deg) } }
   @keyframes bob{ 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-3px) } }
-  #pickLeft{ text-align:center; font-family:'Kanit'; font-size:15px; color:var(--gold); margin-top:2px; min-height:22px; text-shadow:0 2px 0 #000; }
-  #omiNote{ text-align:center; font-size:13px; color:#e8ebff; min-height:20px; }
+  #pickLeft{ display:inline-block; margin-top:9px; padding:8px 18px; border-radius:24px; background:var(--gold); color:#2b2130; font-family:'Kanit'; font-size:17px; font-weight:800; box-shadow:0 3px 0 #a8751a; animation:pulsePick 1.1s ease-in-out infinite; }
+  #pickLeft:empty{ display:none; }
+  @keyframes pulsePick{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+  #omiNote{ text-align:center; font-size:14px; color:#f4f1ff; min-height:20px; line-height:1.6; }
 
   /* JACKPOT */
   #jp{ position:fixed; top:0; right:0; bottom:0; left:0; z-index:50; display:none; background:rgba(8,8,24,.92); }
@@ -153,6 +158,13 @@
   #blankMsg .big{ font-size:44px; margin-bottom:6px; }
   #jackpotNote{ display:none; margin-top:8px; text-align:center; font-size:12.5px; color:#8a5a00; background:#fff3cf; border-radius:8px; padding:8px; }
 
+  #langBtn{ position:fixed; top:calc(10px + var(--safe-t)); right:10px; z-index:40; background:rgba(11,13,31,.78); border:2px solid #6b6fb0; color:#fff; font-family:'Kanit'; font-size:13px; font-weight:600; padding:5px 10px; border-radius:20px; cursor:pointer; }
+  body.test #langBtn{ top:calc(44px + var(--safe-t)); }
+  body.play #langBtn{ display:none; }
+  .demo-wrap{ margin:4px auto 10px; max-width:420px; }
+  .demo-title{ font-family:'Kanit'; font-size:12px; color:#cfd3ff; margin:0 0 4px 4px; }
+  #introDemo{ display:block; width:100%; height:200px; border:3px solid #0b0d1f; box-shadow: inset 0 0 0 2px #6b6fb0; border-radius:4px; background:rgba(22,26,51,.55); }
+  .regular{ margin-top:2px; font-weight:700; color:#8e1c24; }
   #testbar{ display:none; position:fixed; top:0; left:0; right:0; background:#7c2d12; color:#ffd; font-size:11px; padding:4px 8px; z-index:99999; }
   #testbar.on{ display:block; }
   body.test .screen{ padding-top:calc(44px + var(--safe-t)); }
@@ -162,6 +174,7 @@
 </head>
 <body>
 <div id="testbar"></div>
+<button id="langBtn" type="button" onclick="toggleLang()">🌐 EN</button>
 <img id="bgimg" class="px" alt="">
 <div id="bgshade"></div>
 
@@ -169,28 +182,27 @@
 <div class="screen on" id="intro">
   <div class="wrap">
     <img class="shoplogo" data-logo alt="Yoshi SPA">
-    <h1>ล่าหางจิ้งจอก 9 หาง</h1>
-    <div class="sub">🏮 ศาลเจ้าอินาริ · คืนเดือนเต็มดวง</div>
-    <canvas id="introFox"></canvas>
+    <h1 data-i18n="title">ล่าหางจิ้งจอก 9 หาง</h1>
+    <div class="sub" data-i18n="subtitle">🏮 ศาลเจ้าอินาริ · คืนเดือนเต็มดวง</div>
+    <div class="demo-wrap"><div class="demo-title" data-i18n="demoTitle">▶ วิธีเล่น</div><canvas id="introDemo"></canvas></div>
     <div class="pbox dialog">
-      <div class="who">🦊 จิ้งจอกขาวแห่งศาลเจ้า</div>
-      คืนนี้หางของข้าหายไป <b>8 หาง</b>… ช่วยตามเก็บ<b>ไฟจิ้งจอก</b>คืนมาหน่อยนะ<br>
-      หางกลับมามากเท่าไร ข้าจะมอบ<b>โอมิคุจิ</b>ให้มากเท่านั้น
+      <div class="who" data-i18n="who">🦊 จิ้งจอกขาวแห่งศาลเจ้า</div>
+      <span data-i18n="dialog">คืนนี้หางของข้าหายไป <b>8 หาง</b>… ช่วยตามเก็บ<b>ไฟจิ้งจอก</b>คืนมาหน่อยนะ<br>หางกลับมามากเท่าไร ข้าจะมอบ<b>โอมิคุจิ</b>ให้มากเท่านั้น</span>
     </div>
     <div class="pbox red rules">
-      <div><img data-orb alt=""> <b>แตะไฟจิ้งจอก</b> (<img data-gold alt=""> ไฟทองได้ 3 ดวง)</div>
-      <div><img data-oni alt=""> <b>อย่าแตะหน้ากากโอนิ</b></div>
-      <div>🦊 ไฟ 5 ดวง = หางงอก 1 หาง · มีเวลา 30 วินาที</div>
+      <div><img data-orb alt=""> <b data-i18n="rule1a">แตะไฟจิ้งจอก</b> (<img data-gold alt=""> <span data-i18n="rule1b">ไฟทองได้ 3 ดวง</span>)</div>
+      <div><img data-oni alt=""> <b data-i18n="rule2">อย่าแตะหน้ากากโอนิ</b></div>
+      <div data-i18n="rule3">🦊 ไฟ 5 ดวง = หางงอก 1 หาง · มีเวลา 30 วินาที</div>
       <div class="tiers">
-        <div class="tier"><b>1–2 หาง</b>จับได้ 1 ใบ</div>
-        <div class="tier"><b>3–5 หาง</b>จับได้ 2 ใบ</div>
-        <div class="tier"><b>6–9 หาง</b>จับได้ 3 ใบ</div>
+        <div class="tier" data-i18n="tier1"><b>1–2 หาง</b>จับได้ 1 ใบ</div>
+        <div class="tier" data-i18n="tier2"><b>3–5 หาง</b>จับได้ 2 ใบ</div>
+        <div class="tier" data-i18n="tier3"><b>6–9 หาง</b>จับได้ 3 ใบ</div>
       </div>
-      <div style="font-size:12.5px; color:#cfd3ff; margin-top:6px; text-align:center;">🎴 จับโอมิคุจิ แล้ว<b>รวมเงินทุกใบ</b> สูงสุด <b style="color:var(--gold);">฿300</b></div>
+      <div style="font-size:12.5px; color:#cfd3ff; margin-top:6px; text-align:center;" data-i18n="sumLine">🎴 จับโอมิคุจิ แล้ว<b>รวมเงินทุกใบ</b> สูงสุด <b style="color:var(--gold);">฿300</b></div>
       <div id="introNote" style="display:none; margin-top:10px; font-size:13px; text-align:center; color:#ffd7a0; line-height:1.6;"></div>
-      <button class="btn-main" id="startBtn" disabled>⏳ กำลังตรวจสอบสิทธิ์…</button>
+      <button class="btn-main" id="startBtn" disabled data-i18n="checking">⏳ กำลังตรวจสอบสิทธิ์…</button>
     </div>
-    <div class="foot">🦊 เล่นได้ 1 ครั้ง/LINE · คูปองใช้ได้ถึง <b id="expTxt1">31 ต.ค. 69</b> · Yoshi SPA</div>
+    <div class="foot" data-i18n="footer">🦊 เล่นได้ 1 ครั้ง/LINE · คูปองใช้ได้ถึง <b>{exp}</b> · Yoshi SPA</div>
   </div>
 </div>
 
@@ -204,30 +216,32 @@
       <div id="timetxt">30</div>
       <button id="muteBtn" type="button">🔊</button>
     </div>
-    <div id="tailbox">🦊 หาง <span id="tailNum">1</span>/9
+    <div id="tailbox">🦊 <span data-i18n="tails">หาง</span> <span id="tailNum">1</span>/9
       <div id="prog"><i></i><i></i><i></i><i></i><i></i></div>
     </div>
   </div>
   <div id="center"></div>
-  <div id="hint">แตะไฟ 🔥 · อย่าแตะโอนิ 👹</div>
+  <div id="hint" data-i18n="hint">แตะไฟ 🔥 · อย่าแตะโอนิ 👹</div>
 </div></div>
 
 <!-- OMIKUJI -->
 <div class="screen" id="omikuji">
   <div class="wrap">
     <img class="shoplogo" data-logo alt="Yoshi SPA" style="height:36px;">
-    <div class="omi-title" id="omiTitle">จิ้งจอกมอบโอมิคุจิให้</div>
-    <div class="omi-sub" id="omiSub"></div>
-    <div id="pickLeft"></div>
+    <div class="pbox omi-head">
+      <div class="omi-title" id="omiTitle">จิ้งจอกมอบโอมิคุจิให้</div>
+      <div class="omi-sub" id="omiSub"></div>
+      <div id="pickLeft"></div>
+    </div>
     <div id="slips"></div>
-    <div id="omiNote"></div>
+    <div class="pbox omi-foot"><div id="omiNote"></div></div>
     <button class="btn-main" id="toCouponBtn" style="display:none;">🎫 รับคูปอง</button>
   </div>
 </div>
 
 <!-- JACKPOT overlay -->
 <div id="jp"><canvas id="jpcv"></canvas>
-  <div id="jptext"><div class="k">九尾</div><div class="t">เก้าหาง · รางวัลสูงสุด ฿300</div><div class="s">แตะเพื่อรับคูปอง</div><div id="jpbar"><i></i></div></div>
+  <div id="jptext"><div class="k">九尾</div><div class="t" data-i18n="jpT">เก้าหาง · รางวัลสูงสุด ฿300</div><div class="s" data-i18n="jpS">แตะเพื่อรับคูปอง</div><div id="jpbar"><i></i></div></div>
 </div>
 
 <!-- RESULT -->
@@ -236,20 +250,21 @@
     <div class="coupon">
       <div class="c-top">
         <img data-logo alt="Yoshi SPA">
-        <div class="nm">Yoshi SPA<small>คูปองส่วนลด · ล่าหางจิ้งจอก</small></div>
+        <div class="nm">Yoshi SPA<small data-i18n="couponSmall">คูปองส่วนลด · ล่าหางจิ้งจอก</small></div>
         <div class="seal" id="sealTxt">大吉</div>
       </div>
       <div id="resTitle">ได้รับพรจากจิ้งจอกแล้ว!</div>
       <div id="scoreLine"></div>
-      <div class="blank-only" id="blankMsg"><div class="big">🦊🍂</div>ใบที่จับได้<b>ว่างเปล่า</b>… คืนนี้โชคยังไม่เข้าข้าง<br>ขอบคุณที่ช่วยตามหาหางนะ<br><span style="font-size:12.5px; color:#8a7a5a;">ติดตามกิจกรรมใหม่ทาง LINE OA Yoshi SPA</span></div>
+      <div class="blank-only" id="blankMsg" data-i18n="blankMsg"><div class="big">🦊🍂</div>ใบที่จับได้<b>ว่างเปล่า</b>… คืนนี้โชคยังไม่เข้าข้าง<br>ขอบคุณที่ช่วยตามหาหางนะ<br><span style="font-size:12.5px; color:#8a7a5a;">ติดตามกิจกรรมใหม่ทาง LINE OA Yoshi SPA</span></div>
       <div id="amt" class="win-only"><small>฿</small>0</div>
-      <div class="amt-cap win-only">ส่วนลดค่าบริการ Yoshi SPA</div>
+      <div class="amt-cap win-only" data-i18n="amtCap">ส่วนลดค่าบริการ Yoshi SPA</div>
+      <div class="amt-cap win-only regular" data-i18n="regular">ส่วนลดจากราคาปกติ · ใช้ได้ 1 ครั้ง</div>
       <div id="grade" class="win-only"></div>
-      <div id="jackpotNote">🦊 เก้าหางครบ! รางวัลสูงสุดของคืนนี้ — มาใช้ให้ทันนะ</div>
-      <div class="codebox win-only"><span id="codeTxt">-</span><button class="copybtn" id="copyBtn" type="button">📋 คัดลอก</button></div>
+      <div id="jackpotNote" data-i18n="jackpotNote">🦊 เก้าหางครบ! รางวัลสูงสุดของคืนนี้ — มาใช้ให้ทันนะ</div>
+      <div class="codebox win-only"><span id="codeTxt">-</span><button class="copybtn" id="copyBtn" type="button" data-i18n="copy">📋 คัดลอก</button></div>
       <div id="copied" class="win-only"></div>
       <div id="qrcodeBox" class="win-only"></div>
-      <div class="expnote win-only">📱 แคปหน้าจอเก็บไว้ หรือเปิดลิงก์เดิมผ่าน LINE ดูซ้ำได้ตลอด<br>แสดง QR กับพนักงานที่ร้าน · ใช้ได้ถึง <b id="expTxt2">31 ต.ค. 69</b><br><span id="daysLeft"></span></div>
+      <div class="expnote win-only"><span data-i18n="expnote">📱 แคปหน้าจอเก็บไว้ หรือเปิดลิงก์เดิมผ่าน LINE ดูซ้ำได้ตลอด<br>แสดง QR กับพนักงานที่ร้าน · ใช้ได้ถึง <b>{exp}</b></span><br><span id="daysLeft"></span></div>
     </div>
     <div class="foot">🦊 Kitsune Edition · Yoshi SPA</div>
   </div>
@@ -275,14 +290,115 @@ const EXPIRE_LABEL = "31 ต.ค. 69";
       หน้าเกมรู้ตัวเลขก็ต่อเมื่อเซิร์ฟเวอร์บันทึกผลแล้วเท่านั้น → แก้/ปลอมจากเครื่องลูกค้าไม่ได้ */
 const GAME_API_DEFAULT = "https://prspa-game.phoneyjung.workers.dev";
 const SLIP_TABLE = [
-  { a: 0,   k: "凶",   th: "ว่างเปล่า" },
-  { a: 50,  k: "小吉", th: "โชคเล็ก" },
-  { a: 100, k: "吉",   th: "โชคดี" },
-  { a: 150, k: "中吉", th: "โชคกลาง" },
-  { a: 200, k: "大吉", th: "โชคใหญ่" },
-  { a: 250, k: "大吉", th: "โชคใหญ่มาก" },
-  { a: 300, k: "九尾", th: "เก้าหาง" },
+  { a: 0,   k: "凶",   th: "ว่างเปล่า", en: "Blank" },
+  { a: 50,  k: "小吉", th: "โชคเล็ก", en: "Small luck" },
+  { a: 100, k: "吉",   th: "โชคดี", en: "Good luck" },
+  { a: 150, k: "中吉", th: "โชคกลาง", en: "Medium luck" },
+  { a: 200, k: "大吉", th: "โชคใหญ่", en: "Great luck" },
+  { a: 250, k: "大吉", th: "โชคใหญ่มาก", en: "Great luck" },
+  { a: 300, k: "九尾", th: "เก้าหาง", en: "Nine tails" },
 ];
+const EXPIRE_LABEL_EN = "31 Oct 2026";
+
+/* ============================================================
+   🌐 ภาษา ไทย/English — ปุ่ม 🌐 มุมขวาบน · จำใน localStorage · ค่าเริ่มต้นตามภาษา LINE/เครื่อง
+   ============================================================ */
+const I18N = {
+  th: {
+    title: "ล่าหางจิ้งจอก 9 หาง", subtitle: "🏮 ศาลเจ้าอินาริ · คืนเดือนเต็มดวง", demoTitle: "▶ วิธีเล่น (ดูก่อนกดเริ่ม)",
+    who: "🦊 จิ้งจอกขาวแห่งศาลเจ้า",
+    dialog: "คืนนี้หางของข้าหายไป <b>8 หาง</b>… ช่วยตามเก็บ<b>ไฟจิ้งจอก</b>คืนมาหน่อยนะ<br>หางกลับมามากเท่าไร ข้าจะมอบ<b>โอมิคุจิ</b>ให้มากเท่านั้น",
+    rule1a: "แตะไฟจิ้งจอก", rule1b: "ไฟทองได้ 3 ดวง", rule2: "อย่าแตะหน้ากากโอนิ", rule3: "🦊 ไฟ 5 ดวง = หางงอก 1 หาง · มีเวลา 30 วินาที",
+    tier1: "<b>1–2 หาง</b>จับได้ 1 ใบ", tier2: "<b>3–5 หาง</b>จับได้ 2 ใบ", tier3: "<b>6–9 หาง</b>จับได้ 3 ใบ",
+    sumLine: "🎴 จับโอมิคุจิ แล้ว<b>รวมเงินทุกใบ</b> สูงสุด <b style=\"color:var(--gold);\">฿300</b>",
+    checking: "⏳ กำลังตรวจสอบสิทธิ์…", start: "🏮 เริ่มตามหา", starting: "⏳ กำลังเริ่ม…", netStart: "📶 เชื่อมต่อไม่ได้ — แตะเพื่อลองใหม่",
+    footer: "🦊 เล่นได้ 1 ครั้ง/LINE · คูปองใช้ได้ถึง <b>{exp}</b> · " + SHOP_NAME,
+    tails: "หาง", hint: "แตะไฟ 🔥 · อย่าแตะโอนิ 👹", go: "เริ่ม!<small>แตะไฟจิ้งจอก 🔥</small>", tailUp: "หาง {n}!", nine: "九尾!<small>หางครบ 9 หาง 🦊</small>",
+    timeUp: "หมดเวลา!<small>เก็บหางคืนได้ {n} หาง</small>", combo: "+1 คอมโบ {n}",
+    netEnd: "📶 สัญญาณหลุด<small>หางของคุณ ({n} หาง) ยังอยู่ — เช็คเน็ตแล้วแตะ</small>", connecting: "⏳ กำลังเชื่อมต่อ…", retry: "🔄 ลองอีกครั้ง",
+    omiTitle: "เลือกโอมิคุจิ {n} ใบ จาก 9 ใบ", omiSub: "เก็บหางคืนได้ {t}/9 หาง 🦊", omiSubResumed: "กลับมาเลือกต่อ · เก็บหางคืนได้ {t}/9 หาง 🦊", omiSubInterrupted: "เกมถูกปิดกลางคัน · ใช้หางที่เก็บได้ {t}/9 หาง 🦊",
+    omiNote: "รวมยอดทุกใบที่จับ · สูงสุด ฿300 · มีใบว่างปน", pickLeft: "👆 แตะเลือกอีก {n} ใบ", opening: "🎴 กำลังเปิด…",
+    running: "รวม <b style=\"color:var(--gold);\">฿{n}</b>", gotTotal: "✨ รวมได้ <b style=\"color:var(--gold);\">฿{n}</b>", blankRes: "😢 ใบที่จับได้ว่างเปล่า…",
+    nearMiss: "😱 เกือบแล้ว! {k} ฿{n} อยู่ใบข้างๆ นี่เอง", getCoupon: "🎫 รับคูปอง ฿{n}", seeResult: "ดูผล 🦊",
+    netPick: "สัญญาณหลุด — ใบที่เลือกยังอยู่ เช็คเน็ตแล้วแตะเพื่อเปิด", netOmi: "เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ตแล้วแตะอีกครั้ง",
+    omiInterruptedTitle: "เกมถูกปิดกลางคัน", preparing: "⏳ กำลังเตรียมโอมิคุจิ…",
+    introNote: "⚠️ เกมถูกปิดก่อนเก็บหางได้ — <b>เริ่มใหม่ได้อีก 1 ครั้ง</b><br><span style=\"font-size:11.5px;opacity:.8;\">ครั้งนี้ถ้าปิดกลางคันอีก จะได้ตามหางที่เก็บได้</span>",
+    jpT: "เก้าหาง · รางวัลสูงสุด ฿300", jpS: "แตะเพื่อรับคูปอง",
+    couponSmall: "คูปองส่วนลด · ล่าหางจิ้งจอก", resExisting: "คุณได้รับพรจากจิ้งจอกแล้ว", resJackpot: "🦊 เก้าหางครบ! 九尾", resBlank: "凶 · โชคยังไม่เข้าข้าง",
+    scoreLine: "เก็บหางคืนได้ {t}/9 หาง · จับโอมิคุจิ {n} ใบ", amtCap: "ส่วนลดค่าบริการ " + SHOP_NAME, regular: "ส่วนลดจากราคาปกติ · ใช้ได้ 1 ครั้ง",
+    gradeNew: "⏳ ยังไม่ได้ใช้ — แสดง QR ที่ร้าน", gradeUsed: "✅ ใช้คูปองเรียบร้อยแล้ว", jackpotNote: "🦊 เก้าหางครบ! รางวัลสูงสุดของคืนนี้ — มาใช้ให้ทันนะ",
+    copy: "📋 คัดลอก", copied: "✓ คัดลอกแล้ว — ส่งให้แอดมินตอนจองได้เลย",
+    expnote: "📱 แคปหน้าจอเก็บไว้ หรือเปิดลิงก์เดิมผ่าน LINE ดูซ้ำได้ตลอด<br>แสดง QR กับพนักงานที่ร้าน · ใช้ได้ถึง <b>{exp}</b>",
+    daysLeft: "⏳ เหลืออีก {d} วัน — พรจะดับถ้าไม่มาใช้", expired: "⌛ หมดอายุแล้ว",
+    blankMsg: "<div class=\"big\">🦊🍂</div>ใบที่จับได้<b>ว่างเปล่า</b>… คืนนี้โชคยังไม่เข้าข้าง<br>ขอบคุณที่ช่วยตามหาหางนะ<br><span style=\"font-size:12.5px; color:#8a7a5a;\">ติดตามกิจกรรมใหม่ทาง LINE OA " + SHOP_NAME + "</span>",
+    usedToast: "คูปองถูกใช้แล้ว!", thanks: "ขอบคุณที่ใช้บริการ", qrUsed: "QR Code ถูกใช้แล้ว",
+    soonTitle: "เร็วๆ นี้!", soonBody: "ล่าหางจิ้งจอก 9 หาง<br>เริ่มเล่นได้ <b style=\"color:var(--gold);\">1 ตุลาคม 2569</b>",
+    endedTitle: "กิจกรรมจบแล้ว", endedBody: "ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style=\"color:var(--gold);\">31 ตุลาคม 2569</b>",
+    endedHint: "🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<b>ผ่าน LINE</b> ระบบจะแสดง QR คูปองของคุณ", endedFollow: "📢 ติดตามกิจกรรมใหม่ทาง LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b>",
+    demoA: "แตะไฟจิ้งจอก 🔥  ครบ 5 ดวง = หางงอก", demoA2: "หางงอก! 🦊", demoB: "หน้ากากโอนิ 👹 อย่าแตะ!", demoB2: "แตะโดน = ไฟหาย 😱",
+    demoC: "หมดเวลา → จับโอมิคุจิ รวมเงินทุกใบ", demoC2: "รวม ฿150 🎫", langBtn: "🌐 EN",
+  },
+  en: {
+    title: "Nine-Tail Fox Hunt", subtitle: "🏮 Inari Shrine · Full Moon Night", demoTitle: "▶ How to play (watch before you start)",
+    who: "🦊 The White Fox of the Shrine",
+    dialog: "Tonight I lost <b>8 of my tails</b>… please help me gather the <b>fox fires</b>.<br>The more tails you bring back, the more <b>omikuji</b> I will give you.",
+    rule1a: "Tap the fox fires", rule1b: "gold fire = 3", rule2: "Don't tap the Oni mask", rule3: "🦊 5 fires = 1 tail · 30 seconds",
+    tier1: "<b>1–2 tails</b>draw 1 slip", tier2: "<b>3–5 tails</b>draw 2 slips", tier3: "<b>6–9 tails</b>draw 3 slips",
+    sumLine: "🎴 Draw omikuji — <b>all your slips add up</b>, up to <b style=\"color:var(--gold);\">฿300</b>",
+    checking: "⏳ Checking…", start: "🏮 Start the Hunt", starting: "⏳ Starting…", netStart: "📶 Connection failed — tap to retry",
+    footer: "🦊 One play per LINE account · Coupon valid until <b>{exp}</b> · " + SHOP_NAME,
+    tails: "Tails", hint: "Tap the fires 🔥 · Avoid the Oni 👹", go: "Go!<small>Tap the fox fires 🔥</small>", tailUp: "Tail {n}!", nine: "九尾!<small>All 9 tails 🦊</small>",
+    timeUp: "Time's up!<small>{n} tails recovered</small>", combo: "+1 Combo {n}",
+    netEnd: "📶 Connection lost<small>Your {n} tails are safe — check internet, then tap</small>", connecting: "⏳ Connecting…", retry: "🔄 Try again",
+    omiTitle: "Pick {n} of 9 omikuji", omiSub: "{t}/9 tails recovered 🦊", omiSubResumed: "Welcome back · {t}/9 tails 🦊", omiSubInterrupted: "Game was interrupted · using {t}/9 tails 🦊",
+    omiNote: "All picked slips add up · max ฿300 · some slips are blank", pickLeft: "👆 Tap {n} more", opening: "🎴 Opening…",
+    running: "Total <b style=\"color:var(--gold);\">฿{n}</b>", gotTotal: "✨ You got <b style=\"color:var(--gold);\">฿{n}</b>", blankRes: "😢 Your slips were blank…",
+    nearMiss: "😱 So close! {k} ฿{n} was right next to you", getCoupon: "🎫 Get coupon ฿{n}", seeResult: "See result 🦊",
+    netPick: "Connection lost — your picks are saved. Check internet, then tap to open", netOmi: "Connection failed — check internet, then tap again",
+    omiInterruptedTitle: "Game was interrupted", preparing: "⏳ Preparing omikuji…",
+    introNote: "⚠️ The game closed before you earned any tails — <b>you may restart once</b><br><span style=\"font-size:11.5px;opacity:.8;\">If it closes again, you'll keep the tails you have</span>",
+    jpT: "Nine Tails · Top prize ฿300", jpS: "Tap to get your coupon",
+    couponSmall: "Discount coupon · Fox Hunt", resExisting: "Blessed by the fox", resJackpot: "🦊 Nine tails! 九尾", resBlank: "凶 · No luck this time",
+    scoreLine: "{t}/9 tails · {n} slips drawn", amtCap: "Discount on services at " + SHOP_NAME, regular: "Discount off the regular price · One-time use",
+    gradeNew: "⏳ Not used yet — show this QR at the shop", gradeUsed: "✅ Coupon used", jackpotNote: "🦊 All nine tails! Tonight's top prize — don't miss it",
+    copy: "📋 Copy", copied: "✓ Copied — send it to the admin when booking",
+    expnote: "📱 Screenshot this, or reopen the link in LINE anytime<br>Show the QR to staff at the shop · Valid until <b>{exp}</b>",
+    daysLeft: "⏳ {d} days left — the blessing fades if unused", expired: "⌛ Expired",
+    blankMsg: "<div class=\"big\">🦊🍂</div>Your slips were <b>blank</b>… no luck tonight<br>Thank you for helping find the tails<br><span style=\"font-size:12.5px; color:#8a7a5a;\">Follow LINE OA " + SHOP_NAME + " for the next event</span>",
+    usedToast: "Coupon used!", thanks: "Thank you for visiting", qrUsed: "QR code already used",
+    soonTitle: "Coming soon!", soonBody: "Nine-Tail Fox Hunt<br>Starts <b style=\"color:var(--gold);\">1 October 2026</b>",
+    endedTitle: "This event has ended", endedBody: "Nine-Tail Fox Hunt ended on<br><b style=\"color:var(--gold);\">31 October 2026</b>",
+    endedHint: "🎫 Already won a coupon? Open this link <b>in LINE</b> to see your QR", endedFollow: "📢 Follow LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b> for the next event",
+    demoA: "Tap the fox fires 🔥  5 fires = 1 tail", demoA2: "Tail +1! 🦊", demoB: "Oni mask 👹 Don't tap it!", demoB2: "Tapping it loses fires 😱",
+    demoC: "Time's up → pick omikuji, slips add up", demoC2: "Total ฿150 🎫", langBtn: "🌐 ไทย",
+  },
+};
+let LANG = 'th';
+(function(){
+  try{ const sv = localStorage.getItem('kitsune_lang'); if(sv === 'th' || sv === 'en'){ LANG = sv; return; } }catch(e){}
+  const nl = (navigator.language || navigator.userLanguage || 'th').toLowerCase();
+  LANG = nl.startsWith('th') ? 'th' : 'en';
+})();
+function t(key, vars){
+  let s = (I18N[LANG] && I18N[LANG][key]) || I18N.th[key] || key;
+  s = s.replace('{exp}', LANG === 'en' ? EXPIRE_LABEL_EN : EXPIRE_LABEL);
+  if(vars) for(const k in vars) s = s.split('{' + k + '}').join(vars[k]);
+  return s;
+}
+function slipLabel(si){ return LANG === 'en' ? si.en : si.th; }
+function applyLang(){
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.innerHTML = t(el.getAttribute('data-i18n')); });
+  const lb = document.getElementById('langBtn'); if(lb) lb.textContent = t('langBtn');
+  try{ if(document.getElementById('result').classList.contains('on') && currentCouponData) renderCoupon(currentCouponData, true); }catch(e){}
+}
+function toggleLang(){
+  LANG = LANG === 'th' ? 'en' : 'th';
+  try{ localStorage.setItem('kitsune_lang', LANG); }catch(e){}
+  applyLang();
+  const b = document.getElementById('startBtn');
+  if(b && window._initDone && !_starting && b.onclick === startGame) b.textContent = t('start');
+}
 const DECK_SIZE = 9;
 const TIERS = [0, 50, 100, 150, 200, 300];   // ?force= ในโหมดทดสอบ (ยอดตั้งต้น)
 const CAP = 300;
@@ -343,8 +459,7 @@ document.querySelectorAll('[data-gold]').forEach(el => el.src = ASSET.gold);
 document.querySelectorAll('[data-oni]').forEach(el => el.src = ASSET.oni);
 document.querySelectorAll('[data-fake]').forEach(el => el.src = ASSET.fake);
 document.getElementById('bgimg').src = ASSET.bg;
-document.getElementById('expTxt1').textContent = EXPIRE_LABEL;
-document.getElementById('expTxt2').textContent = EXPIRE_LABEL;
+applyLang();
 
 function show(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
@@ -417,7 +532,7 @@ async function initLine(){
 function enableStartBtn(){
   window._initDone = true;
   const b = document.getElementById('startBtn');
-  b.disabled = false; b.textContent = '🏮 เริ่มตามหา'; b.onclick = startGame;
+  b.disabled = false; b.textContent = t('start'); b.onclick = startGame;
 }
 function generateTestId(){
   const id = "test_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
@@ -489,8 +604,8 @@ async function tryServer(fn){
 function askRetry(where, msg){   // แสดงปุ่ม "ลองอีกครั้ง" แล้วรอลูกค้ากด
   return new Promise(resolve => {
     const box = document.getElementById(where);
-    box.innerHTML = `<div style="color:#ffd7a0;">📶 ${msg}</div><button type="button" class="btn-main" style="margin-top:10px; font-size:16px; padding:11px;">🔄 ลองอีกครั้ง</button>`;
-    box.querySelector('button').onclick = () => { box.innerHTML = '⏳ กำลังเชื่อมต่อ…'; resolve(); };
+    box.innerHTML = `<div style="color:#ffd7a0;">📶 ${msg}</div><button type="button" class="btn-main" style="margin-top:10px; font-size:16px; padding:11px;">${t('retry')}</button>`;
+    box.querySelector('button').onclick = () => { box.innerHTML = t('connecting'); resolve(); };
   });
 }
 function slipInfo(a){ return SLIP_TABLE.find(s => s.a === a) || SLIP_TABLE[0]; }
@@ -509,21 +624,21 @@ async function handleInterrupted(d){
   if(canRestart(d)){
     show('intro');
     const note = document.getElementById('introNote');
-    if(note){ note.style.display = 'block'; note.innerHTML = '⚠️ เกมถูกปิดก่อนเก็บหางได้ — <b>เริ่มใหม่ได้อีก 1 ครั้ง</b><br><span style="font-size:11.5px;opacity:.8;">ครั้งนี้ถ้าปิดกลางคันอีก จะได้ตามหางที่เก็บได้</span>'; }
+    if(note){ note.style.display = 'block'; note.innerHTML = t('introNote'); }
     enableStartBtn(); return;
   }
   show('omikuji');
   document.getElementById('slips').innerHTML = '';
   document.getElementById('pickLeft').textContent = '';
-  document.getElementById('omiTitle').textContent = 'เกมถูกปิดกลางคัน';
-  document.getElementById('omiSub').textContent = `ใช้หางที่เก็บได้ ${d.tails || 1}/9 หาง 🦊`;
-  document.getElementById('omiNote').textContent = '⏳ กำลังเตรียมโอมิคุจิ…';
+  document.getElementById('omiTitle').textContent = t('omiInterruptedTitle');
+  document.getElementById('omiSub').textContent = t('omiSubInterrupted', { t: d.tails || 1 });
+  document.getElementById('omiNote').textContent = t('preparing');
   for(;;){
     try{
       const r = await tryServer(() => txEnd({ ...d, tails: d.tails || 1 }));
       if(r.route){ routeExisting(r.route); return; }
       currentCouponData = r.pick; openOmikuji(r.pick, true, true); return;
-    }catch(e){ await askRetry('omiNote', 'เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ตแล้วแตะอีกครั้ง'); }
+    }catch(e){ await askRetry('omiNote', t('netOmi')); }
   }
 }
 function renderCoupon(data, existing){
@@ -534,16 +649,16 @@ function renderCoupon(data, existing){
   const jackpot = data.amount >= CAP;
   const seal = document.getElementById('sealTxt');
   seal.innerHTML = si.k.split('').join('<br>'); seal.classList.toggle('one', si.k.length === 1);
-  document.getElementById('resTitle').textContent = blank ? '凶 · โชคยังไม่เข้าข้าง' : existing ? 'คุณได้รับพรจากจิ้งจอกแล้ว' : (jackpot ? '🦊 เก้าหางครบ! 九尾' : `${si.k} · ${si.th}`);
-  document.getElementById('scoreLine').textContent = data.tails ? `เก็บหางคืนได้ ${data.tails}/9 หาง · จับโอมิคุจิ ${(data.picks || []).length || data.slipCount || 1} ใบ` : '';
+  document.getElementById('resTitle').textContent = blank ? t('resBlank') : existing ? t('resExisting') : (jackpot ? t('resJackpot') : `${si.k} · ${slipLabel(si)}`);
+  document.getElementById('scoreLine').textContent = data.tails ? t('scoreLine', { t: data.tails, n: (data.picks || []).length || data.slipCount || 1 }) : '';
   if(blank){ if(window._saveFailed) showSaveWarning(); return; }
   document.getElementById('amt').innerHTML = `<small>฿</small>${data.amount}`;
-  document.getElementById('grade').textContent = data.isUsed ? '✅ ใช้คูปองเรียบร้อยแล้ว' : '⏳ ยังไม่ได้ใช้ — แสดง QR ที่ร้าน';
+  document.getElementById('grade').textContent = data.isUsed ? t('gradeUsed') : t('gradeNew');
   document.getElementById('jackpotNote').style.display = (jackpot && !data.isUsed) ? 'block' : 'none';
   document.getElementById('codeTxt').textContent = data.code;
   document.getElementById('copied').textContent = '';
   const dl = daysLeft();
-  document.getElementById('daysLeft').textContent = data.isUsed ? '' : (dl > 0 ? `⏳ เหลืออีก ${dl} วัน — พรจะดับถ้าไม่มาใช้` : '⌛ หมดอายุแล้ว');
+  document.getElementById('daysLeft').textContent = data.isUsed ? '' : (dl > 0 ? t('daysLeft', { d: dl }) : t('expired'));
   document.getElementById('daysLeft').style.display = data.isUsed ? 'none' : 'inline-block';
   generateCouponQR(data.code, data.amount, data.isUsed);
   if(window._saveFailed) showSaveWarning();
@@ -559,7 +674,7 @@ function showSaveWarning(){
 }
 function generateCouponQR(code, amount, isUsed){
   const box = document.getElementById('qrcodeBox'); if(!box) return;
-  if(isUsed){ box.innerHTML = '<div style="padding:20px;text-align:center;opacity:.5;">QR Code ถูกใช้แล้ว</div>'; return; }
+  if(isUsed){ box.innerHTML = `<div style="padding:20px;text-align:center;opacity:.5;">${t('qrUsed')}</div>`; return; }
   box.innerHTML = '<div id="qrcode" style="display:flex;justify-content:center;padding:12px;background:#fff;border-radius:12px;margin:10px auto;width:fit-content;border:1px solid #e3d5b3;"></div>';
   const qd = document.getElementById('qrcode');
   const qrData = JSON.stringify({ code: code, campaign: CAMPAIGN_ID, type: SHOP_ID + "_coupon", lineId: String(lineUserId || "").startsWith("test_") ? "" : lineUserId });
@@ -593,21 +708,21 @@ function subscribeToChanges(){   // เช็คกับตัวกลาง�
   realtimeUnsubscribe = () => clearInterval(id);
 }
 function markAsUsedUI(){
-  document.getElementById('grade').textContent = '✅ ใช้คูปองเรียบร้อยแล้ว';
+  document.getElementById('grade').textContent = t('gradeUsed');
   document.getElementById('jackpotNote').style.display = 'none';
   document.getElementById('daysLeft').style.display = 'none';
   const q = document.getElementById('qrcodeBox'); if(q){ q.style.transition = 'opacity .5s'; q.style.opacity = '.3'; }
 }
 function showUsedToast(){
   const t = document.createElement('div');
-  t.innerHTML = `<div style="font-size:32px;margin-bottom:8px;">✅</div><div style="font-size:18px;font-weight:bold;">คูปองถูกใช้แล้ว!</div><div style="font-size:13px;opacity:.9;margin-top:4px;">ขอบคุณที่ใช้บริการ ${SHOP_EMOJI} ${SHOP_NAME}</div>`;
+  t.innerHTML = `<div style="font-size:32px;margin-bottom:8px;">✅</div><div style="font-size:18px;font-weight:bold;">${t('usedToast')}</div><div style="font-size:13px;opacity:.9;margin-top:4px;">${t('thanks')} ${SHOP_EMOJI} ${SHOP_NAME}</div>`;
   t.style.cssText = `position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.8);background:linear-gradient(135deg,#4caf50,#388e3c);color:#fff;padding:24px 32px;border-radius:16px;box-shadow:0 8px 32px rgba(76,175,80,.4);text-align:center;z-index:99999;min-width:260px;opacity:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '1'; t.style.transform = 'translate(-50%,-50%) scale(1)'; }, 50);
   setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 400); }, 3000);
 }
 function showCampaignExpired(){
-  document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊💤</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">กิจกรรมจบแล้ว</div><div style="font-size:14px;opacity:.85;line-height:1.7;">ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style="color:var(--gold);">31 ตุลาคม 2569</b></div><div style="font-size:12.5px;opacity:.75;margin-top:16px;">🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<b>ผ่าน LINE</b> ระบบจะแสดง QR คูปองของคุณ</div><div style="font-size:13px;margin-top:16px;">📢 ติดตามกิจกรรมใหม่ทาง LINE OA <b style="color:var(--gold);">${SHOP_NAME}</b></div></div>`;
+  document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊💤</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">${t('endedTitle')}</div><div style="font-size:14px;opacity:.85;line-height:1.7;">${t('endedBody')}</div><div style="font-size:12.5px;opacity:.75;margin-top:16px;">${t('endedHint')}</div><div style="font-size:13px;margin-top:16px;">${t('endedFollow')}</div></div>`;
   show('intro');
 }
 /* 🧪 ผู้ทดสอบ (LINE จริง) — แถบล่าง + ปุ่มรีเซ็ต */
@@ -620,7 +735,7 @@ function showTesterBar(){
   document.body.appendChild(d);
 }
 function showNotStarted(){
-  document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊🏮</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">เร็วๆ นี้!</div><div style="font-size:14px;opacity:.85;line-height:1.7;">ล่าหางจิ้งจอก 9 หาง<br>เริ่มเล่นได้ <b style="color:var(--gold);">1 ตุลาคม 2569</b></div>${window._uid ? `<div style="font-size:10px;opacity:.45;margin-top:18px;word-break:break-all;">ID: ${window._uid}</div>` : ''}</div>`;
+  document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊🏮</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">${t('soonTitle')}</div><div style="font-size:14px;opacity:.85;line-height:1.7;">${t('soonBody')}</div>${window._uid ? `<div style="font-size:10px;opacity:.45;margin-top:18px;word-break:break-all;">ID: ${window._uid}</div>` : ''}</div>`;
   show('intro');
 }
 function showErrorScreen(title, msg){
@@ -630,7 +745,7 @@ function showErrorScreen(title, msg){
 window.addEventListener("beforeunload", () => { if(realtimeUnsubscribe){ realtimeUnsubscribe(); realtimeUnsubscribe = null; } });
 document.getElementById('copyBtn').onclick = () => {
   const txt = document.getElementById('codeTxt').textContent;
-  const done = () => document.getElementById('copied').textContent = '✓ คัดลอกแล้ว — ส่งให้แอดมินตอนจองได้เลย';
+  const done = () => document.getElementById('copied').textContent = t('copied');
   if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done).catch(done); else done();
 };
 
@@ -677,22 +792,80 @@ function fitCanvas(cv){
 }
 /* หน้าแรก: จิ้งจอก 1 หาง นั่งรอ */
 let _introRaf = null;
+/* ▶ วิธีเล่นแบบภาพเคลื่อนไหว (วนซ้ำ ~10 วิ) — ไม่ต้องอ่านก็เล่นเป็น
+   ฉาก A แตะไฟ → ครบ 5 = หางงอก · ฉาก B โอนิ ห้ามแตะ · ฉาก C หมดเวลา → จับโอมิคุจิ รวมเงิน */
 function startIntroFox(){
   if(_introRaf || !IMG.fox || !IMG.fox.complete) return;
-  const cv = document.getElementById('introFox'); if(!cv || !cv.isConnected) return;
+  const cv = document.getElementById('introDemo'); if(!cv || !cv.isConnected) return;
   let f = fitCanvas(cv);
+  const LOOP = 10.2, t0 = performance.now();
+  const ease = (a, b, k) => a + (b - a) * Math.max(0, Math.min(1, k));
+  const smooth = (k) => k < 0 ? 0 : k > 1 ? 1 : k * k * (3 - 2 * k);
+  const caption = (ctx, W, txt, color) => {
+    ctx.save(); ctx.font = `700 ${Math.round(Math.min(15, W * .04))}px Kanit, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const tw = ctx.measureText(txt).width + 22;
+    ctx.fillStyle = 'rgba(11,13,31,.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(W / 2 - tw / 2, 6, tw, 26, 13) : ctx.rect(W / 2 - tw / 2, 6, tw, 26); ctx.fill();
+    ctx.fillStyle = color || '#fff'; ctx.fillText(txt, W / 2, 19); ctx.restore();
+  };
+  const hand = (ctx, x, y, press) => { ctx.save(); ctx.font = `${Math.round(30 * (press ? .85 : 1))}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.shadowColor = 'rgba(0,0,0,.5)'; ctx.shadowBlur = 6; ctx.fillText('👆', x + 4, y + 20); ctx.restore(); };
+  const popup = (ctx, x, y, txt, color, k) => { if(k < 0 || k > 1) return; ctx.save(); ctx.globalAlpha = 1 - k; ctx.font = '800 16px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText(txt, x + 1, y - k * 28 + 1); ctx.fillStyle = color; ctx.fillText(txt, x, y - k * 28); ctx.restore(); };
+  const burst = (ctx, x, y, k, color) => { if(k < 0 || k > 1) return; ctx.save(); ctx.globalAlpha = 1 - k; ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 8 + k * 26, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); };
+  const dots = (ctx, x, y, n) => { for(let i = 0; i < 5; i++){ ctx.fillStyle = i < n ? '#9cc6ff' : 'rgba(255,255,255,.18)'; ctx.strokeStyle = '#0b0d1f'; ctx.lineWidth = 2; ctx.beginPath(); ctx.rect(x + i * 15, y, 11, 11); ctx.fill(); ctx.stroke(); } };
   const loop = (ms) => {
-    const t = ms / 1000;
-    f.ctx.clearRect(0, 0, f.W, f.H);
-    const fs = Math.min(f.H * 0.78, f.W * 0.55);
-    f.ctx.save(); f.ctx.globalAlpha = .35 + .15 * Math.sin(t * 2); f.ctx.fillStyle = '#7fb4ff';
-    f.ctx.beginPath(); f.ctx.ellipse(f.W / 2, f.H - 8, fs * 0.45, 7, 0, 0, Math.PI * 2); f.ctx.fill(); f.ctx.restore();
-    drawFox(f.ctx, f.W / 2, f.H - 6, fs, 1, t, null, false);
-    for(let i = 0; i < 3; i++){   // ไฟลอยรอบตัว
-      const a = t * 0.9 + i * 2.1, r = fs * 0.72;
-      const x = f.W / 2 + Math.cos(a) * r, y = f.H * 0.45 + Math.sin(a * 1.3) * f.H * 0.18;
-      const sz = 20 + Math.sin(t * 3 + i) * 2;
-      f.ctx.globalAlpha = .85; f.ctx.drawImage(IMG.orb, x - sz / 2, y - sz / 2, sz, sz); f.ctx.globalAlpha = 1;
+    const tm = ((ms - t0) / 1000) % LOOP, W = f.W, H = f.H, ctx = f.ctx;
+    ctx.clearRect(0, 0, W, H); ctx.imageSmoothingEnabled = false;
+    if(tm < 4.2){   // ── A: แตะไฟ → หางงอก
+      const taps = [[0.15, 0.62, 1.0], [0.8, 0.82, 1.85], [1.5, 0.72, 2.7]];   // [spawn, x%, tapTime]
+      const tailed = tm >= 2.7;
+      caption(ctx, W, tailed ? t('demoA2') : t('demoA'), tailed ? '#ffcf5a' : '#fff');
+      const fs = Math.min(H * .55, W * .3);
+      drawFox(ctx, W * .22, H - 8, fs, tailed ? 2 : 1, tm, tailed ? [0, Math.max(0, 1 - (tm - 2.7) * 1.4)] : null, false);
+      let n = 2, handX = W * .55, handY = H * .6, press = false;
+      taps.forEach(([sp, xp, tt]) => {
+        const x = W * xp, y = H * .92 - (tm - sp) * H * .22;
+        if(tm >= sp && tm < tt){ ctx.save(); ctx.shadowColor = 'rgba(127,180,255,.9)'; ctx.shadowBlur = 12; ctx.drawImage(IMG.orb, x - 18, y - 18, 36, 36); ctx.restore(); }
+        if(tm >= tt){ n++; const yt = H * .92 - (tt - sp) * H * .22; burst(ctx, x, yt, (tm - tt) / .5, '#9cc6ff'); popup(ctx, x, yt - 10, '+1', '#9cc6ff', (tm - tt) / .8); }
+        if(tm >= sp - .3 && tm < tt + .15){ const ty = H * .92 - (Math.max(tm, sp) - sp) * H * .22; handX = ease(handX, x, smooth((tm - sp + .3) / .6)); handY = ease(handY, ty, smooth((tm - sp + .3) / .6)); press = Math.abs(tm - tt) < .15; }
+      });
+      if(tm < 3.3) hand(ctx, handX, handY, press);
+      dots(ctx, W * .08, 40, Math.min(5, n));
+      if(tailed) popup(ctx, W * .22, H * .35, '+1 🦊', '#ffcf5a', (tm - 2.7) / 1.3);
+    } else if(tm < 7.0){   // ── B: โอนิ ห้ามแตะ
+      const u = tm - 4.2, hit = u >= 1.6;
+      caption(ctx, W, hit ? t('demoB2') : t('demoB'), hit ? '#ff6b6b' : '#fff');
+      const fs = Math.min(H * .55, W * .3);
+      drawFox(ctx, W * .22, H - 8, fs, 2, tm, null, false);
+      const ox = ease(W * 1.05, W * .62, smooth(u / 1.4)), oy = H * .5 + Math.sin(u * 3) * 6, sz = 54;
+      if(hit){ ctx.save(); ctx.translate(Math.sin(u * 40) * 3, 0); ctx.drawImage(IMG.oni, ox - sz / 2, oy - sz / 2, sz, sz); ctx.restore(); }
+      else ctx.drawImage(IMG.oni, ox - sz / 2, oy - sz / 2, sz, sz);
+      const hx = ease(W * .85, ox, smooth((u - .6) / 1.0)), hy = ease(H * .85, oy, smooth((u - .6) / 1.0));
+      if(!hit) hand(ctx, hx, hy, false);
+      else {
+        hand(ctx, ease(ox, W * .9, smooth((u - 1.6) / .5)), ease(oy, H * .85, smooth((u - 1.6) / .5)), false);
+        ctx.save(); ctx.strokeStyle = '#ff2d3d'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.globalAlpha = .9;
+        ctx.beginPath(); ctx.moveTo(ox - 26, oy - 26); ctx.lineTo(ox + 26, oy + 26); ctx.moveTo(ox + 26, oy - 26); ctx.lineTo(ox - 26, oy + 26); ctx.stroke(); ctx.restore();
+        dots(ctx, W * .08, 40, u < 2.0 ? 3 : 0); popup(ctx, W * .16, 70, '-3', '#ff6b6b', (u - 1.6) / 1.2);
+      }
+      if(!hit) dots(ctx, W * .08, 40, 3);
+    } else {   // ── C: จับโอมิคุจิ รวมเงิน
+      const u = tm - 7.0, done = u >= 2.2;
+      caption(ctx, W, done ? t('demoC2') : t('demoC'), done ? '#ffcf5a' : '#fff');
+      const cw = Math.min(64, W * .17), ch = cw * 1.45, gap = 14, x0 = W / 2 - (cw * 3 + gap * 2) / 2, y0 = H * .5 - ch / 2 + 6;
+      const vals = ['฿100', '฿50', ''];
+      const opened = [u >= .9, u >= 1.7, false];
+      for(let i = 0; i < 3; i++){
+        const x = x0 + i * (cw + gap), pick = opened[i];
+        ctx.save(); ctx.fillStyle = pick ? '#fffaf0' : '#f3e7cc'; ctx.strokeStyle = pick ? '#ffcf5a' : '#d8c7a0'; ctx.lineWidth = pick ? 3 : 2;
+        ctx.fillRect(x, y0, cw, ch); ctx.strokeRect(x, y0, cw, ch);
+        if(!pick){ ctx.fillStyle = '#c8323a'; ctx.fillRect(x, y0, cw, 10); ctx.fillStyle = '#2b2130'; ctx.font = `${Math.round(cw * .34)}px "Shippori Mincho", serif`; ctx.textAlign = 'center'; ctx.fillText('御', x + cw / 2, y0 + ch * .5); ctx.fillText('籤', x + cw / 2, y0 + ch * .5 + cw * .36); }
+        else { ctx.fillStyle = '#c8323a'; ctx.font = `800 ${Math.round(cw * .34)}px "Shippori Mincho", serif`; ctx.textAlign = 'center'; ctx.fillText(i === 0 ? '吉' : '小吉', x + cw / 2, y0 + ch * .42); ctx.fillStyle = '#2b2130'; ctx.font = `800 ${Math.round(cw * .28)}px Kanit, sans-serif`; ctx.fillText(vals[i], x + cw / 2, y0 + ch * .78); }
+        ctx.restore();
+      }
+      const tapT = [.9, 1.7];
+      let hx = W * .5, hy = H * .9;
+      tapT.forEach((tt, i) => { const x = x0 + i * (cw + gap) + cw / 2, y = y0 + ch / 2; if(u >= tt - .6 && u < tt + .2){ hx = ease(hx, x, smooth((u - tt + .6) / .5)); hy = ease(hy, y, smooth((u - tt + .6) / .5)); } if(u >= tt) burst(ctx, x, y, (u - tt) / .5, '#ffcf5a'); });
+      if(u < 2.0) hand(ctx, hx, hy, tapT.some(tt => Math.abs(u - tt) < .15));
+      if(done){ ctx.save(); ctx.globalAlpha = Math.min(1, (u - 2.2) / .4); ctx.font = '800 22px Kanit, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#000'; ctx.fillText('฿100 + ฿50 = ฿150', W / 2 + 1, H - 15); ctx.fillStyle = '#ffcf5a'; ctx.fillText('฿100 + ฿50 = ฿150', W / 2, H - 16); ctx.restore(); }
     }
     _introRaf = requestAnimationFrame(loop);
   };
@@ -1015,14 +1188,14 @@ async function startGame(){
   _starting = true;
   ac(); bgmPrepare();
   const btn = document.getElementById('startBtn');
-  btn.disabled = true; btn.textContent = '⏳ กำลังเริ่ม…';
+  btn.disabled = true; btn.textContent = t('starting');
   let r;
   try{ r = await tryServer(txStart); }
   catch(e){
     _starting = false;
     if(e.code === 'not_started'){ showNotStarted(); return; }
     if(e.code === 'ended'){ showCampaignExpired(); return; }
-    btn.disabled = false; btn.textContent = '📶 เชื่อมต่อไม่ได้ — แตะเพื่อลองใหม่'; return;
+    btn.disabled = false; btn.textContent = t('netStart'); return;
   }
   if(r && r.route){ _starting = false; routeExisting(r.route); return; }
   const note = document.getElementById('introNote'); if(note) note.style.display = 'none';
@@ -1038,7 +1211,7 @@ async function startGame(){
   let n = 3;
   const step = () => {
     if(n > 0){ c.innerHTML = n; c.classList.add('on'); sfx.tick(); n--; setTimeout(step, 700); }
-    else { c.innerHTML = 'เริ่ม!<small>แตะไฟจิ้งจอก 🔥</small>'; sfx.go(); setTimeout(() => c.classList.remove('on'), 600); G.running = true; G.last = performance.now(); bgmStart(); }
+    else { c.innerHTML = t('go'); sfx.go(); setTimeout(() => c.classList.remove('on'), 600); G.running = true; G.last = performance.now(); bgmStart(); }
   };
   step();
   _raf = requestAnimationFrame(frame);
@@ -1156,7 +1329,7 @@ function addPoints(n){
     saveProgress(G.tails);
     sfx.tail();
     const c = document.getElementById('center');
-    c.innerHTML = G.tails >= 9 ? '九尾!<small>หางครบ 9 หาง 🦊</small>' : `หาง ${G.tails}!`;
+    c.innerHTML = G.tails >= 9 ? t('nine') : t('tailUp', { n: G.tails });
     c.classList.add('on'); clearTimeout(c._t); c._t = setTimeout(() => c.classList.remove('on'), 650);
   }
   if(G.tails >= 9) G.prog = Math.min(G.prog, FIRES_PER_TAIL);
@@ -1199,7 +1372,7 @@ function onTap(e){
     G.golds++; sfx.gold(); burst(best.x, best.y, '#ffcf5a', 18, `+${GOLD_VALUE}`); addPoints(GOLD_VALUE);
   } else {
     G.combo = (G.t - G.lastCatch < 1.1) ? G.combo + 1 : 0; G.lastCatch = G.t;
-    G.fires++; sfx.pick(G.combo); burst(best.x, best.y, '#9cc6ff', 9, G.combo >= 2 ? `+1 คอมโบ ${G.combo + 1}` : '+1'); addPoints(1);
+    G.fires++; sfx.pick(G.combo); burst(best.x, best.y, '#9cc6ff', 9, G.combo >= 2 ? t('combo', { n: G.combo + 1 }) : '+1'); addPoints(1);
   }
 }
 (function(){
@@ -1213,7 +1386,7 @@ async function endGame(){
   if(G.over) return;
   G.over = true; G.running = false; bgmStop(); sfx.gong();
   const c = document.getElementById('center');
-  c.innerHTML = `หมดเวลา!<small>เก็บหางคืนได้ ${G.tails} หาง</small>`; c.classList.add('on');
+  c.innerHTML = t('timeUp', { n: G.tails }); c.classList.add('on');
   const st = { tails: G.tails, fires: G.fires, golds: G.golds, oniHits: G.oniHits, fakeHits: G.fakeHits };
   const minWait = new Promise(r => setTimeout(r, 1800));
   let r = null;
@@ -1221,9 +1394,9 @@ async function endGame(){
     try{ r = await tryServer(() => txEnd(st)); break; }
     catch(e){
       await minWait;
-      c.innerHTML = `📶 สัญญาณหลุด<small>หางของคุณ (${G.tails} หาง) ยังอยู่ — เช็คเน็ตแล้วแตะ</small><button type="button" class="btn-main" style="pointer-events:auto; max-width:260px; margin:12px auto 0; font-size:16px;">🔄 ลองอีกครั้ง</button>`;
+      c.innerHTML = t('netEnd', { n: G.tails }) + `<button type="button" class="btn-main" style="pointer-events:auto; max-width:260px; margin:12px auto 0; font-size:16px;">${t('retry')}</button>`;
       c.style.pointerEvents = 'auto';
-      await new Promise(res => { c.querySelector('button').onclick = () => { c.innerHTML = '⏳ กำลังเชื่อมต่อ…'; res(); }; });
+      await new Promise(res => { c.querySelector('button').onclick = () => { c.innerHTML = t('connecting'); res(); }; });
       c.style.pointerEvents = '';
     }
   }
@@ -1236,14 +1409,14 @@ async function endGame(){
 }
 function slipBackHtml(a){
   const si = slipInfo(a);
-  return `<div class="kanji">${si.k.split('').join('<br>')}</div><div class="th">${si.th}</div><div class="amt">${a > 0 ? '฿' + a : '—'}</div>`;
+  return `<div class="kanji">${si.k.split('').join('<br>')}</div><div class="th">${slipLabel(si)}</div><div class="amt">${a > 0 ? '฿' + a : '—'}</div>`;
 }
 function openOmikuji(d, resumed, interrupted){
   show('omikuji');
   const n = d.slipCount || 1;
-  document.getElementById('omiTitle').textContent = `เลือกโอมิคุจิ ${n} ใบ จาก ${DECK_SIZE} ใบ`;
-  document.getElementById('omiSub').textContent = (interrupted ? 'เกมถูกปิดกลางคัน · ใช้หางที่เก็บได้ ' : resumed ? 'กลับมาเลือกต่อ · เก็บหางคืนได้ ' : 'เก็บหางคืนได้ ') + `${d.tails || 1}/9 หาง 🦊`;
-  document.getElementById('omiNote').textContent = 'รวมยอดทุกใบที่จับ · สูงสุด ฿300 · มีใบว่างปน';
+  document.getElementById('omiTitle').textContent = t('omiTitle', { n });
+  document.getElementById('omiSub').textContent = t(interrupted ? 'omiSubInterrupted' : resumed ? 'omiSubResumed' : 'omiSub', { t: d.tails || 1 });
+  document.getElementById('omiNote').textContent = t('omiNote');
   document.getElementById('toCouponBtn').style.display = 'none';
   const box = document.getElementById('slips');
   // ⚠️ ด้านหลังยังว่าง — ตัวเลขถูกสร้างตอนจับครบเท่านั้น
@@ -1252,7 +1425,7 @@ function openOmikuji(d, resumed, interrupted){
       <div class="face back"></div>
     </div>`).join('');
   const picks = [];
-  const left = () => document.getElementById('pickLeft').textContent = picks.length < n ? `👆 แตะเลือกอีก ${n - picks.length} ใบ` : '';
+  const left = () => document.getElementById('pickLeft').textContent = picks.length < n ? t('pickLeft', { n: n - picks.length }) : '';
   left();
   box.querySelectorAll('.slip').forEach(el => el.onclick = () => {
     if(picks.length >= n || el.classList.contains('picked')) return;
@@ -1263,13 +1436,13 @@ function openOmikuji(d, resumed, interrupted){
 async function revealAll(d, picks){
   const els = [...document.querySelectorAll('#slips .slip')];
   const note = document.getElementById('omiNote');
-  note.textContent = '🎴 กำลังเปิด…';
+  note.textContent = t('opening');
   let out = null;
   for(;;){   // ✅ เซิร์ฟเวอร์สุ่ม + บันทึกผลก่อน แล้วค่อยพลิก — ออฟไลน์ = รอ ไม่โชว์อะไร
     try{ out = await tryServer(() => txFinalize(picks)); break; }
     catch(e){
       if(e.status === 400 || e.status === 409){ const j = await api('state').catch(() => null); if(j && j.doc){ routeExisting(j.doc); return; } }
-      await askRetry('omiNote', 'สัญญาณหลุด — ใบที่เลือกยังอยู่ เช็คเน็ตแล้วแตะเพื่อเปิด');
+      await askRetry('omiNote', t('netPick'));
     }
   }
   if(out.route){ currentCouponData = out.route; renderCoupon(out.route, true); return; }   // มีผลจากอีกเครื่องแล้ว
@@ -1282,13 +1455,13 @@ async function revealAll(d, picks){
     const rl = first ? .8 : .5; first = false;
     sfx.roll(rl); els[i].classList.add('shake'); await new Promise(r => setTimeout(r, rl * 1000)); els[i].classList.remove('shake');
     flip(i, ['mine']); sfx.paper(); run += res.deck[i];
-    note.innerHTML = `รวม <b style="color:var(--gold);">฿${run}</b>`;
+    note.innerHTML = t('running', { n: run });
     if(res.deck[i] >= 150) setTimeout(() => sfx.reveal(false), 250); else if(res.deck[i] > 0) setTimeout(() => bell(INSCALE[5] * 2, .05, 0, .6), 250);
     await new Promise(r => setTimeout(r, 650));
   }
   picks.forEach(i => els[i].classList.add(res.deck[i] > 0 ? 'best' : 'lose'));
   if(res.amount >= CAP) picks.forEach(i => els[i].classList.add('k9'));
-  note.innerHTML = res.amount > 0 ? `✨ รวมได้ <b style="color:var(--gold);">฿${res.amount}</b>` : '😢 ใบที่จับได้ว่างเปล่า…';
+  note.innerHTML = res.amount > 0 ? t('gotTotal', { n: res.amount }) : t('blankRes');
   if(res.amount >= CAP) sfx.reveal(true); else if(res.amount > 0) sfx.tada(); else sfx.wah();
   await new Promise(r => setTimeout(r, 1100));
   // 😏 เฉลยใบที่ไม่ได้เลือก
@@ -1300,10 +1473,10 @@ async function revealAll(d, picks){
   if(maxMissed > bestMine){
     rest.filter(i => res.deck[i] === maxMissed).forEach(i => els[i].classList.add('tease'));
     const mi = slipInfo(maxMissed);
-    note.innerHTML += `<br><span style="color:#ff8a93;">😱 เกือบแล้ว! ${mi.k} ฿${maxMissed} อยู่ใบข้างๆ นี่เอง</span>`;
+    note.innerHTML += `<br><span style="color:#ff8a93;">${t('nearMiss', { k: mi.k, n: maxMissed })}</span>`;
   }
   const btn = document.getElementById('toCouponBtn');
-  btn.textContent = res.amount > 0 ? `🎫 รับคูปอง ฿${res.amount}` : 'ดูผล 🦊';
+  btn.textContent = res.amount > 0 ? t('getCoupon', { n: res.amount }) : t('seeResult');
   btn.style.display = 'block';
   btn.onclick = () => { if(res.amount >= CAP) showJackpot(res); else renderCoupon(res, false); };
 }
