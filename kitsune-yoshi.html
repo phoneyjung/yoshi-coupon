@@ -156,6 +156,7 @@
   .coupon.blank .blank-only{ display:block; }
   #blankMsg{ text-align:center; font-size:14px; line-height:1.8; color:#5b4b33; margin:14px 0 6px; }
   #blankMsg .big{ font-size:44px; margin-bottom:6px; }
+  #addFriend{ display:block; margin:10px auto 0; max-width:320px; text-align:center; background:#06c755; color:#fff; font-family:'Kanit'; font-weight:700; font-size:15px; padding:10px 14px; border-radius:24px; text-decoration:none; box-shadow:0 3px 0 #04913e; }
   #jackpotNote{ display:none; margin-top:8px; text-align:center; font-size:12.5px; color:#8a5a00; background:#fff3cf; border-radius:8px; padding:8px; }
 
   #langBtn{ position:fixed; top:calc(10px + var(--safe-t)); right:10px; z-index:40; background:rgba(11,13,31,.78); border:2px solid #6b6fb0; color:#fff; font-family:'Kanit'; font-size:13px; font-weight:600; padding:5px 10px; border-radius:20px; cursor:pointer; }
@@ -260,6 +261,7 @@
       <div class="amt-cap win-only" data-i18n="amtCap">ส่วนลดค่าบริการ Yoshi SPA</div>
       <div class="amt-cap win-only regular" data-i18n="regular">ส่วนลดจากราคาปกติ · ใช้ได้ 1 ครั้ง</div>
       <div id="grade" class="win-only"></div>
+      <a id="addFriend" class="win-only" href="#" target="_blank" rel="noopener" style="display:none;" data-i18n="addFriend">➕ แอดไลน์ร้านไว้ รับโปรเดือนหน้าก่อนใคร</a>
       <div id="jackpotNote" data-i18n="jackpotNote">🦊 เก้าหางครบ! รางวัลสูงสุดของคืนนี้ — มาใช้ให้ทันนะ</div>
       <div class="codebox win-only"><span id="codeTxt">-</span><button class="copybtn" id="copyBtn" type="button" data-i18n="copy">📋 คัดลอก</button></div>
       <div id="copied" class="win-only"></div>
@@ -279,11 +281,11 @@ const SHOP_NAME = "Yoshi SPA";
 const SHOP_EMOJI = "💜";
 const CAMPAIGN_ID = "kitsune_oct2026";
 const COLLECTION_NAME = "coupons_" + SHOP_ID + "_" + CAMPAIGN_ID;
-const CAMPAIGN_START_DATE = "2026-10-01";    // เปิดให้ลูกค้าเล่น (โหมดทดสอบเล่นได้ก่อน)
-const CAMPAIGN_EXPIRE_DATE = "2026-11-01";   // เล่นได้ถึง 31 ต.ค. 23:59
-const COUPON_LAST_DAY = "2026-10-31";        // คูปองใช้ได้ถึงวันนี้
-const COUPON_EXPIRE_TH = "31/10/69";
-const EXPIRE_LABEL = "31 ต.ค. 69";
+const CAMPAIGN_START_DATE = "2026-09-24";    // เปิดให้ลูกค้าเล่น (โหมดทดสอบเล่นได้ก่อน)
+const CAMPAIGN_EXPIRE_DATE = "2027-01-01";   // เล่นได้ถึง 31 ธ.ค. 23:59
+const COUPON_LAST_DAY = "2026-12-31";        // คูปองใช้ได้ถึงวันนี้
+const COUPON_EXPIRE_TH = "31/12/69";
+const EXPIRE_LABEL = "31 ธ.ค. 69";
 
 /* 🎴 โอมิคุจิ 9 ใบ — ยอดที่ได้ = รวมทุกใบที่จับ
    ⚙️ การสุ่มรางวัล/สำรับ/ยอดตั้งต้น อยู่ที่ตัวกลาง prspa-game (เซิร์ฟเวอร์) ทั้งหมด
@@ -298,7 +300,7 @@ const SLIP_TABLE = [
   { a: 250, k: "大吉", th: "โชคใหญ่มาก", en: "Great luck" },
   { a: 300, k: "九尾", th: "เก้าหาง", en: "Nine tails" },
 ];
-const EXPIRE_LABEL_EN = "31 Oct 2026";
+const EXPIRE_LABEL_EN = "31 Dec 2026";
 
 /* ============================================================
    🌐 ภาษา ไทย/English — ปุ่ม 🌐 มุมขวาบน · จำใน localStorage · ค่าเริ่มต้นตามภาษา LINE/เครื่อง
@@ -331,9 +333,11 @@ const I18N = {
     expnote: "📱 แคปหน้าจอเก็บไว้ หรือเปิดลิงก์เดิมผ่าน LINE ดูซ้ำได้ตลอด<br>แสดง QR กับพนักงานที่ร้าน · ใช้ได้ถึง <b>{exp}</b>",
     daysLeft: "⏳ เหลืออีก {d} วัน — พรจะดับถ้าไม่มาใช้", expired: "⌛ หมดอายุแล้ว",
     blankMsg: "<div class=\"big\">🦊🍂</div>ใบที่จับได้<b>ว่างเปล่า</b>… คืนนี้โชคยังไม่เข้าข้าง<br>ขอบคุณที่ช่วยตามหาหางนะ<br><span style=\"font-size:12.5px; color:#8a7a5a;\">ติดตามกิจกรรมใหม่ทาง LINE OA " + SHOP_NAME + "</span>",
-    usedToast: "คูปองถูกใช้แล้ว!", thanks: "ขอบคุณที่ใช้บริการ", qrUsed: "QR Code ถูกใช้แล้ว",
-    soonTitle: "เร็วๆ นี้!", soonBody: "ล่าหางจิ้งจอก 9 หาง<br>เริ่มเล่นได้ <b style=\"color:var(--gold);\">1 ตุลาคม 2569</b>",
-    endedTitle: "กิจกรรมจบแล้ว", endedBody: "ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style=\"color:var(--gold);\">31 ตุลาคม 2569</b>",
+    addFriend: "➕ แอดไลน์ร้านไว้ รับโปรเดือนหน้าก่อนใคร",
+    friendGate: "📲 <b>แอดไลน์ร้านก่อน</b> แล้วกลับมาเล่นได้เลย<br><span style=\"font-size:12px; opacity:.8;\">เกมนี้สำหรับเพื่อนในไลน์ " + SHOP_NAME + "</span>",
+    friendAdd: "➕ แอดไลน์ร้าน", friendCheck: "✅ แอดแล้ว — เริ่มเล่น", checkingFriend: "⏳ กำลังเช็ค…", friendStill: "ยังไม่พบ — แอดแล้วกดอีกครั้ง", usedToast: "คูปองถูกใช้แล้ว!", thanks: "ขอบคุณที่ใช้บริการ", qrUsed: "QR Code ถูกใช้แล้ว",
+    soonTitle: "เร็วๆ นี้!", soonBody: "ล่าหางจิ้งจอก 9 หาง<br>เปิดให้เล่น<b style=\"color:var(--gold);\">เร็วๆ นี้</b> ติดตามได้ทาง LINE OA",
+    endedTitle: "กิจกรรมจบแล้ว", endedBody: "ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style=\"color:var(--gold);\">31 ธันวาคม 2569</b>",
     endedHint: "🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<b>ผ่าน LINE</b> ระบบจะแสดง QR คูปองของคุณ", endedFollow: "📢 ติดตามกิจกรรมใหม่ทาง LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b>",
     demoA: "แตะไฟจิ้งจอก 🔥  ครบ 5 ดวง = หางงอก", demoA2: "หางงอก! 🦊", demoB: "หน้ากากโอนิ 👹 อย่าแตะ!", demoB2: "แตะโดน = ไฟหาย 😱",
     demoC: "หมดเวลา → จับโอมิคุจิ รวมเงินทุกใบ", demoC2: "รวม ฿150 🎫", langBtn: "🌐 EN",
@@ -365,9 +369,11 @@ const I18N = {
     expnote: "📱 Screenshot this, or reopen the link in LINE anytime<br>Show the QR to staff at the shop · Valid until <b>{exp}</b>",
     daysLeft: "⏳ {d} days left — the blessing fades if unused", expired: "⌛ Expired",
     blankMsg: "<div class=\"big\">🦊🍂</div>Your slips were <b>blank</b>… no luck tonight<br>Thank you for helping find the tails<br><span style=\"font-size:12.5px; color:#8a7a5a;\">Follow LINE OA " + SHOP_NAME + " for the next event</span>",
-    usedToast: "Coupon used!", thanks: "Thank you for visiting", qrUsed: "QR code already used",
-    soonTitle: "Coming soon!", soonBody: "Nine-Tail Fox Hunt<br>Starts <b style=\"color:var(--gold);\">1 October 2026</b>",
-    endedTitle: "This event has ended", endedBody: "Nine-Tail Fox Hunt ended on<br><b style=\"color:var(--gold);\">31 October 2026</b>",
+    addFriend: "➕ Add our LINE for next month's deals",
+    friendGate: "📲 <b>Add our LINE first</b>, then come back to play<br><span style=\"font-size:12px; opacity:.8;\">This game is for LINE friends of " + SHOP_NAME + "</span>",
+    friendAdd: "➕ Add our LINE", friendCheck: "✅ Added — start", checkingFriend: "⏳ Checking…", friendStill: "Not found yet — add, then tap again", usedToast: "Coupon used!", thanks: "Thank you for visiting", qrUsed: "QR code already used",
+    soonTitle: "Coming soon!", soonBody: "Nine-Tail Fox Hunt<br>Opening <b style=\"color:var(--gold);\">soon</b> — follow our LINE OA",
+    endedTitle: "This event has ended", endedBody: "Nine-Tail Fox Hunt ended on<br><b style=\"color:var(--gold);\">31 December 2026</b>",
     endedHint: "🎫 Already won a coupon? Open this link <b>in LINE</b> to see your QR", endedFollow: "📢 Follow LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b> for the next event",
     demoA: "Tap the fox fires 🔥  5 fires = 1 tail", demoA2: "Tail +1! 🦊", demoB: "Oni mask 👹 Don't tap it!", demoB2: "Tapping it loses fires 😱",
     demoC: "Time's up → pick omikuji, slips add up", demoC2: "Total ฿150 🎫", langBtn: "🌐 ไทย",
@@ -432,6 +438,7 @@ function daysLeft(){
 
 /* --- LINE LIFF --- */
 const LIFF_ID = "2009938597-22F8x0Zf";
+const OA_ADD_URL = "https://line.me/R/ti/p/@ys88";   // ลิงก์แอดเพื่อน OA ร้าน (ว่าง = ไม่โชว์ปุ่ม)
 let lineUserId = null, lineDisplayName = "", linePictureUrl = "";
 let currentCouponData = null, realtimeUnsubscribe = null;
 let forceDiscount = null;
@@ -529,7 +536,34 @@ async function initLine(){
   if(!c && _expired){ showCampaignExpired(); return; }
   enableStartBtn();
 }
-function enableStartBtn(){
+/* 👥 ต้องแอดไลน์ร้านก่อนเล่น (เซิร์ฟเวอร์เช็คซ้ำตอนเริ่ม) */
+function showFriendGate(){
+  window._initDone = true;
+  const b = document.getElementById('startBtn');
+  const note = document.getElementById('introNote');
+  note.style.display = 'block';
+  note.innerHTML = `<div style="font-size:14px; color:#fff;">${t('friendGate')}</div>
+    <a id="gateAdd" href="${OA_ADD_URL || '#'}" target="_blank" rel="noopener" style="display:block; margin:10px auto 4px; max-width:300px; background:#06c755; color:#fff; font-family:'Kanit'; font-weight:800; font-size:18px; padding:12px; border-radius:26px; text-decoration:none; box-shadow:0 3px 0 #04913e;">${t('friendAdd')}</a>`;
+  b.disabled = false; b.textContent = t('friendCheck');
+  b.onclick = recheckFriend;
+}
+async function recheckFriend(){
+  const b = document.getElementById('startBtn');
+  b.disabled = true; b.textContent = t('checkingFriend');
+  try{
+    const j = await api('state');
+    window._friend = j.friend;
+    if(j.doc){ routeExisting(j.doc); return; }
+    if(j.friend === false){ showFriendGate(); b.textContent = t('friendStill'); return; }
+    document.getElementById('introNote').style.display = 'none';
+    enableStartBtn(true);
+  }catch(e){ b.disabled = false; b.textContent = t('friendCheck'); }
+}
+document.addEventListener('visibilitychange', () => {   // กลับจากหน้าแอดเพื่อน → เช็คให้อัตโนมัติ
+  if(document.visibilityState === 'visible' && window._friend === false && document.getElementById('intro').classList.contains('on')) recheckFriend();
+});
+function enableStartBtn(skipGate){
+  if(!skipGate && window._needFriend && window._friend === false && !isTestUser()){ showFriendGate(); return; }
   window._initDone = true;
   const b = document.getElementById('startBtn');
   b.disabled = false; b.textContent = t('start'); b.onclick = startGame;
@@ -575,6 +609,7 @@ async function checkExistingResult(){
   try{
     const j = await api('state');
     window._camp = j.campaign || null; window._tester = !!j.tester; window._uid = j.uid || '';
+    window._friend = j.friend; window._needFriend = !!j.needFriend;
     if(window._tester) showTesterBar();
     if(j.doc){ currentCouponData = j.doc; routeExisting(j.doc); return 'found'; }
     return 'none';
@@ -584,7 +619,20 @@ const LS_KEY = () => SHOP_ID + "_kitsune_" + (lineUserId || "guest");
 function loadLocalCoupon(){ try{ const r = localStorage.getItem(LS_KEY()); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
 function saveToLocalStorage(d){ try{ localStorage.setItem(LS_KEY(), JSON.stringify({ ...d, ts: Date.now() })); }catch(e){} }
 
-const txStart = () => api('start');
+/* 📊 ช่องทางที่มา — ลิงก์ …?src=line / tg / web / x (LIFF ส่งต่อมาใน liff.state) · จำครั้งแรกของเครื่องนี้ */
+function getSrc(){
+  let s = '';
+  try{
+    const q = new URLSearchParams(location.search);
+    s = q.get('src') || '';
+    if(!s && q.get('liff.state')) s = new URLSearchParams(decodeURIComponent(q.get('liff.state')).replace(/^[^?]*\?/, '')).get('src') || '';
+  }catch(e){}
+  s = String(s).toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 16);
+  try{ if(s){ localStorage.setItem('kitsune_src', s); } else { s = localStorage.getItem('kitsune_src') || ''; } }catch(e){}
+  return s || 'direct';
+}
+const _SRC_AT_LOAD = getSrc();
+const txStart = () => api('start', { src: _SRC_AT_LOAD });
 function saveProgress(tails){ api('progress', { tails }).catch(() => {}); }
 const txEnd = (st) => api('end', { stats: { tails: st.tails || 1, fires: st.fires || 0, golds: st.golds || 0, oniHits: st.oniHits || 0, fakeHits: st.fakeHits || 0 } });
 async function txFinalize(picks){
@@ -610,6 +658,15 @@ function askRetry(where, msg){   // แสดงปุ่ม "ลองอีก
 }
 function slipInfo(a){ return SLIP_TABLE.find(s => s.a === a) || SLIP_TABLE[0]; }
 
+async function checkFriendButton(){
+  const a = document.getElementById('addFriend'); if(!a) return;
+  a.style.display = 'none';
+  if(!OA_ADD_URL || isTestUser() || !(window.liff && liff.getFriendship)) return;
+  try{
+    const f = await liff.getFriendship();          // ต้องผูก LINE Login channel กับ OA ไว้ (Linked OA)
+    if(f && f.friendFlag === false){ a.href = OA_ADD_URL; a.style.display = 'block'; }
+  }catch(e){ /* ยังไม่ได้ผูก OA → ไม่โชว์ */ }
+}
 function showExistingResult(data){ renderCoupon(data, true); }
 function routeExisting(data){
   if(!data){ enableStartBtn(); return; }
@@ -642,6 +699,7 @@ async function handleInterrupted(d){
   }
 }
 function renderCoupon(data, existing){
+  checkFriendButton();
   show('result');
   const blank = !(data.amount > 0);
   document.querySelector('#result .coupon').classList.toggle('blank', blank);
@@ -1195,6 +1253,7 @@ async function startGame(){
     _starting = false;
     if(e.code === 'not_started'){ showNotStarted(); return; }
     if(e.code === 'ended'){ showCampaignExpired(); return; }
+    if(e.code === 'not_friend'){ _starting = false; window._friend = false; showFriendGate(); return; }
     btn.disabled = false; btn.textContent = t('netStart'); return;
   }
   if(r && r.route){ _starting = false; routeExisting(r.route); return; }
