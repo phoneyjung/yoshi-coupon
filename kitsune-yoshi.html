@@ -18,7 +18,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import {
-    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction,
     collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   const firebaseConfig = {
@@ -32,7 +32,7 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   window.firebaseDB = db;
-  window.firebaseHelpers = { doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot };
+  window.firebaseHelpers = { doc, getDoc, setDoc, updateDoc, deleteDoc, runTransaction, collection, addDoc, serverTimestamp, increment, arrayUnion, onSnapshot };
   window.firebaseReady = true;
 </script>
 <style>
@@ -46,10 +46,10 @@
   html,body{ margin:0; height:100%; background:var(--night); color:#f4f1ff; font-family:'Sarabun',sans-serif; overflow:hidden; }
   body{ -webkit-user-select:none; user-select:none; touch-action:manipulation; }
   .px{ image-rendering:pixelated; image-rendering:crisp-edges; }
-  #bgimg{ position:fixed; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; image-rendering:pixelated; }
-  #bgshade{ position:fixed; inset:0; z-index:1; background:linear-gradient(180deg, rgba(14,16,40,.15), rgba(14,16,40,.55)); transition:background .4s; pointer-events:none; }
+  #bgimg{ position:fixed; top:0; right:0; bottom:0; left:0; width:100%; height:100%; object-fit:cover; z-index:0; image-rendering:pixelated; }
+  #bgshade{ position:fixed; top:0; right:0; bottom:0; left:0; z-index:1; background:linear-gradient(180deg, rgba(14,16,40,.15), rgba(14,16,40,.55)); transition:background .4s; pointer-events:none; }
   body.play #bgshade{ background:rgba(12,14,38,.42); }
-  .screen{ position:fixed; inset:0; z-index:2; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(14px + var(--safe-t)) 14px calc(18px + var(--safe-b)); }
+  .screen{ position:fixed; top:0; right:0; bottom:0; left:0; z-index:2; display:none; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:calc(14px + var(--safe-t)) 14px calc(18px + var(--safe-b)); }
   .screen.on{ display:block; }
   .wrap{ max-width:420px; margin:0 auto; }
 
@@ -76,7 +76,8 @@
 
   /* GAME */
   #game{ padding:0; overflow:hidden; }
-  #cv{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  #stage{ position:absolute; top:0; bottom:0; left:50%; width:100%; max-width:62vh; -webkit-transform:translateX(-50%); transform:translateX(-50%); overflow:hidden; }
+  #cv{ position:absolute; top:0; right:0; bottom:0; left:0; width:100%; height:100%; touch-action:none; }
   #hud{ position:absolute; left:0; right:0; top:0; padding:calc(8px + var(--safe-t)) 12px 0; pointer-events:none; }
   .hudrow{ display:flex; align-items:center; gap:8px; }
   #timebar{ flex:1; height:12px; background:#0b0d1f; border:2px solid #0b0d1f; box-shadow: inset 0 0 0 1px #6b6fb0; border-radius:2px; overflow:hidden; }
@@ -92,7 +93,7 @@
   #center{ position:absolute; left:0; right:0; top:38%; text-align:center; pointer-events:none; font-family:'Kanit'; font-weight:800; font-size:64px; color:#fff; text-shadow:0 4px 0 var(--torii-deep), 0 0 24px rgba(127,180,255,.8); opacity:0; transition:opacity .2s, transform .2s; }
   #center.on{ opacity:1; }
   #center small{ display:block; font-size:18px; font-weight:600; text-shadow:0 2px 0 #000; }
-  #flash{ position:absolute; inset:0; background:#ff2d3d; opacity:0; pointer-events:none; transition:opacity .25s; }
+  #flash{ position:absolute; top:0; right:0; bottom:0; left:0; background:#ff2d3d; opacity:0; pointer-events:none; transition:opacity .25s; }
   #hint{ position:absolute; left:0; right:0; bottom:calc(30% + var(--safe-b)); text-align:center; font-size:13px; color:#e8ebff; text-shadow:0 2px 0 #000; pointer-events:none; transition:opacity .6s; }
 
   /* OMIKUJI */
@@ -104,7 +105,7 @@
   .slip.open{ transform:rotateY(180deg); cursor:default; }
   .slip.picked:not(.open){ transform:translateY(-8px); }
   .slip.picked:not(.open) .front{ box-shadow:0 0 0 3px var(--gold), 0 0 18px rgba(255,207,90,.8); }
-  .slip .face{ position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:4px; box-shadow:0 6px 14px rgba(0,0,0,.45); overflow:hidden; }
+  .slip .face{ position:absolute; top:0; right:0; bottom:0; left:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:4px; box-shadow:0 6px 14px rgba(0,0,0,.45); overflow:hidden; }
   .slip .front{ background:linear-gradient(180deg,#fdf8ec,#efe4c9); border:2px solid #d8c7a0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .slip .front .band{ position:absolute; top:0; left:0; right:0; height:18px; background:var(--torii); }
   .slip .front .vt{ font-family:'Shippori Mincho',serif; font-size:19px; line-height:1.15; color:var(--ink); text-align:center; margin-top:12px; }
@@ -133,9 +134,9 @@
   #omiNote{ text-align:center; font-size:13px; color:#e8ebff; min-height:20px; }
 
   /* JACKPOT */
-  #jp{ position:fixed; inset:0; z-index:50; display:none; background:rgba(8,8,24,.92); }
+  #jp{ position:fixed; top:0; right:0; bottom:0; left:0; z-index:50; display:none; background:rgba(8,8,24,.92); }
   #jp.on{ display:block; }
-  #jpcv{ position:absolute; inset:0; width:100%; height:100%; }
+  #jpcv{ position:absolute; top:0; right:0; bottom:0; left:0; width:100%; height:100%; }
   #jptext{ position:absolute; left:0; right:0; bottom:calc(14% + var(--safe-b)); text-align:center; }
   #jptext .k{ font-family:'Shippori Mincho',serif; font-weight:800; font-size:54px; color:var(--gold); text-shadow:0 0 24px rgba(255,207,90,.9); }
   #jptext .t{ font-family:'Kanit'; font-size:20px; font-weight:800; }
@@ -145,7 +146,7 @@
 
   /* RESULT — coupon (เรียบหรู) */
   .coupon{ background:var(--cream); color:var(--ink); border-radius:10px; padding:16px 16px 14px; position:relative; box-shadow:0 10px 30px rgba(0,0,0,.45); border:2px solid #e3d5b3; }
-  .coupon::before{ content:''; position:absolute; inset:6px; border:1.5px solid var(--torii); border-radius:6px; pointer-events:none; opacity:.7; }
+  .coupon::before{ content:''; position:absolute; top:6px; right:6px; bottom:6px; left:6px; border:1.5px solid var(--torii); border-radius:6px; pointer-events:none; opacity:.7; }
   .c-top{ display:flex; align-items:center; gap:10px; }
   .c-top img{ height:40px; }
   .c-top .nm{ font-family:'Kanit'; font-weight:800; font-size:16px; line-height:1.1; }
@@ -206,6 +207,7 @@
         <div class="tier"><b>6–9 หาง</b>จับได้ 3 ใบ</div>
       </div>
       <div style="font-size:12.5px; color:#cfd3ff; margin-top:6px; text-align:center;">🎴 จับโอมิคุจิ แล้ว<b>รวมเงินทุกใบ</b> สูงสุด <b style="color:var(--gold);">฿300</b></div>
+      <div id="introNote" style="display:none; margin-top:10px; font-size:13px; text-align:center; color:#ffd7a0; line-height:1.6;"></div>
       <button class="btn-main" id="startBtn" disabled>⏳ กำลังตรวจสอบสิทธิ์…</button>
     </div>
     <div class="foot">🦊 เล่นได้ 1 ครั้ง/LINE · คูปองใช้ได้ถึง <b id="expTxt1">31 ต.ค. 69</b> · Yoshi SPA</div>
@@ -213,7 +215,7 @@
 </div>
 
 <!-- GAME -->
-<div class="screen" id="game">
+<div class="screen" id="game"><div id="stage">
   <canvas id="cv"></canvas>
   <div id="flash"></div>
   <div id="hud">
@@ -228,7 +230,7 @@
   </div>
   <div id="center"></div>
   <div id="hint">แตะไฟ 🔥 · อย่าแตะโอนิ 👹</div>
-</div>
+</div></div>
 
 <!-- OMIKUJI -->
 <div class="screen" id="omikuji">
@@ -282,6 +284,7 @@ const SHOP_NAME = "Yoshi SPA";
 const SHOP_EMOJI = "💜";
 const CAMPAIGN_ID = "kitsune_oct2026";
 const COLLECTION_NAME = "coupons_" + SHOP_ID + "_" + CAMPAIGN_ID;
+const CAMPAIGN_START_DATE = "2026-10-01";    // เปิดให้ลูกค้าเล่น (โหมดทดสอบเล่นได้ก่อน)
 const CAMPAIGN_EXPIRE_DATE = "2026-11-01";   // เล่นได้ถึง 31 ต.ค. 23:59
 const COUPON_LAST_DAY = "2026-10-31";        // คูปองใช้ได้ถึงวันนี้
 const COUPON_EXPIRE_TH = "31/10/69";
@@ -331,11 +334,13 @@ const ONI_START = 3, ONI_EVERY_EARLY = 1.9, ONI_EVERY_LATE = 1.35;
 const ONI_PATHS = [ ['side', 50], ['drop', 30], ['rise', 20], ['ambush', 0] ];
 const FAKE_START = Infinity, FAKE_EVERY_EARLY = 2.6, FAKE_EVERY_LATE = 1.8;   // 🟣 ไฟหลอก (ปิดไว้ — ใส่ 6 ถ้าอยากเปิด)
 
+const IS_TEST_URL = /test/i.test(location.hash + location.search) || /preview/i.test(location.search);   // ?force / ?mockdate ใช้ได้เฉพาะโหมดทดสอบ
 function getNow(){
-  const mock = new URLSearchParams(location.search).get('mockdate');
+  const mock = IS_TEST_URL ? new URLSearchParams(location.search).get('mockdate') : null;
   if(mock){ const d = new Date(mock + "T12:00:00+07:00"); if(!isNaN(d.getTime())) return d; }
   return new Date();
 }
+function isBeforeStart(){ return getNow() < new Date(CAMPAIGN_START_DATE + "T00:00:00+07:00"); }
 function isCampaignExpired(){ return getNow() >= new Date(CAMPAIGN_EXPIRE_DATE + "T00:00:00+07:00"); }
 function daysLeft(){
   const end = new Date(COUPON_LAST_DAY + "T23:59:59+07:00");
@@ -390,7 +395,7 @@ async function initLine(){
   const isPreview = /preview/i.test(location.search);
   if(isTest){ document.getElementById('testbar').classList.add('on'); document.body.classList.add('test'); }
   const pf = new URLSearchParams(location.search).get('force');
-  if(pf !== null && pf !== '' && TIERS.includes(+pf)) forceDiscount = +pf;
+  if((isTest || isPreview) && pf !== null && pf !== '' && TIERS.includes(+pf)) forceDiscount = +pf;   // 🔒 ลูกค้าจริงใส่ ?force ไม่มีผล
   const _expired = isCampaignExpired();
 
   try{
@@ -413,28 +418,27 @@ async function initLine(){
       const p = await liff.getProfile();
       lineUserId = p.userId; lineDisplayName = p.displayName; linePictureUrl = p.pictureUrl;
     } else {
-      showErrorScreen("กรุณาเปิดผ่าน LINE", "ระบบรองรับเฉพาะการเปิดผ่าน LINE OA เท่านั้น"); return;
+      showErrorScreen(window.liff ? "กรุณาเปิดผ่าน LINE" : "โหลดไม่สำเร็จ", window.liff ? "ระบบรองรับเฉพาะการเปิดผ่าน LINE OA เท่านั้น" : "สัญญาณขัดข้อง — ปิดหน้านี้แล้วเปิดลิงก์เดิมผ่าน LINE อีกครั้ง"); return;
     }
   }catch(e){
     console.error("LIFF error:", e);
     if(!isTest && !isPreview){ showErrorScreen("เชื่อมต่อ LINE ไม่สำเร็จ", "สัญญาณอาจขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง"); return; }
     lineUserId = localStorage.getItem("test_user_id") || generateTestId();
   }
-  if(isTest){ document.getElementById('testbar').textContent = "TEST · " + (lineUserId || "-") + " · ?force=300 บังคับเพดาน (0/50/100/150/200/300) · #reset เล่นใหม่"; }
   if(isTest && /reset/i.test(location.hash)){ localStorage.removeItem("test_user_id"); lineUserId = generateTestId(); }
+  if(isTest){ document.getElementById('testbar').textContent = "TEST · " + (lineUserId || "-") + " · ?force=300 บังคับเพดาน · #reset เล่นใหม่"; }
 
   const chk = await checkExistingResult();
   if(chk === 'found') return;
   const bak = loadLocalCoupon();
-  if(bak && bak.slipCount){
-    if(chk === 'none') await resyncLocalCoupon(bak);
-    if(!currentCouponData) currentCouponData = bak;
-    routeExisting(currentCouponData); return;
-  }
-  if(chk === 'error' && lineUserId && !String(lineUserId).startsWith("test_")){
+  if(chk === 'error' && !isTestUser()){
+    // ลูกค้าจริง: ต้องตรวจกับระบบได้ก่อนเล่น · ถ้าเคยได้คูปองแล้ว โชว์ของเดิมให้ดูได้ (สแกนที่ร้านยังเช็คกับระบบเสมอ)
+    if(bak && bak.pending === false && bak.code){ renderCoupon(bak, true); return; }
     showErrorScreen("ตรวจสอบสิทธิ์ไม่สำเร็จ", "สัญญาณขัดข้องชั่วคราว<br>ปิดหน้านี้แล้วเปิดลิงก์เดิมอีกครั้ง (สิทธิ์ของคุณยังอยู่)"); return;
   }
+  if(isTestUser() && !fbOk() && bak && bak.stage){ currentCouponData = bak; routeExisting(bak); return; }   // ทดสอบแบบออฟไลน์
   if(_expired){ showCampaignExpired(); return; }
+  if(!isTestUser() && isBeforeStart()){ showNotStarted(); return; }
   enableStartBtn();
 }
 function enableStartBtn(){
@@ -446,12 +450,26 @@ function generateTestId(){
   const id = "test_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
   localStorage.setItem("test_user_id", id); return id;
 }
+/* ============================================================
+   🔐 สถานะในฐานข้อมูล (1 เอกสาร / LINE / ร้าน)
+   stage 'playing' → เริ่มเกมแล้ว (บันทึกหางระหว่างเล่น) · ปิดกลางคัน = ใช้หางที่เก็บได้ (เริ่มใหม่ได้ 1 ครั้งถ้ายังไม่ได้หางเลย)
+   stage 'pick'    → หมดเวลา รอเลือกโอมิคุจิ (ยังไม่มีตัวเลขใดๆ)
+   stage 'done'    → มีผลแล้ว (pending:false) — เปิดใหม่ = หน้าคูปองเดิม
+   ทุกขั้นเขียนผ่าน transaction (กันเปิด 2 เครื่อง/2 แท็บแล้วเลือกผลที่ดีกว่า)
+   ลูกค้าจริงต้องออนไลน์ — ผลโอมิคุจิจะโชว์หลังบันทึกเข้าระบบสำเร็จเท่านั้น
+   ============================================================ */
+const MAX_RESTARTS = 1;
+function isTestUser(){ return String(lineUserId || '').startsWith('test_'); }
+function fbOk(){ return !!(window.firebaseReady && window.firebaseHelpers && window.firebaseDB && lineUserId); }
+function couponRef(){ return window.firebaseHelpers.doc(window.firebaseDB, COLLECTION_NAME, lineUserId); }
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); }
+function canRestart(d){ return d && d.stage === 'playing' && (d.restarts || 0) < MAX_RESTARTS && (d.tails || 1) <= 1; }
+const localMode = () => !fbOk() && isTestUser();   // ทดสอบแบบไม่มีเน็ต/ไม่มี Firebase เท่านั้น
+
 async function checkExistingResult(){
-  if(!window.firebaseReady || !lineUserId) return 'error';
+  if(!fbOk()) return 'error';
   try{
-    const { doc, getDoc } = window.firebaseHelpers;
-    const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
-    const snap = await Promise.race([ getDoc(ref), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 8000)) ]);
+    const snap = await withTimeout(window.firebaseHelpers.getDoc(couponRef()), 8000);
     if(snap.exists()){ currentCouponData = snap.data(); routeExisting(currentCouponData); return 'found'; }
     return 'none';
   }catch(e){ console.warn("[firebase] check failed:", e); return 'error'; }
@@ -459,63 +477,82 @@ async function checkExistingResult(){
 const LS_KEY = () => SHOP_ID + "_kitsune_" + (lineUserId || "guest");
 function loadLocalCoupon(){ try{ const r = localStorage.getItem(LS_KEY()); return r ? JSON.parse(r) : null; }catch(e){ return null; } }
 function saveToLocalStorage(d){ try{ localStorage.setItem(LS_KEY(), JSON.stringify({ ...d, ts: Date.now() })); }catch(e){} }
-function buildCouponDoc(d, resynced){
+function baseFields(){
   const { serverTimestamp } = window.firebaseHelpers;
-  return {
-    amount: d.amount || 0, code: d.code || '', pending: !!d.pending, win: (d.amount || 0) > 0,
-    deck: d.deck || [], picks: d.picks || [], slipCount: d.slipCount || 1, cap: d.cap || 0,
-    tails: d.tails || 0, fires: d.fires || 0, golds: d.golds || 0, oniHits: d.oniHits || 0, fakeHits: d.fakeHits || 0,
-    lineUserId, lineDisplayName, linePictureUrl, displayName: lineDisplayName, userId: lineUserId,
-    shop: SHOP_ID, shopId: SHOP_ID, campaignId: CAMPAIGN_ID,
-    createdAt: serverTimestamp(), date: new Date(d.ts || Date.now()).toISOString(),
-    isUsed: false, usedAt: null, expireDate: COUPON_EXPIRE_TH, gameType: "kitsune_tails",
-    ...(resynced ? { resynced: true } : {})
-  };
+  return { lineUserId, lineDisplayName, linePictureUrl, displayName: lineDisplayName, userId: lineUserId,
+           shop: SHOP_ID, shopId: SHOP_ID, campaignId: CAMPAIGN_ID, gameType: "kitsune_tails",
+           createdAt: serverTimestamp(), date: new Date().toISOString(),
+           isUsed: false, usedAt: null, expireDate: COUPON_EXPIRE_TH };
 }
-async function resyncLocalCoupon(bak){
-  if(!window.firebaseReady || !lineUserId) return false;
-  try{
-    const { doc, setDoc } = window.firebaseHelpers;
-    const data = buildCouponDoc(bak, true);
-    await setDoc(doc(window.firebaseDB, COLLECTION_NAME, lineUserId), data);
-    currentCouponData = { ...bak, ...data }; return true;
-  }catch(e){ console.warn("[recover] resync failed:", e); return false; }
+function statFields(st){ return { tails: st.tails || 1, fires: st.fires || 0, golds: st.golds || 0, oniHits: st.oniHits || 0, fakeHits: st.fakeHits || 0 }; }
+
+/* ① กดเริ่ม → จองสิทธิ์ (stage playing) */
+async function txStart(){
+  if(localMode()){ saveToLocalStorage({ pending: true, stage: 'playing', tails: 1, restarts: (loadLocalCoupon() || {}).restarts || 0 }); return { ok: true }; }
+  const { runTransaction, serverTimestamp } = window.firebaseHelpers, ref = couponRef();
+  return withTimeout(runTransaction(window.firebaseDB, async (tx) => {
+    const snap = await tx.get(ref);
+    if(snap.exists()){
+      const d = snap.data();
+      if(canRestart(d)){ tx.update(ref, { restarts: (d.restarts || 0) + 1, tails: 1, startedAt: serverTimestamp() }); return { ok: true }; }
+      return { route: d };
+    }
+    tx.set(ref, { ...baseFields(), pending: true, stage: 'playing', tails: 1, restarts: 0, amount: 0, code: '', win: false, startedAt: serverTimestamp() });
+    return { ok: true };
+  }), 12000);
 }
-async function _retry(fn){
+/* ② ระหว่างเล่น: หางงอก → บันทึกจำนวนหาง (ปิดกลางคันก็ไม่ได้เริ่มใหม่ฟรี) */
+function saveProgress(tails){
+  if(localMode()){ const b = loadLocalCoupon() || {}; if(b.stage === 'playing'){ b.tails = tails; saveToLocalStorage(b); } return; }
+  if(!fbOk()) return;
+  try{ window.firebaseHelpers.updateDoc(couponRef(), { tails }).catch(() => {}); }catch(e){}
+}
+/* ③ หมดเวลา (หรือกลับมาหลังปิดกลางคัน) → stage pick */
+async function txEnd(st){
+  const n = slipsForTails(st.tails || 1);
+  if(localMode()){ const d = { pending: true, stage: 'pick', slipCount: n, amount: 0, code: '', ...statFields(st) }; saveToLocalStorage(d); return { pick: d }; }
+  const { runTransaction, serverTimestamp } = window.firebaseHelpers, ref = couponRef();
+  return withTimeout(runTransaction(window.firebaseDB, async (tx) => {
+    const snap = await tx.get(ref);
+    const cur = snap.exists() ? snap.data() : null;
+    if(cur && (cur.pending === false || cur.stage === 'done')) return { route: cur };
+    if(cur && cur.stage === 'pick') return { pick: cur };                        // จบจากอีกเครื่องแล้ว
+    const tails = Math.max(st.tails || 1, (cur && cur.tails) || 1);
+    const patch = { pending: true, stage: 'pick', slipCount: slipsForTails(tails), endedAt: serverTimestamp(), ...statFields({ ...st, tails }) };
+    if(cur) tx.update(ref, patch); else tx.set(ref, { ...baseFields(), amount: 0, code: '', win: false, ...patch });
+    return { pick: { ...(cur || {}), ...patch } };
+  }), 12000);
+}
+/* ④ เลือกครบ → บันทึกผล (ถ้ามีผลอยู่แล้วจากอีกเครื่อง ใช้ผลนั้น) */
+async function txFinalize(res){
+  const fin = { pending: false, stage: 'done', picks: res.picks, deck: res.deck, cap: res.cap, amount: res.amount, win: res.amount > 0, code: res.code || '' };
+  if(localMode()){ const d = { ...(loadLocalCoupon() || {}), ...res, ...fin }; saveToLocalStorage(d); return { done: d }; }
+  const { runTransaction, serverTimestamp } = window.firebaseHelpers, ref = couponRef();
+  const out = await withTimeout(runTransaction(window.firebaseDB, async (tx) => {
+    const snap = await tx.get(ref);
+    const cur = snap.exists() ? snap.data() : null;
+    if(cur && (cur.pending === false || cur.stage === 'done')) return { route: cur };
+    const patch = { ...fin, pickedAt: serverTimestamp() };
+    if(cur) tx.update(ref, patch); else tx.set(ref, { ...baseFields(), ...statFields(res), slipCount: res.picks.length, ...patch });
+    return { done: { ...(cur || {}), ...res, ...patch } };
+  }), 12000);
+  if(out.done){ saveToLocalStorage({ ...res, ...fin }); if(res.amount > 0) updateCustomerMaster(res.amount); }
+  return out;
+}
+/* ลองซ้ำอัตโนมัติ 3 ครั้ง แล้วค่อยถามลูกค้า */
+async function tryServer(fn){
+  let last;
   for(let i = 0; i < 3; i++){
-    try{ await fn(); return true; }
-    catch(err){ console.warn("[firebase] attempt", i + 1, err); await new Promise(r => setTimeout(r, 1200)); }
+    try{ return await fn(); }catch(e){ last = e; console.warn('[server] attempt', i + 1, e); await new Promise(r => setTimeout(r, 1000 + i * 800)); }
   }
-  return false;
+  throw last;
 }
-/* ⭐ 1) จบเกม → บันทึกสำรับ 9 ใบทันที (pending) — ปิดแอปแล้วเปิดใหม่ = สำรับเดิม สุ่มใหม่ไม่ได้ */
-async function savePending(d){
-  saveToLocalStorage(d);
-  if(!window.firebaseReady || !lineUserId){ window._saveFailed = true; return d; }
-  const { doc, getDoc, setDoc } = window.firebaseHelpers;
-  const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
-  try{
-    const ex = await getDoc(ref);
-    if(ex.exists()){ currentCouponData = ex.data(); return currentCouponData; }   // กันเปิด 2 แท็บ
-    const data = buildCouponDoc(d, false);
-    if(!(await _retry(() => setDoc(ref, data)))) throw new Error("save failed");
-    currentCouponData = { ...d, ...data };
-    return currentCouponData;
-  }catch(e){ console.error("[firebase] pending save failed:", e); window._saveFailed = true; return d; }
-}
-/* ⭐ 2) เลือกครบ → บันทึกผลทันที (ก่อนพลิกเฉลย) */
-async function finalizeResult(d){
-  saveToLocalStorage(d);
-  currentCouponData = { ...(currentCouponData || {}), ...d };
-  if(!window.firebaseReady || !lineUserId){ window._saveFailed = true; return; }
-  const { doc, updateDoc, setDoc, serverTimestamp } = window.firebaseHelpers;
-  const ref = doc(window.firebaseDB, COLLECTION_NAME, lineUserId);
-  const patch = { pending: false, picks: d.picks, deck: d.deck, cap: d.cap, amount: d.amount, win: d.amount > 0, code: d.code || '', pickedAt: serverTimestamp() };
-  let ok = await _retry(() => updateDoc(ref, patch));
-  if(!ok) ok = await _retry(() => setDoc(ref, buildCouponDoc(d, false)));   // pending ไม่เคยเข้าระบบ → เขียนทั้งก้อน
-  if(!ok){ window._saveFailed = true; return; }
-  window._saveFailed = false;
-  if(d.amount > 0) updateCustomerMaster(d.amount);
+function askRetry(where, msg){   // แสดงปุ่ม "ลองอีกครั้ง" แล้วรอลูกค้ากด
+  return new Promise(resolve => {
+    const box = document.getElementById(where);
+    box.innerHTML = `<div style="color:#ffd7a0;">📶 ${msg}</div><button type="button" class="btn-main" style="margin-top:10px; font-size:16px; padding:11px;">🔄 ลองอีกครั้ง</button>`;
+    box.querySelector('button').onclick = () => { box.innerHTML = '⏳ กำลังเชื่อมต่อ…'; resolve(); };
+  });
 }
 async function updateCustomerMaster(amount){
   try{
@@ -538,8 +575,32 @@ function slipInfo(a){ return SLIP_TABLE.find(s => s.a === a) || SLIP_TABLE[0]; }
 
 function showExistingResult(data){ renderCoupon(data, true); }
 function routeExisting(data){
-  if(data && data.pending) openOmikuji(data, true);
-  else renderCoupon(data, true);
+  if(!data){ enableStartBtn(); return; }
+  if(data.pending === false || data.stage === 'done') renderCoupon(data, true);
+  else if(data.stage === 'playing') handleInterrupted(data);
+  else openOmikuji(data, true);                     // stage 'pick'
+}
+/* กลับมาหลังปิดเกมกลางคัน */
+async function handleInterrupted(d){
+  if(canRestart(d)){
+    show('intro');
+    const note = document.getElementById('introNote');
+    if(note){ note.style.display = 'block'; note.innerHTML = '⚠️ เกมถูกปิดก่อนเก็บหางได้ — <b>เริ่มใหม่ได้อีก 1 ครั้ง</b><br><span style="font-size:11.5px;opacity:.8;">ครั้งนี้ถ้าปิดกลางคันอีก จะได้ตามหางที่เก็บได้</span>'; }
+    enableStartBtn(); return;
+  }
+  show('omikuji');
+  document.getElementById('slips').innerHTML = '';
+  document.getElementById('pickLeft').textContent = '';
+  document.getElementById('omiTitle').textContent = 'เกมถูกปิดกลางคัน';
+  document.getElementById('omiSub').textContent = `ใช้หางที่เก็บได้ ${d.tails || 1}/9 หาง 🦊`;
+  document.getElementById('omiNote').textContent = '⏳ กำลังเตรียมโอมิคุจิ…';
+  for(;;){
+    try{
+      const r = await tryServer(() => txEnd({ ...d, tails: d.tails || 1 }));
+      if(r.route){ routeExisting(r.route); return; }
+      currentCouponData = r.pick; openOmikuji(r.pick, true, true); return;
+    }catch(e){ await askRetry('omiNote', 'เชื่อมต่อไม่ได้ — เช็คอินเทอร์เน็ตแล้วแตะอีกครั้ง'); }
+  }
 }
 function renderCoupon(data, existing){
   show('result');
@@ -577,7 +638,7 @@ function generateCouponQR(code, amount, isUsed){
   if(isUsed){ box.innerHTML = '<div style="padding:20px;text-align:center;opacity:.5;">QR Code ถูกใช้แล้ว</div>'; return; }
   box.innerHTML = '<div id="qrcode" style="display:flex;justify-content:center;padding:12px;background:#fff;border-radius:12px;margin:10px auto;width:fit-content;border:1px solid #e3d5b3;"></div>';
   const qd = document.getElementById('qrcode');
-  const qrData = JSON.stringify({ code: code, campaign: CAMPAIGN_ID, type: SHOP_ID + "_coupon" });
+  const qrData = JSON.stringify({ code: code, campaign: CAMPAIGN_ID, type: SHOP_ID + "_coupon", lineId: String(lineUserId || "").startsWith("test_") ? "" : lineUserId });
   const renderNow = () => { qd.innerHTML = ''; new QRCode(qd, { text: qrData, width: 210, height: 210, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.M }); };
   if(typeof QRCode !== 'undefined'){ renderNow(); return; }
   qd.innerHTML = '<div style="padding:24px;color:#666;font-size:13px;">⏳ กำลังสร้าง QR...</div>';
@@ -620,6 +681,10 @@ function showUsedToast(){
 }
 function showCampaignExpired(){
   document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊💤</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">กิจกรรมจบแล้ว</div><div style="font-size:14px;opacity:.85;line-height:1.7;">ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style="color:var(--gold);">31 ตุลาคม 2569</b></div><div style="font-size:12.5px;opacity:.75;margin-top:16px;">🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<b>ผ่าน LINE</b> ระบบจะแสดง QR คูปองของคุณ</div><div style="font-size:13px;margin-top:16px;">📢 ติดตามกิจกรรมใหม่ทาง LINE OA <b style="color:var(--gold);">${SHOP_NAME}</b></div></div>`;
+  show('intro');
+}
+function showNotStarted(){
+  document.querySelector('#intro .wrap').innerHTML = `<div class="pbox" style="text-align:center;padding:26px 18px;margin-top:40px;"><img class="shoplogo" src="${ASSET.logo}"><div style="font-size:54px;margin:14px 0;">🦊🏮</div><div style="font-family:'Kanit';font-size:20px;font-weight:800;margin-bottom:8px;">เร็วๆ นี้!</div><div style="font-size:14px;opacity:.85;line-height:1.7;">ล่าหางจิ้งจอก 9 หาง<br>เริ่มเล่นได้ <b style="color:var(--gold);">1 ตุลาคม 2569</b></div></div>`;
   show('intro');
 }
 function showErrorScreen(title, msg){
@@ -1008,9 +1073,18 @@ document.getElementById('muteBtn').onclick = () => {
 let G = null, _raf = null, CV = null;
 function rnd(a, b){ return a + Math.random() * (b - a); }
 
-function startGame(){
-  if(!window._initDone) return;
+let _starting = false;
+async function startGame(){
+  if(!window._initDone || _starting) return;
+  _starting = true;
   ac(); bgmPrepare();
+  const btn = document.getElementById('startBtn');
+  btn.disabled = true; btn.textContent = '⏳ กำลังเริ่ม…';
+  let r;
+  try{ r = await tryServer(txStart); }
+  catch(e){ _starting = false; btn.disabled = false; btn.textContent = '📶 เชื่อมต่อไม่ได้ — แตะเพื่อลองใหม่'; return; }
+  if(r && r.route){ _starting = false; routeExisting(r.route); return; }
+  const note = document.getElementById('introNote'); if(note) note.style.display = 'none';
   show('game');
   CV = fitCanvas(document.getElementById('cv'));
   G = { t: 0, running: false, over: false, last: 0,
@@ -1027,6 +1101,7 @@ function startGame(){
   };
   step();
   _raf = requestAnimationFrame(frame);
+  _starting = false;
 }
 window.addEventListener('resize', () => { if(document.getElementById('game').classList.contains('on')) CV = fitCanvas(document.getElementById('cv')); });
 
@@ -1137,6 +1212,7 @@ function addPoints(n){
   while(G.prog >= FIRES_PER_TAIL && G.tails < 9){
     G.prog -= FIRES_PER_TAIL; G.tails++;
     G.pops[G.tails - 1] = 1;
+    saveProgress(G.tails);
     sfx.tail();
     const c = document.getElementById('center');
     c.innerHTML = G.tails >= 9 ? '九尾!<small>หางครบ 9 หาง 🦊</small>' : `หาง ${G.tails}!`;
@@ -1150,11 +1226,12 @@ function updateHud(){
   const dots = document.querySelectorAll('#prog i');
   dots.forEach((d, i) => d.classList.toggle('on', G.tails >= 9 || i < G.prog));
 }
-document.getElementById('cv').addEventListener('pointerdown', (e) => {
+function onTap(e){
   if(!G || !G.running || G.over) return;
-  e.preventDefault();
-  const r = e.currentTarget.getBoundingClientRect();
-  const x = e.clientX - r.left, y = e.clientY - r.top;
+  if(e.cancelable) e.preventDefault();
+  const pt = (e.changedTouches && e.changedTouches[0]) || e;
+  const r = document.getElementById('cv').getBoundingClientRect();
+  const x = pt.clientX - r.left, y = pt.clientY - r.top;
   if(G.t < G.stunUntil){ tone(150, .06, 'square', .05); return; }   // มือชา
   let best = null, bd = 1e9;
   const hit = (o) => Math.hypot(o.x - x, o.y - y) < o.size * (o.kind === 'oni' ? .46 : .68);
@@ -1183,7 +1260,12 @@ document.getElementById('cv').addEventListener('pointerdown', (e) => {
     G.combo = (G.t - G.lastCatch < 1.1) ? G.combo + 1 : 0; G.lastCatch = G.t;
     G.fires++; sfx.pick(G.combo); burst(best.x, best.y, '#9cc6ff', 9, G.combo >= 2 ? `+1 คอมโบ ${G.combo + 1}` : '+1'); addPoints(1);
   }
-}, { passive: false });
+}
+(function(){
+  const cv = document.getElementById('cv');
+  if(window.PointerEvent) cv.addEventListener('pointerdown', onTap, { passive: false });
+  else { cv.addEventListener('touchstart', onTap, { passive: false }); cv.addEventListener('mousedown', onTap); }
+})();
 
 /* ⏱ จบเกม → บันทึกสิทธิ์ (ยังไม่มีตัวเลข) → ให้เลือก N ใบ → สุ่มตอนจับครบ → บันทึก → เฉลย */
 function pickWeighted(tbl){
@@ -1231,25 +1313,35 @@ async function endGame(){
   G.over = true; G.running = false; bgmStop(); sfx.gong();
   const c = document.getElementById('center');
   c.innerHTML = `หมดเวลา!<small>เก็บหางคืนได้ ${G.tails} หาง</small>`; c.classList.add('on');
-  const d = { pending: true, picks: [], slipCount: slipsForTails(G.tails), amount: 0, code: '',
-              tails: G.tails, fires: G.fires, golds: G.golds, oniHits: G.oniHits, fakeHits: G.fakeHits };
-  const savedP = savePending(d);
-  await new Promise(r => setTimeout(r, 1800));
-  const saved = await savedP;
+  const st = { tails: G.tails, fires: G.fires, golds: G.golds, oniHits: G.oniHits, fakeHits: G.fakeHits };
+  const minWait = new Promise(r => setTimeout(r, 1800));
+  let r = null;
+  for(;;){
+    try{ r = await tryServer(() => txEnd(st)); break; }
+    catch(e){
+      await minWait;
+      c.innerHTML = `📶 สัญญาณหลุด<small>หางของคุณ (${G.tails} หาง) ยังอยู่ — เช็คเน็ตแล้วแตะ</small><button type="button" class="btn-main" style="pointer-events:auto; max-width:260px; margin:12px auto 0; font-size:16px;">🔄 ลองอีกครั้ง</button>`;
+      c.style.pointerEvents = 'auto';
+      await new Promise(res => { c.querySelector('button').onclick = () => { c.innerHTML = '⏳ กำลังเชื่อมต่อ…'; res(); }; });
+      c.style.pointerEvents = '';
+    }
+  }
+  await minWait;
   c.classList.remove('on');
   cancelAnimationFrame(_raf); _raf = null;
-  if(saved && saved.pending === false){ renderCoupon(saved, true); return; }   // มีผลในระบบแล้ว (แท็บซ้ำ)
-  openOmikuji(saved && saved.slipCount ? saved : d, false);
+  if(r.route){ routeExisting(r.route); return; }
+  currentCouponData = r.pick;
+  openOmikuji(r.pick, false);
 }
 function slipBackHtml(a){
   const si = slipInfo(a);
   return `<div class="kanji">${si.k.split('').join('<br>')}</div><div class="th">${si.th}</div><div class="amt">${a > 0 ? '฿' + a : '—'}</div>`;
 }
-function openOmikuji(d, resumed){
+function openOmikuji(d, resumed, interrupted){
   show('omikuji');
   const n = d.slipCount || 1;
   document.getElementById('omiTitle').textContent = `เลือกโอมิคุจิ ${n} ใบ จาก ${DECK_SIZE} ใบ`;
-  document.getElementById('omiSub').textContent = (resumed ? 'กลับมาเลือกต่อ · ' : '') + `เก็บหางคืนได้ ${d.tails || 1}/9 หาง 🦊`;
+  document.getElementById('omiSub').textContent = (interrupted ? 'เกมถูกปิดกลางคัน · ใช้หางที่เก็บได้ ' : resumed ? 'กลับมาเลือกต่อ · เก็บหางคืนได้ ' : 'เก็บหางคืนได้ ') + `${d.tails || 1}/9 หาง 🦊`;
   document.getElementById('omiNote').textContent = 'รวมยอดทุกใบที่จับ · สูงสุด ฿300 · มีใบว่างปน';
   document.getElementById('toCouponBtn').style.display = 'none';
   const box = document.getElementById('slips');
@@ -1272,7 +1364,13 @@ async function revealAll(d, picks){
   const note = document.getElementById('omiNote');
   note.textContent = '🎴 กำลังเปิด…';
   const res = buildResult(d, picks);
-  await finalizeResult(res);            // ✅ บันทึกผลให้เสร็จก่อนพลิกใบแรก (ปิดแอประหว่างพลิก = ผลเดิม)
+  let out = null;
+  for(;;){   // ✅ ต้องบันทึกเข้าระบบสำเร็จก่อนพลิกใบแรก — ออฟไลน์ = รอ ไม่โชว์อะไร
+    try{ out = await tryServer(() => txFinalize(res)); break; }
+    catch(e){ await askRetry('omiNote', 'สัญญาณหลุด — ใบที่เลือกยังอยู่ เช็คเน็ตแล้วแตะเพื่อเปิด'); }
+  }
+  if(out.route){ currentCouponData = out.route; renderCoupon(out.route, true); return; }   // มีผลจากอีกเครื่องแล้ว
+  currentCouponData = out.done;
   const flip = (i, extra) => { const a = res.deck[i]; els[i].querySelector('.back').innerHTML = slipBackHtml(a); els[i].classList.toggle('zero', !(a > 0)); els[i].classList.add('open', ...(extra || [])); };
   let run = 0;
   let first = true;
