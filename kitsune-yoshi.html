@@ -532,7 +532,7 @@ async function initLine(){
   }
   if(chk === 'error' && isTestUser()){ showErrorScreen("ต่อเซิร์ฟเวอร์เกมไม่ได้", "prspa-game ยังไม่พร้อม / เน็ตหลุด — ลองรีเฟรช"); return; }
   const c = window._camp;   // เซิร์ฟเวอร์เป็นคนบอกว่าเปิดเล่นได้ไหม (แก้วันที่ในเครื่องไม่มีผล)
-  if(c && !c.open){ const todayTH = c.today || new Date(getNow().getTime() + 7 * 3600e3).toISOString().slice(0, 10); if(todayTH < c.start) showNotStarted(); else showCampaignExpired(); return; }
+  if(c && !c.open){ if(c.status === 'ended') showCampaignExpired(); else if(c.status === 'soon') showNotStarted(); else { const todayTH = c.today || new Date(getNow().getTime() + 7 * 3600e3).toISOString().slice(0, 10); if(todayTH < c.start) showNotStarted(); else showCampaignExpired(); } return; }
   if(!c && _expired){ showCampaignExpired(); return; }
   enableStartBtn();
 }
