@@ -162,6 +162,9 @@
   #langBtn{ position:fixed; top:calc(10px + var(--safe-t)); right:10px; z-index:40; background:rgba(11,13,31,.78); border:2px solid #6b6fb0; color:#fff; font-family:'Kanit'; font-size:13px; font-weight:600; padding:5px 10px; border-radius:20px; cursor:pointer; }
   body.test #langBtn{ top:calc(44px + var(--safe-t)); }
   body.play #langBtn{ display:none; }
+  #homeMute{ position:fixed; top:calc(10px + var(--safe-t)); left:10px; z-index:40; background:rgba(11,13,31,.78); border:2px solid #6b6fb0; color:#fff; font-size:15px; line-height:1; padding:6px 9px; border-radius:20px; cursor:pointer; }
+  body.test #homeMute{ top:calc(44px + var(--safe-t)); }
+  body.play #homeMute{ display:none; }
   .demo-wrap{ margin:4px auto 10px; max-width:420px; }
   .demo-title{ font-family:'Kanit'; font-size:12px; color:#cfd3ff; margin:0 0 4px 4px; }
   #introDemo{ display:block; width:100%; height:200px; border:3px solid #0b0d1f; box-shadow: inset 0 0 0 2px #6b6fb0; border-radius:4px; background:rgba(22,26,51,.55); }
@@ -282,10 +285,10 @@ const SHOP_EMOJI = "💜";
 const CAMPAIGN_ID = "kitsune_oct2026";
 const COLLECTION_NAME = "coupons_" + SHOP_ID + "_" + CAMPAIGN_ID;
 const CAMPAIGN_START_DATE = "2026-09-24";    // เปิดให้ลูกค้าเล่น (โหมดทดสอบเล่นได้ก่อน)
-const CAMPAIGN_EXPIRE_DATE = "2027-01-01";   // เล่นได้ถึง 31 ธ.ค. 23:59
-const COUPON_LAST_DAY = "2026-12-31";        // คูปองใช้ได้ถึงวันนี้
-const COUPON_EXPIRE_TH = "31/12/69";
-const EXPIRE_LABEL = "31 ธ.ค. 69";
+const CAMPAIGN_EXPIRE_DATE = "2026-11-01";   // เล่นได้ถึง 31 ต.ค. 23:59 (เปลี่ยนจาก 31 ธ.ค. — 28 ก.ย. 69)
+const COUPON_LAST_DAY = "2026-10-31";        // คูปองใช้ได้ถึงวันนี้
+const COUPON_EXPIRE_TH = "31/10/69";
+const EXPIRE_LABEL = "31 ต.ค. 69";
 
 /* 🎴 โอมิคุจิ 9 ใบ — ยอดที่ได้ = รวมทุกใบที่จับ
    ⚙️ การสุ่มรางวัล/สำรับ/ยอดตั้งต้น อยู่ที่ตัวกลาง prspa-game (เซิร์ฟเวอร์) ทั้งหมด
@@ -300,7 +303,7 @@ const SLIP_TABLE = [
   { a: 250, k: "大吉", th: "โชคใหญ่มาก", en: "Great luck" },
   { a: 300, k: "九尾", th: "เก้าหาง", en: "Nine tails" },
 ];
-const EXPIRE_LABEL_EN = "31 Dec 2026";
+const EXPIRE_LABEL_EN = "31 Oct 2026";
 
 /* ============================================================
    🌐 ภาษา ไทย/English — ปุ่ม 🌐 มุมขวาบน · จำใน localStorage · ค่าเริ่มต้นตามภาษา LINE/เครื่อง
@@ -337,7 +340,7 @@ const I18N = {
     friendGate: "📲 <b>แอดไลน์ร้านก่อน</b> แล้วกลับมาเล่นได้เลย<br><span style=\"font-size:12px; opacity:.8;\">เกมนี้สำหรับเพื่อนในไลน์ " + SHOP_NAME + "</span>",
     friendAdd: "➕ แอดไลน์ร้าน", friendCheck: "✅ แอดแล้ว — เริ่มเล่น", checkingFriend: "⏳ กำลังเช็ค…", friendStill: "ยังไม่พบ — แอดแล้วกดอีกครั้ง", usedToast: "คูปองถูกใช้แล้ว!", thanks: "ขอบคุณที่ใช้บริการ", qrUsed: "QR Code ถูกใช้แล้ว",
     soonTitle: "เร็วๆ นี้!", soonBody: "ล่าหางจิ้งจอก 9 หาง<br>เปิดให้เล่น<b style=\"color:var(--gold);\">เร็วๆ นี้</b> ติดตามได้ทาง LINE OA",
-    endedTitle: "กิจกรรมจบแล้ว", endedBody: "ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style=\"color:var(--gold);\">31 ธันวาคม 2569</b>",
+    endedTitle: "กิจกรรมจบแล้ว", endedBody: "ล่าหางจิ้งจอก 9 หาง สิ้นสุดเมื่อ<br><b style=\"color:var(--gold);\">31 ตุลาคม 2569</b>",
     endedHint: "🎫 เคยเล่นได้คูปองแล้ว? เปิดลิงก์นี้<b>ผ่าน LINE</b> ระบบจะแสดง QR คูปองของคุณ", endedFollow: "📢 ติดตามกิจกรรมใหม่ทาง LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b>",
     demoA: "แตะไฟจิ้งจอก 🔥  ครบ 5 ดวง = หางงอก", demoA2: "หางงอก! 🦊", demoB: "หน้ากากโอนิ 👹 อย่าแตะ!", demoB2: "แตะโดน = ไฟหาย 😱",
     demoC: "หมดเวลา → จับโอมิคุจิ รวมเงินทุกใบ", demoC2: "รวม ฿150 🎫", langBtn: "🌐 EN",
@@ -373,7 +376,7 @@ const I18N = {
     friendGate: "📲 <b>Add our LINE first</b>, then come back to play<br><span style=\"font-size:12px; opacity:.8;\">This game is for LINE friends of " + SHOP_NAME + "</span>",
     friendAdd: "➕ Add our LINE", friendCheck: "✅ Added — start", checkingFriend: "⏳ Checking…", friendStill: "Not found yet — add, then tap again", usedToast: "Coupon used!", thanks: "Thank you for visiting", qrUsed: "QR code already used",
     soonTitle: "Coming soon!", soonBody: "Nine-Tail Fox Hunt<br>Opening <b style=\"color:var(--gold);\">soon</b> — follow our LINE OA",
-    endedTitle: "This event has ended", endedBody: "Nine-Tail Fox Hunt ended on<br><b style=\"color:var(--gold);\">31 December 2026</b>",
+    endedTitle: "This event has ended", endedBody: "Nine-Tail Fox Hunt ended on<br><b style=\"color:var(--gold);\">31 October 2026</b>",
     endedHint: "🎫 Already won a coupon? Open this link <b>in LINE</b> to see your QR", endedFollow: "📢 Follow LINE OA <b style=\"color:var(--gold);\">" + SHOP_NAME + "</b> for the next event",
     demoA: "Tap the fox fires 🔥  5 fires = 1 tail", demoA2: "Tail +1! 🦊", demoB: "Oni mask 👹 Don't tap it!", demoB2: "Tapping it loses fires 😱",
     demoC: "Time's up → pick omikuji, slips add up", demoC2: "Total ฿150 🎫", langBtn: "🌐 ไทย",
@@ -936,8 +939,11 @@ function stopIntroFox(){ if(_introRaf){ cancelAnimationFrame(_introRaf); _introR
    โคโตะ (ดีด) · กระดิ่งศาลเจ้า · ไทโกะ · ไม้เคาะ · ระฆังวัด — สเกลญี่ปุ่น In (E F A B C)
    🎵 เพลงประกอบ: ถ้ามีไฟล์ BGM_URL ในเว็บ จะเล่นไฟล์นั้น · ไม่มี = เล่นเพลงสังเคราะห์แทนอัตโนมัติ
    ============================================================ */
-const BGM_URL = 'fox-assets/kitsune-bgm.mp3';
+const BGM_URL = 'kitsune-bgm.mp3';   // ⭐ 28 ก.ย. 69: ไฟล์เพลงวางข้างไฟล์เกม (อัปผ่านมือถือง่ายกว่าโฟลเดอร์ย่อย)
 const BGM_VOL = 0.35;
+// ⭐ 28 ก.ย. 69: เพลงคลอหน้าแรก + ระหว่างเล่นเบาลง (เสียงแตะ/เอฟเฟกต์ไม่เปลี่ยน)
+const BGM_HOME = 0.34, BGM_GAME = 0.15;
+let _bgmBus = null, _bgmMode = 'home';
 let _bus = null;   // ถ้าตั้งไว้ เสียงจะออกทางบัสนี้ (ใช้หยุดเพลงแจ็กพอตได้ทั้งก้อน)
 let _ac = null, _muted = false, _master = null, _bgmTimer = null, _bgmBuf = null, _bgmSrc = null, _bgmFileOk = null;
 const INSCALE = [329.63, 349.23, 440.00, 493.88, 523.25, 659.25, 698.46, 880.00, 987.77, 1046.5];
@@ -1155,21 +1161,36 @@ function bgmPrepare(){
   _bgmFileOk = 'loading';
   fetch(BGM_URL).then(r => { if(!r.ok) throw new Error('no bgm'); return r.arrayBuffer(); })
     .then(ab => new Promise((res, rej) => ac().decodeAudioData(ab, res, rej)))
-    .then(buf => { _bgmBuf = buf; _bgmFileOk = true; if(G && G.running && !G.over && !_muted) bgmStart(); })
+    .then(buf => { _bgmBuf = buf; _bgmFileOk = true; if(_muted) return; if(G && G.running && !G.over){ bgmStop(); bgmStart('game'); } else if(document.getElementById('intro')?.classList.contains('on') && (_bgmTimer || _bgmSrc === null)){ bgmStop(); homeMusic(); } })
     .catch(() => { _bgmFileOk = false; });
 }
-function bgmStart(){
+function bgmBus(){
+  const a = ac(); if(!a) return null;
+  if(!_bgmBus){ _bgmBus = a.createGain(); _bgmBus.gain.value = BGM_HOME; _bgmBus.connect(_master); }
+  return _bgmBus;
+}
+function bgmLevel(mode, now){
+  _bgmMode = mode; const b = bgmBus(); if(!b) return;
+  const a = ac(), v = mode === 'game' ? BGM_GAME : BGM_HOME;
+  try{ b.gain.cancelScheduledValues(a.currentTime); b.gain.setValueAtTime(b.gain.value, a.currentTime); b.gain.linearRampToValueAtTime(v, a.currentTime + (now ? .05 : .8)); }catch(e){ b.gain.value = v; }
+}
+function bgmStart(mode){
   if(_muted) return;
-  const hurry = G && G.t >= HURRY_AT;
+  const m = mode || ((G && G.running) ? 'game' : 'home');
+  const firstStart = !_bgmSrc && !_bgmTimer;
+  bgmLevel(m, firstStart);
+  const hurry = G && G.running && G.t >= HURRY_AT;
   if(_bgmBuf){
     bgmSynthStop();
     const a = ac(); if(!a) return;
     if(_bgmSrc){ _bgmSrc.playbackRate.value = hurry ? 1.1 : 1; return; }
     _bgmSrc = a.createBufferSource(); _bgmSrc.buffer = _bgmBuf; _bgmSrc.loop = true; _bgmSrc.playbackRate.value = hurry ? 1.1 : 1;
-    const g = a.createGain(); g.gain.value = BGM_VOL; _bgmSrc.connect(g); g.connect(_bus || _master); _bgmSrc.start();
+    // ตัดช่องว่างที่ไฟล์ mp3 แถมหัว-ท้าย ให้วนต่อกันเนียน
+    try{ _bgmSrc.loopStart = Math.min(.03, _bgmBuf.duration / 10); _bgmSrc.loopEnd = Math.max(_bgmSrc.loopStart + 1, _bgmBuf.duration - .03); }catch(e){}
+    _bgmSrc.connect(bgmBus()); _bgmSrc.start(0, _bgmSrc.loopStart || 0);
     return;
   }
-  bgmSynthStart();
+  if(!_bgmTimer) bgmSynthStart(); else if(hurry) bgmSynthStart();
 }
 /* 🎃 เพลงสังเคราะห์ธีมฮาโลวีนญี่ปุ่น — ลึกลับแต่น่ารัก (ขบวนภูตผีร้อยตน) ไม่น่ากลัวจนเครียด */
 let _drone = null;
@@ -1181,7 +1202,7 @@ function droneStart(){
   o1.type = 'triangle'; o1.frequency.value = 82.41;          // E ต่ำ
   o2.type = 'sawtooth'; o2.frequency.value = 87.31;          // F ต่ำ ชนกันครึ่งเสียง = หลอนๆ
   lfo.frequency.value = .18; lg.gain.value = 180; lfo.connect(lg); lg.connect(f.frequency);
-  o1.connect(f); o2.connect(f); f.connect(g); g.connect(_bus || _master);
+  o1.connect(f); o2.connect(f); f.connect(g); g.connect(bgmBus() || _bus || _master);
   o1.start(); o2.start(); lfo.start();
   _drone = { g, nodes: [o1, o2, lfo] };
 }
@@ -1211,6 +1232,8 @@ function bgmSynthStart(){
   const bass = [INSCALE[0], INSCALE[1], INSCALE[0], INSCALE[3]];
   _bgmTimer = setInterval(() => {
     if(_muted) return;
+    const _pb = _bus; _bus = bgmBus() || _bus;   // เพลงสังเคราะห์ออกทางบัสเพลง (ดัง/เบาตามโหมด)
+    try{
     const s8 = step % 8, bar = Math.floor(step / 8) % 8;
     if(s8 === 0) taiko(bar % 4 === 0 ? .3 : .18);
     if(s8 === 6 && bar % 2 === 1) taiko(.12);
@@ -1224,15 +1247,38 @@ function bgmSynthStart(){
     if(s8 === 0 && bar === 2) ghostFlute(0);
     if(s8 === 0 && bar === 6) windSwell(0);
     if(s8 === 4 && bar === 7) bell(INSCALE[1] * 2, .03, 0, 2.2);
+    } finally { _bus = _pb; }
     step++;
   }, hurry ? 210 : 270);
 }
 function bgmSynthStop(){ if(_bgmTimer){ clearInterval(_bgmTimer); _bgmTimer = null; } droneStop(); }
 function bgmStop(){ bgmSynthStop(); try{ if(_bgmSrc){ _bgmSrc.stop(); } }catch(e){} _bgmSrc = null; }
-document.getElementById('muteBtn').onclick = () => {
-  _muted = !_muted; document.getElementById('muteBtn').textContent = _muted ? '🔇' : '🔊';
-  if(_muted) bgmStop(); else if(G && G.running) bgmStart();
-};
+function setMuted(v){
+  _muted = v; try{ localStorage.setItem('kitsune_muted', v ? '1' : '0'); }catch(e){}
+  ['muteBtn', 'homeMute'].forEach(id => { const b = document.getElementById(id); if(b) b.textContent = v ? '🔇' : '🔊'; });
+  if(v) bgmStop(); else if(G && G.running) bgmStart('game'); else if(document.getElementById('intro')?.classList.contains('on')) homeMusic();
+}
+document.getElementById('muteBtn').onclick = () => setMuted(!_muted);
+/* 🎵 หน้าแรก: เพลงคลอเบาๆ — เบราว์เซอร์/LINE ยอมให้มีเสียงหลังแตะหน้าจอครั้งแรกเท่านั้น → เริ่มตอนแตะครั้งแรก */
+function homeMusic(){
+  if(_muted || (G && (G.running || G.over))) return;
+  if(!document.getElementById('intro')?.classList.contains('on')) return;
+  ac(); bgmPrepare(); bgmStart('home');
+}
+function _homeKick(){ homeMusic(); }
+['click', 'touchend'].forEach(ev => document.addEventListener(ev, _homeKick, { passive: true }));
+(function(){
+  try{ if(localStorage.getItem('kitsune_muted') === '1'){ _muted = true; } }catch(e){}
+  const b = document.createElement('button'); b.id = 'homeMute'; b.type = 'button'; b.textContent = _muted ? '🔇' : '🔊';
+  b.setAttribute('aria-label', 'เสียงเพลง');
+  b.onclick = (e) => { e.stopPropagation(); setMuted(!_muted); };
+  document.body.appendChild(b);
+  const mb = document.getElementById('muteBtn'); if(mb) mb.textContent = _muted ? '🔇' : '🔊';
+})();
+// ออกจากแอป/สลับแท็บ → หยุดเสียงชั่วคราว กลับมาแล้วเล่นต่อ
+document.addEventListener('visibilitychange', () => {
+  try{ if(!_ac) return; if(document.visibilityState === 'hidden') _ac.suspend(); else if(!_muted) _ac.resume(); }catch(e){}
+});
 
 /* ============================================================
    🎮 ตัวเกม — 30 วิ แตะไฟจิ้งจอก เก็บหาง
@@ -1270,7 +1316,7 @@ async function startGame(){
   let n = 3;
   const step = () => {
     if(n > 0){ c.innerHTML = n; c.classList.add('on'); sfx.tick(); n--; setTimeout(step, 700); }
-    else { c.innerHTML = t('go'); sfx.go(); setTimeout(() => c.classList.remove('on'), 600); G.running = true; G.last = performance.now(); bgmStart(); }
+    else { c.innerHTML = t('go'); sfx.go(); setTimeout(() => c.classList.remove('on'), 600); G.running = true; G.last = performance.now(); bgmStart('game'); }
   };
   step();
   _raf = requestAnimationFrame(frame);
@@ -1317,7 +1363,7 @@ function frame(now){
     G.t += dt;
     // spawn
     const late = G.t >= HURRY_AT;
-    if(late && !G.hurried){ G.hurried = true; document.getElementById('timefill').classList.add('hurry'); bgmStart(); }
+    if(late && !G.hurried){ G.hurried = true; document.getElementById('timefill').classList.add('hurry'); bgmStart('game'); }
     G.nextBlue -= dt; if(G.nextBlue <= 0){ spawn('blue'); G.nextBlue += late ? BLUE_EVERY_LATE : BLUE_EVERY_EARLY; }
     G.nextOni -= dt;  if(G.t >= ONI_START && G.nextOni <= 0){ spawn('oni'); G.nextOni += (late ? ONI_EVERY_LATE : ONI_EVERY_EARLY) * rnd(.7, 1.25); }
     G.nextFake -= dt; if(G.t >= FAKE_START && G.nextFake <= 0){ spawn('fake'); G.nextFake += (late ? FAKE_EVERY_LATE : FAKE_EVERY_EARLY) * rnd(.7, 1.3); }
