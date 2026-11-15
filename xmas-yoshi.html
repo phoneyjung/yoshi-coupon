@@ -435,7 +435,7 @@ button.proto{cursor:pointer;min-height:34px;font-family:inherit}
   <section id="fail" class="layer screen shade" hidden><div class="card"><h2 data-t="failTitle"></h2><div class="sub" data-t="failSub"></div></div></section>
 </div>
 
-<script src="xmas-sfx-1.js" async></script>
+<script src="xmas-sfx-2.js" async></script>
 <script src="three-r128.min.js"></script>
 <script>window.THREE || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>')</script>
 <script>
@@ -448,6 +448,7 @@ const CFG = {
   lanes: [-2.3, 0, 2.3],
   speed0: 15, accel: 0.19,                        // m/s · +0.19 every second → 36 m/s after ~110 s
   cheerFirst: 8, cheerEvery: 25, cheerSecs: 8,    // น้องแซนตี้ is sent out after 8 s of play (the sleigh reaches her at ~15 s), then every 25 s; her heart = score x2 for 8 s
+  musicPlay: 0.34,                                // ความดังเพลงระหว่างเล่น (หน้าอื่น 0.5) — เพลงต้องได้ยินชัดตลอด
   tempoRef: 1.45, tempoMax: 1.7, tempoOver: 45,   // เพลง: เร็วขึ้น 1.45 เท่าที่ 130 กม./ชม. (speedRef) · สูงสุด 1.7 เท่าเมื่อเร็วเกินนั้นอีก 45 ม./วิ (เจ้าของ 15 พ.ย. 69)
   speedRef: 36, accelLate: 0.45,                  // past 36 m/s there is NO ceiling: it keeps speeding up, and faster (owner 13 Nov 69)
   hearts: 3,
@@ -485,7 +486,7 @@ const TXT = {
     cheerOn: 'น้องแซนตี้เชียร์! คะแนน x2', toast2: 'เปิดได้ 2 กล่องแล้ว!', toast3: 'เปิดได้ 3 กล่องแล้ว!', hint: 'ปัดซ้าย-ขวา เปลี่ยนเลน', toGo: 'อีก {n} → {k} กล่อง', maxed: 'ครบ 3 กล่องแล้ว',
     bestTag: 'สถิติ {n}', failTitle: 'อุปกรณ์นี้เปิดเกมไม่ได้', failSub: 'ลองเปิดด้วย Chrome หรือ Safari รุ่นใหม่',
     demoTempo: 'ฟังจังหวะเพลงตามความเร็ว (ครั้งละ 8 วิ)', tempo1: 'เริ่มเกม', tempo2: '130 กม./ชม.', tempo3: 'เร็วสุด', bpm: 'จังหวะ/นาที',
-    sfxOn: 'ฟังเสียงประกอบทีละเสียง · เสียงจริงพร้อม {n}/13', sfxOff: 'ฟังเสียงประกอบทีละเสียง · ยังโหลดเสียงจริงไม่ได้ ใช้เสียงสำรอง', sx_gift: 'ของขวัญ', sx_star: 'ดาว', sx_hit: 'ชน', sx_move: 'เปลี่ยนเลน', sx_cheer: 'เชียร์', sx_hoho: 'โฮ่ โฮ่', sx_tier: 'ได้กล่องเพิ่ม', sx_over: 'จบเกม', sx_box: 'เปิดกล่อง', sx_win: 'ได้รางวัล', sx_jp: 'แจ็กพอต', sx_wind: 'ลม',
+    sfxOn: 'ฟังเสียงประกอบทีละเสียง · เสียงจริงพร้อม {n}/{all}', sfxOff: 'ฟังเสียงประกอบทีละเสียง · ยังโหลดเสียงจริงไม่ได้ ใช้เสียงสำรอง', sx_gift: 'ของขวัญ', sx_star: 'ดาว', sx_hit: 'ชน', sx_move: 'เปลี่ยนเลน', sx_cheer: 'เชียร์', sx_hoho: 'โฮ่ โฮ่', sx_tier: 'ได้กล่องเพิ่ม', sx_over: 'จบเกม', sx_box: 'เปิดกล่อง', sx_win: 'ได้รางวัล', sx_jp: 'แจ็กพอต', sx_wind: 'ลม',
     checking: 'กำลังตรวจสอบสิทธิ์…', starting: 'กำลังเริ่ม…', netStart: 'เชื่อมต่อไม่ได้ แตะเริ่มอีกครั้ง', startPick: 'เปิดกล่องของขวัญ', startAgain: 'เล่นอีกครั้ง ทำอันดับ',
     mineBtn: 'คูปองของคุณ ฿{a} · แตะเพื่อใช้', mineUsedBtn: 'ใช้คูปอง ฿{a} แล้ว', soonTitle: 'เร็ว ๆ นี้', soonSub: 'เกมยังไม่เปิดให้เล่น รอติดตามทาง LINE ของร้านนะคะ',
     endedTitle: 'กิจกรรมจบแล้ว', endedSub: 'ขอบคุณที่ร่วมสนุกนะคะ ติดตามกิจกรรมใหม่ทาง LINE ของร้าน', friendTitle: 'แอดไลน์ร้านก่อนนะคะ', friendSub: 'เกมนี้สำหรับเพื่อนใน LINE ของ {shop} แอดแล้วกลับมาเล่นได้เลย',
@@ -515,7 +516,7 @@ const TXT = {
     cheerOn: 'Santy cheers! Score x2', toast2: '2 boxes unlocked!', toast3: '3 boxes unlocked!', hint: 'Swipe left / right to change lane', toGo: '{n} more → {k} boxes', maxed: 'All 3 boxes unlocked',
     bestTag: 'Best {n}', failTitle: 'This device cannot run the game', failSub: 'Try a recent Chrome or Safari',
     demoTempo: 'Hear the music at each speed (8 s each)', tempo1: 'Start', tempo2: '130 km/h', tempo3: 'Top', bpm: 'BPM',
-    sfxOn: 'Hear each sound · real sounds ready {n}/13', sfxOff: 'Hear each sound · real sounds not loaded, using the built-in ones', sx_gift: 'Gift', sx_star: 'Star', sx_hit: 'Crash', sx_move: 'Lane', sx_cheer: 'Cheer', sx_hoho: 'Ho ho', sx_tier: '+Box', sx_over: 'Game over', sx_box: 'Open box', sx_win: 'Prize', sx_jp: 'Jackpot', sx_wind: 'Wind',
+    sfxOn: 'Hear each sound · real sounds ready {n}/{all}', sfxOff: 'Hear each sound · real sounds not loaded, using the built-in ones', sx_gift: 'Gift', sx_star: 'Star', sx_hit: 'Crash', sx_move: 'Lane', sx_cheer: 'Cheer', sx_hoho: 'Ho ho', sx_tier: '+Box', sx_over: 'Game over', sx_box: 'Open box', sx_win: 'Prize', sx_jp: 'Jackpot', sx_wind: 'Wind',
     checking: 'Checking…', starting: 'Starting…', netStart: 'Cannot connect. Tap Play again', startPick: 'Open my gift boxes', startAgain: 'Play again for the ranking',
     mineBtn: 'Your coupon ฿{a} · tap to use', mineUsedBtn: 'Coupon ฿{a} used', soonTitle: 'Coming soon', soonSub: 'The game is not open yet. Watch our LINE for news.',
     endedTitle: 'The event has ended', endedSub: 'Thank you for playing. Watch our LINE for the next one.', friendTitle: 'Add our LINE first', friendSub: 'This game is for LINE friends of {shop}. Add us, then come back to play.',
@@ -551,23 +552,25 @@ function applyLang(){
 let liveReady = false;
 
 /* ============================================================
-   SOUND — everything is synthesised (no audio files)
+   SOUND — เสียงจริงจากไฟล์ xmas-sfx-2.js (ElevenLabs) · ไม่มีไฟล์ก็เล่นได้ด้วยเสียงสังเคราะห์ในตัว
    ============================================================ */
 const Sound = (() => {
-  let ctx = null, master, music, sfx, muted = !!store.get('mute', false), timer = null, nextT = 0, idx = 0, musicLevel = 0.5, rate = 1, rateTarget = 1, holdUntil = 0;
-  const N = { C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.0, C3: 130.81, F3: 174.61, G3: 196.0 };
-  // Jingle Bells (1857, public domain) — [note, beats]
-  const A = [['E4',1],['E4',1],['E4',2],['E4',1],['E4',1],['E4',2],['E4',1],['G4',1],['C4',1.5],['D4',.5],['E4',4]];
-  const B = [['F4',1],['F4',1],['F4',1.5],['F4',.5],['F4',1],['E4',1],['E4',1],['E4',.5],['E4',.5]];
-  const MEL = [...A, ...B, ['E4',1],['D4',1],['D4',1],['E4',1],['D4',2],['G4',2], ...A, ...B, ['G4',1],['G4',1],['F4',1],['D4',1],['C4',4]];
-  const BASS = ['C3','C3','C3','C3','F3','C3','G3','G3','C3','C3','C3','C3','F3','C3','G3','C3'];
-  const BEAT = 60 / 138;
+  let ctx = null, master, music, sfx, muted = !!store.get('mute', false), timer = null, nextT = 0, idx = 0, musicLevel = 0.5, rate = 1, rateTarget = 1, holdUntil = 0, musicT0 = 0, waitInst = false;
+  // เพลง: Jingle Bells (James Pierpont, 1857 — สาธารณสมบัติ) · ฮุก 16 ห้อง แล้วท่อนร้อง 16 ห้อง วนไป
+  // เขียนเป็น "โน้ต:จำนวนจังหวะ" (ไม่ใส่ = 1 จังหวะ) · "-" = หยุด · "|" = ขึ้นห้องใหม่ (ห้องละ 4 จังหวะ)
+  const HOOK = 'E5 E5 E5:2|E5 E5 E5:2|E5 G5 C5:1.5 D5:.5|E5:4|F5 F5 F5:1.5 F5:.5|F5 E5 E5 E5:.5 E5:.5|E5 D5 D5 E5|D5:2 G5:2|E5 E5 E5:2|E5 E5 E5:2|E5 G5 C5:1.5 D5:.5|E5:4|F5 F5 F5:1.5 F5:.5|F5 E5 E5 E5:.5 E5:.5|G5 G5 F5 D5|C5:4';
+  const VERSE = 'G4 E5 D5 C5|G4:3 G4:.5 G4:.5|G4 E5 D5 C5|A4:3 -|A4 F5 E5 D5|B4:3 -|G5 G5 F5 D5|E5:3 -|G4 E5 D5 C5|G4:3 -|G4 E5 D5 C5|A4:3 A4|A4 F5 E5 D5|G5 G5 G5 G5|A5 G5 F5 D5|C5:2 G5:2';
+  const HARM = 'C C C C F C D G C C C C F C G C C C C F F G G C C C C F F C G C/G'.split(' ');   // คอร์ดห้องละ 1 · ห้องสุดท้าย C แล้ว G ส่งกลับเข้าฮุก
+  const CH = { C: ['C3', 'G2', 'E4', 'G4', 'C5'], F: ['F2', 'C3', 'F4', 'A4', 'C5'], G: ['G2', 'D3', 'D4', 'G4', 'B4'], D: ['D3', 'A2', 'D4', 'F#4', 'A4'] };   // [เบสจังหวะ 1, เบสจังหวะ 3, โน้ตคอร์ด 3 ตัว]
+  const FQ = n => 440 * Math.pow(2, ('C D EF G A B'.indexOf(n[0]) + (n[1] === '#' ? 1 : 0) - 9) / 12 + (+n[n.length - 1] - 4));
+  const BEAT = 60 / 138, LOOP_BEATS = 128;
   let events = [];
-  (function build(){ let b = 0; for(const [n, d] of MEL){ events.push({ b, n, d, k: 'm' }); b += d; }
-    for(let bar = 0; bar < 16; bar++){ events.push({ b: bar * 4, n: BASS[bar], d: 2, k: 'b' }); events.push({ b: bar * 4 + 2, n: BASS[bar], d: 2, k: 'b' }); }
-    for(let e = 0; e < 128; e++) events.push({ b: e * .5, k: 's', d: .5 });
+  (function build(){ let b = 0;
+    for(const bar of (HOOK + '|' + VERSE).split('|')) for(const x of bar.split(' ')){ const [n, d] = x.split(':'), len = d ? +d : 1; if(n !== '-') events.push({ b, f: FQ(n), d: len, k: 'm', hook: b < 64 }); b += len; }
+    HARM.forEach((h, bar) => { const [h1, h2] = h.split('/'), c1 = CH[h1], c2 = CH[h2 || h1], b0 = bar * 4;
+      events.push({ b: b0, f: FQ(c1[0]), d: 2, k: 'b' }, { b: b0 + 1, fs: c1.slice(2).map(FQ), d: 1, k: 'c' }, { b: b0 + 2, f: FQ(h2 ? c2[0] : c1[1]), d: 2, k: 'b' }, { b: b0 + 3, fs: c2.slice(2).map(FQ), d: 1, k: 'c' }); });
+    for(let e = 0; e < LOOP_BEATS * 2; e++) events.push({ b: e * .5, k: 's', d: .5 });
     events.sort((a, c) => a.b - c.b); })();
-  const LOOP_BEATS = 64;
   function init(){
     if(ctx) return true;
     const AC = window.AudioContext || window.webkitAudioContext; if(!AC) return false;
@@ -585,7 +588,7 @@ const Sound = (() => {
     o.connect(g); g.connect(dest); o.start(t0); o.stop(t0 + dur + 0.03);
   }
   // ---- เสียงจริง (ElevenLabs) จาก xmas-sfx-1.js: ถอดรหัสครั้งเดียวหลังแตะครั้งแรก · play() คืน false ถ้าเสียงนั้นยังไม่พร้อม → ผู้เรียกเล่นเสียงสังเคราะห์เดิมแทน
-  const SMP = {}, VOL = { gift: 0.3, star: 0.32, hit: 0.7, move: 0.1, bell: 0.14, cheer: 0.36, hoho: 0.42, tier: 0.4, over: 0.4, box: 0.4, win: 0.5, jackpot: 0.5, wind: 0.18 };   // ตั้งจากการวัดระดับจริง (lv.cjs): ใกล้เสียงเดิม +2 ถึง +4 dB · ลมเบากว่าเพลง ~4 dB
+  const SMP = {}, VOL = { gift: 0.3, star: 0.32, hit: 0.7, move: 0.1, bell: 0.14, cheer: 0.36, hoho: 0.42, tier: 0.4, over: 0.4, box: 0.4, win: 0.5, jackpot: 0.5, wind: 0.12 };   // ตั้งจากการวัดระดับจริง (lv.cjs): ใกล้เสียงเดิม +2 ถึง +4 dB · ลมเบากว่าเพลง ~4 dB
   let smpAsked = false, windSrc = null, windG = null, windWant = 0, windHold = 0;
   function loadSamples(){
     const P = window.XMAS_SFX; if(smpAsked || !ctx || !P || !P.d) return; smpAsked = true;
@@ -597,8 +600,18 @@ const Sound = (() => {
   function play(name, vol, rate, dest, when){
     if(!smpAsked) loadSamples();
     const b = SMP[name]; if(!b) return false;
-    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; if(rate) s.playbackRate.value = rate;
-    g.gain.value = VOL[name] * (vol == null ? 1 : vol); s.connect(g); g.connect(dest || sfx); s.start(when || 0); return true;
+    try{ const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; if(rate) s.playbackRate.value = rate;
+      g.gain.value = VOL[name] * (vol == null ? 1 : vol); s.connect(g); g.connect(dest || sfx); s.start(when || 0); return true; }catch(e){ return false; }
+  }
+  // เครื่องดนตรีจริงทีละโน้ต (กล่องดนตรี · ระฆังราว · เปียโน · เบส): ไฟล์มีโน้ตเดียว เล่นให้เร็ว/ช้าเพื่อได้เสียงสูง/ต่ำ (ความถี่จริงของโน้ตอยู่ใน XMAS_SFX.inst)
+  // → จังหวะเพลงเร่งได้อิสระจากระดับเสียง: เพลงเร็วขึ้นตามเลื่อนโดยเสียงไม่เพี้ยนสูง
+  const INST = { mbox: [0.3, 0.5], pno: [0.26, 0.22], glock: [0.15, 0.5], chord: [0.09, 0.1], bass: [0.5, 0.18] };   // [ความดัง, กังวานต่อหลังหมดตัวโน้ต (วิ)]
+  function note(name, f, t0, dur){
+    if(!smpAsked) loadSamples();
+    const b = SMP[name], P = window.XMAS_SFX && window.XMAS_SFX.inst; if(!b || !P || !P[name]) return false;
+    try{ const s = ctx.createBufferSource(), g = ctx.createGain(), I = INST[name], off = t0 + dur + I[1];
+      s.buffer = b; s.playbackRate.value = f / P[name]; g.gain.setValueAtTime(I[0], t0); g.gain.setTargetAtTime(0.0001, off, 0.07);
+      s.connect(g); g.connect(music); s.start(t0); s.stop(off + 0.5); return true; }catch(e){ return false; }
   }
   // ลม: วนต่อเนื่อง (จุดวนมาจากไฟล์เสียง) · เงียบเมื่อไม่ได้เล่น · ดังและแหลมขึ้นตามความเร็ว
   function applyWind(){
@@ -624,12 +637,18 @@ const Sound = (() => {
   function schedule(){
     if(!ctx) return;
     if(nextT < ctx.currentTime - 0.2) nextT = ctx.currentTime + 0.05;   // แท็บถูกพักไปนาน: ข้ามมาเล่นต่อ ไม่ยิงโน้ตค้างรวดเดียว
+    if(waitInst){ if(window.XMAS_SFX && !SMP.pno && ctx.currentTime - musicT0 < 1.2) return;   // รอเครื่องดนตรีถอดรหัสแป๊บเดียว เพลงจะได้ไม่เริ่มด้วยเสียงสังเคราะห์แล้วเปลี่ยนกลางท่อน
+      waitInst = false; nextT = ctx.currentTime + 0.06; }                                       // เริ่มนับจังหวะแรกจาก "ตอนนี้" (ไม่ใช่เวลาที่เริ่มรอ) โน้ตแรกจะไม่ถูกสั่งย้อนหลัง
     while(nextT < ctx.currentTime + 0.35){
       rate += (rateTarget - rate) * 0.1;                               // ค่อย ๆ เร่ง/ผ่อนจังหวะ (~1 วิ) ไม่กระตุก
       const e = events[idx], t0 = nextT, bt = BEAT / rate;
-      if(e.k === 'm'){ tone(music, 'triangle', N[e.n] * 2, t0, Math.min(e.d * bt * 0.92, 0.7), 0.16); tone(music, 'sine', N[e.n] * 4, t0, Math.min(0.22, e.d * bt), 0.05); }
-      else if(e.k === 'b') tone(music, 'triangle', N[e.n], t0, e.d * bt * 0.9, 0.13);
-      else tick(music, t0, !(Math.round(e.b * 2) % 2));
+      try{                                                             // เสียงโน้ตตัวไหนมีปัญหา เพลงต้องเดินต่อ
+        if(e.k === 'm'){ const dur = e.d * bt, a = note('mbox', e.f * 2, t0, dur), p = note('pno', e.f, t0, dur); if(e.hook) note('glock', e.f * 2, t0, dur);
+          if(!a && !p){ tone(music, 'triangle', e.f, t0, Math.min(dur * 0.92, 0.7), 0.16); tone(music, 'sine', e.f * 2, t0, Math.min(0.22, dur), 0.05); } }
+        else if(e.k === 'b'){ if(!note('bass', e.f, t0, e.d * bt * 0.6)) tone(music, 'triangle', e.f < 120 ? e.f * 2 : e.f, t0, e.d * bt * 0.9, 0.13); }
+        else if(e.k === 'c'){ for(const f of e.fs) note('chord', f, t0, e.d * bt * 0.5); }
+        else tick(music, t0, !(Math.round(e.b * 2) % 2));
+      }catch(err){}
       const b0 = e.b; idx++;
       if(idx >= events.length){ idx = 0; nextT += (LOOP_BEATS - b0) * bt; } else nextT += (events[idx].b - b0) * bt;
     }
@@ -637,7 +656,7 @@ const Sound = (() => {
   function startMusic(){
     if(!init()) return; if(ctx.state === 'suspended') ctx.resume();
     if(timer) return;
-    idx = 0; nextT = ctx.currentTime + 0.08;
+    idx = 0; nextT = ctx.currentTime + 0.08; musicT0 = ctx.currentTime; waitInst = true;
     music.gain.setTargetAtTime(musicLevel, ctx.currentTime, 0.4);
     timer = setInterval(schedule, 110); schedule();
   }
@@ -652,7 +671,8 @@ const Sound = (() => {
     get muted(){ return muted; },
     setWind(k){ if(!ctx || ctx.currentTime < windHold) return; k = Math.round(k * 50) / 50; if(k === windWant) return; windWant = k; applyWind(); },   // ลมตามความเร็ว: 0 = เงียบ
     previewWind(sec){ if(!ctx) return; windHold = 0; this.setWind(1); windHold = ctx.currentTime + sec; },   // เครื่องมือตัวอย่าง
-    get pack(){ return Object.keys(SMP).length; }, get windLevel(){ return windG ? windWant : -1; },
+    get pack(){ return Object.keys(SMP).length; }, get packAll(){ const P = window.XMAS_SFX; return P && P.d ? Object.keys(P.d).length : 0; },
+    get song(){ return { beats: LOOP_BEATS, notes: events.filter(e => e.k === 'm').map(e => [e.b, +e.f.toFixed(2), e.d]), bars: HARM.slice() }; }, get windLevel(){ return windG ? windWant : -1; },
     // ของขวัญ: กระดิ่งจริง + เสียงติ๊งที่ไล่สูงขึ้นตามคอมโบ (ตัวบอกคอมโบยังเป็นเสียงเดิม)
     gift(n){ if(!ctx) return; const f = 880 * Math.pow(1.0595, Math.min(n, 7) * 2), has = play('gift', 1, 1 + Math.min(n, 7) * 0.035); tone(sfx, 'sine', f, ctx.currentTime, 0.11, has ? 0.14 : 0.22, f * 1.5); },
     star(){ if(!ctx || play('star')) return; const t0 = ctx.currentTime; [1047, 1319, 1568, 2093].forEach((f, i) => tone(sfx, 'triangle', f, t0 + i * 0.06, 0.2, 0.2)); },
@@ -662,7 +682,7 @@ const Sound = (() => {
     click(){ if(!ctx) return; tone(sfx, 'sine', 660, ctx.currentTime, 0.07, 0.18, 990); },
     fanfare(){ if(!ctx || play('win')) return; const t0 = ctx.currentTime; [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(sfx, 'triangle', f, t0 + i * 0.08, 0.36, 0.24)); [1568, 2093, 2637].forEach((f, i) => tone(sfx, 'sine', f, t0 + 0.62 + i * 0.1, 0.7, 0.13)); },
     // jackpot: the carol turns up, sleigh bells in tempo, a rising fanfare and chimes every bar; returns a function that stops it
-    jackpot(sec){ if(!ctx) return () => {}; rate = rateTarget = 1; holdUntil = 0; const t0 = ctx.currentTime, bus = ctx.createGain(); bus.gain.value = 1; bus.connect(sfx); music.gain.setTargetAtTime(0.85, t0, 0.15);
+    jackpot(sec){ if(!ctx) return () => {}; rate = rateTarget = 1; holdUntil = 0; const t0 = ctx.currentTime, bus = ctx.createGain(); bus.gain.value = 1; bus.connect(sfx); music.gain.setTargetAtTime(0.7, t0, 0.15);
       if(!play('jackpot', 1, 1, bus)) [392, 523, 659, 784, 1047, 1319, 1568, 2093].forEach((f, i) => tone(bus, 'triangle', f, t0 + i * 0.075, 0.5, 0.26));
       for(let k = 0; k * BEAT / 2 < sec - 0.8; k++) tick(bus, t0 + 0.75 + k * BEAT / 2, !(k % 2), 1.6);
       for(let k = 0; k * BEAT * 4 < sec - 1.2; k++){ const tt = t0 + 0.75 + k * BEAT * 4; [1568, 2093, 2637].forEach((f, i) => tone(bus, 'sine', f, tt + i * 0.11, 0.65, 0.12)); }
@@ -1344,7 +1364,7 @@ function beginRun(){
   Object.assign(S, { mode: 'play', score: 0, dist: 0, bonus: 0, speed: CFG.speed0, hearts: CFG.hearts, lane: 1, px: 0, invuln: 0, opens: 1, combo: 0, comboT: 0, rowAcc: 0, rows: 0, lastFree: 1, shake: 0, hits: 0, gifts: 0, stars: 0, kmh: 0, skyT: 0, pt: 0, extra: 0, cheer: 0, cheers: 0, nextCheer: CFG.cheerFirst, first: !firstResult, nextSave: 500 });
   for(const z of [-46, -72, -98, -124]) spawnRow(z);
   $('sc').textContent = '0'; goalKey = ''; renderHearts(); renderGoal(); show(null); resize();
-  Sound.setLevel(0.2); Sound.hoho();
+  Sound.setLevel(CFG.musicPlay); Sound.hoho();
   const h = $('hint'); h.textContent = t('hint'); h.classList.add('on'); setTimeout(() => h.classList.remove('on'), 2600);
 }
 function finish(){
@@ -1701,7 +1721,7 @@ tap('btnOverHome', () => { Sound.click(); goHome(); });
 tap('btnBoardHome', () => { Sound.click(); goHome(); });
 tap('btnBoardPlay', () => { Sound.click(); startGame(); });
 tap('btnPickAgain', () => { Sound.click(); if(LIVE) openMine(); else if(pickDemo){ pickDemo = false; goHome(); } else startGame(); });
-const sfxNote = () => { const n = Sound.pack; $('sfxNote').textContent = n ? t('sfxOn', { n }) : t('sfxOff'); };
+const sfxNote = () => { const n = Sound.pack; $('sfxNote').textContent = n ? t('sfxOn', { n, all: Sound.packAll }) : t('sfxOff'); };
 tap('btnDemo', () => { Sound.click(); show('demo'); sfxNote(); setTimeout(sfxNote, 900); });
 document.querySelectorAll('[data-sfx]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); Sound.unlock(); const k = b.dataset.sfx;
   if(k === 'gift') Sound.gift(1); else if(k === 'win') Sound.fanfare(); else if(k === 'wind') Sound.previewWind(3); else Sound[k](); sfxNote(); }));
