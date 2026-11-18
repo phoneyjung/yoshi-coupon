@@ -136,6 +136,19 @@ html[lang=en] h1{font-size:clamp(40px,13vw,92px)}
 .gbox:active{transform:scale(.94)}
 .gbox.open{background:rgba(255,204,77,.16);border-color:var(--gold)}
 .gbox.rest{opacity:.5}
+/* v11 reveal like the fox game: total first → the other boxes open one by one → a box worth more than ours glows */
+.gbox.rest.in{animation:restIn .24s ease-out}
+@keyframes restIn{0%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+#grid9 .gbox.tease{opacity:1;border-color:var(--berry);background:rgba(226,58,78,.22);box-shadow:0 0 0 2px var(--berry),0 0 14px rgba(226,58,78,.75);animation:tease 1s ease-in-out infinite}
+#grid9 .gbox.tease .amt{color:#fff}
+@keyframes tease{0%,100%{box-shadow:0 0 0 2px var(--berry),0 0 6px rgba(226,58,78,.45)}50%{box-shadow:0 0 0 2px var(--berry),0 0 22px rgba(226,58,78,.95)}}
+#pickSub.rv{min-height:2.7em}   /* two lines kept free while picking, so the boxes do not jump when "so close" appears */
+#pickSub b{display:inline-block;line-height:1;font-family:var(--f-data);font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}
+#pickSub.sum{color:var(--snow)}
+#pickSub.sum b{font-size:1.25em;animation:sumIn .38s cubic-bezier(.2,1.4,.4,1)}
+@keyframes sumIn{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+#pickSub .miss,#pickSub.miss{color:#ff9aa6}
+#pickSub.miss{font-size:13.5px}
 .gbox .amt{font-family:var(--f-data);font-size:clamp(22px,7vw,30px);font-weight:700;color:var(--gold)}
 .gbox .amt.zero{font-family:var(--f-display);font-size:15px;font-weight:500;color:var(--dim)}
 .gbox:disabled{cursor:default}
@@ -210,8 +223,8 @@ button.proto{cursor:pointer;min-height:34px;font-family:inherit}
   #home .prize{font-size:14px;padding:5px 14px}
   #home .proto{display:none}
 }
-@media (max-height:620px){ h1{font-size:clamp(44px,13vw,80px)} .btn-main{min-height:52px;font-size:22px} .big{font-size:46px} .card{gap:8px;padding:14px} }
-@media (prefers-reduced-motion:reduce){ .demo *,.score b.pop,.jp-amt,.jp-tap,.coupon{animation:none!important} #fx{display:none} }
+@media (max-height:620px){ h1{font-size:clamp(44px,13vw,80px)} .btn-main{min-height:52px;font-size:22px} .big{font-size:46px} .card{gap:8px;padding:14px} #pickSub.miss{font-size:12.5px;margin-top:-4px} }
+@media (prefers-reduced-motion:reduce){ .demo *,.score b.pop,.jp-amt,.jp-tap,.coupon,.gbox.rest.in,#grid9 .gbox.tease,#pickSub.sum b{animation:none!important} #fx{display:none} }
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
@@ -480,6 +493,7 @@ const TXT = {
     over: 'จบเกม', newBest: 'สถิติใหม่!', overSubFirst: 'ได้เปิดกล่องของขวัญ', boxes: 'กล่อง', openBtn: 'เปิดกล่องของขวัญ',
     overSubAgain: 'คะแนนสูงสุดของคุณ', locked: 'คูปองของคุณ ฿{a} · ล็อกจากครั้งแรก', again: 'เล่นอีกครั้ง',
     pickTitle: 'เลือก {n} กล่อง', pickSub: 'แตะกล่องที่ชอบ', pickLeft: 'เหลืออีก {n} กล่อง', pickDone: 'รวมส่วนลดของคุณ',
+    sumNow: 'รวม <b>฿{n}</b>', nearMiss: 'เกือบแล้ว! กล่อง ฿{n} อยู่ตรงนี้เอง',
     empty: 'กล่องเปล่า', couponLbl: 'คูปองส่วนลด', couponJp: 'คูปองแจ็กพอต', goodDone: 'เยี่ยมมาก! ส่วนลดของคุณ', jpDone: 'แจ็กพอต! ส่วนลดสูงสุด',
     jpTitle: 'แจ็กพอต!', jpSub: 'รางวัลสูงสุดของเกม', jpTap: 'แตะเพื่อรับคูปอง', demoBtn: 'ตัวอย่าง · ดูฉากจบ + ฟังเสียง ›', demoTitle: 'เครื่องมือตัวอย่าง', demoNote: 'ดูฉากจบและฟังเสียงได้โดยไม่ต้องเล่น · เกมจริงจะไม่มีหน้านี้',
     demo50: 'ฉากจบ ฿50 (ปกติ)', demo150: 'ฉากจบ ฿150 (ดี)', demo300: 'ฉากจบ ฿300 (แจ็กพอต)', couponNote: 'ตัวอย่าง · ของจริงระบบจะออกคูปองให้ทาง LINE',
@@ -510,6 +524,7 @@ const TXT = {
     over: 'Game over', newBest: 'New best!', overSubFirst: 'Gift boxes you can open', boxes: 'boxes', openBtn: 'Open my gift boxes',
     overSubAgain: 'Your best score', locked: 'Your coupon ฿{a} · locked from first play', again: 'Play again',
     pickTitle: 'Pick {n} boxes', pickSub: 'Tap the ones you like', pickLeft: '{n} more to pick', pickDone: 'Your total discount',
+    sumNow: 'Total <b>฿{n}</b>', nearMiss: 'So close! ฿{n} was right here',
     empty: 'Empty', couponLbl: 'Discount coupon', couponJp: 'Jackpot coupon', goodDone: 'Great! Your discount', jpDone: 'Jackpot! Top discount',
     jpTitle: 'JACKPOT!', jpSub: 'The top prize', jpTap: 'Tap to get your coupon', demoBtn: 'Sample · endings + sounds ›', demoTitle: 'Sample tools', demoNote: 'Preview endings and sounds without playing · not in the real game',
     demo50: 'Ending ฿50 (normal)', demo150: 'Ending ฿150 (good)', demo300: 'Ending ฿300 (jackpot)', couponNote: 'Sample · the real coupon will be issued through LINE',
@@ -699,6 +714,8 @@ const Sound = (() => {
       for(let k = 0; k * BEAT * 4 < sec - 1.2; k++){ const tt = t0 + 0.75 + k * BEAT * 4; [1568, 2093, 2637].forEach((f, i) => tone(bus, 'sine', f, tt + i * 0.11, 0.65, 0.12)); }
       return () => { if(!ctx) return; bus.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.08); music.gain.setTargetAtTime(musicLevel, ctx.currentTime, 0.4); setTimeout(() => { try{ bus.disconnect(); }catch(e){} }, 600); }; },
     pop(){ if(!ctx || play('box', 0.5, 0.8 + Math.random() * 0.5)) return; noise(sfx, ctx.currentTime, 0.18, 0.05, 1800); },
+    flip(){ if(!ctx) return; const t0 = ctx.currentTime; noise(sfx, t0, 0.06, 0.07, 3200); tone(sfx, 'sine', 1568, t0, 0.06, 0.055); },   // เปิดกล่องที่ไม่ได้เลือก: เบาเท่าเสียงเปลี่ยนเลน (วัดได้ราว −18 dBFS · เพลงหน้านี้ −5)
+    tease(){ if(!ctx) return; const t0 = ctx.currentTime; tone(sfx, 'triangle', 784, t0, 0.16, 0.13); tone(sfx, 'triangle', 659, t0 + 0.17, 0.26, 0.13); },   // "เกือบแล้ว": ซอล→มี เบา ๆ อยู่ในคีย์เพลง
     box(){ if(ctx) play('box'); },      // เปิดกล่องของขวัญ (ไม่มีเสียงสำรอง: เสียงดาว/คลิกเดิมยังดังตามปกติ)
     hoho(){ if(ctx) play('hoho'); },    // ซานต้าหัวเราะตอนออกตัว (ไม่มีเสียงสำรอง)
     jp(){ if(ctx) play('jackpot'); },   // เครื่องมือตัวอย่าง
@@ -1409,7 +1426,7 @@ function confetti(n){
     p.style.transform = 'rotate(' + Math.floor(Math.random() * 360) + 'deg)'; fx.appendChild(p); setTimeout(() => p.remove(), 3700); }
 }
 function showCoupon(total, tier){
-  $('pickTitle').textContent = t(tier === 'jackpot' ? 'jpDone' : tier === 'good' ? 'goodDone' : 'pickDone'); $('pickSub').textContent = '';
+  $('pickTitle').textContent = t(tier === 'jackpot' ? 'jpDone' : tier === 'good' ? 'goodDone' : 'pickDone'); { const s = $('pickSub'); s.className = missLine ? 'sub miss' : 'sub'; s.textContent = missLine; }
   $('coupon').className = 'coupon' + (tier === 'normal' ? '' : ' ' + tier); $('couponLbl').textContent = t(tier === 'jackpot' ? 'couponJp' : 'couponLbl'); $('couponAmt').textContent = '฿' + total;
   $('btnPickAgain').textContent = t(LIVE ? 'seeCoupon' : pickDemo ? 'home' : 'again'); $('coupon').hidden = false; $('pickBtns').hidden = false;
   if(LIVE) $('couponNote').textContent = t('couponNoteLive', { exp: expLabel() });
@@ -1425,26 +1442,49 @@ function showJackpot(total){
   setTimeout(() => { scr.onclick = go; }, 900);          // ignore the tap that opened the last box
 }
 function endPick(total){ const tier = tierOf(total); if(tier === 'jackpot') setTimeout(() => showJackpot(total), 900); else showCoupon(total, tier); }
+/* v11 เฉลยแบบเกมจิ้งจอก: ยอดรวมขึ้นก่อน → กล่องที่เหลือเปิดไล่ทีละกล่อง → กล่องที่แพงกว่าของเราเรืองแสง + "เกือบแล้ว!" → คูปอง
+   ตัวเลขในกล่อง: ตัวจริงมาจากเซิร์ฟเวอร์ · ตัวอย่างมาจากสำรับตัวอย่าง — ตรงนี้แค่เปิดให้ดู ไม่ได้คิดยอดเอง */
+const RV = { gap: 800, each: 120, tease: 260, hold: 450, holdMiss: 1300 };   // มิลลิวินาที: เว้นหลังยอดรวม · ต่อกล่อง · ก่อนแซว · ค้างก่อนคูปอง (ไม่แซว / แซว)
+let rvRun = 0, missLine = '';
+function pickReset(){ rvRun++; missLine = ''; const s = $('pickSub'); s.className = 'sub rv'; s.textContent = ''; }
+function sumLine(n, big){ const s = $('pickSub'); s.className = big ? 'sub rv sum' : 'sub rv'; s.innerHTML = t('sumNow', { n }); }
+function revealRest(deck, picks, total, done){
+  const run = ++rvRun, boxes = [...$('grid9').children], live = () => run === rvRun && !$('pick').hidden;
+  const rest = boxes.map((b, i) => i).filter(i => !picks.includes(i));
+  boxes.forEach(b => { b.disabled = true; });
+  sumLine(total, true);                                                                  // 1) ยอดรวมขึ้นก่อน
+  rest.forEach((i, k) => setTimeout(() => { if(!live()) return; const b = boxes[i]; b.classList.add('rest', 'in'); b.innerHTML = amtHtml(deck[i] || 0); Sound.flip(); }, RV.gap + k * RV.each));   // 2) ไล่เปิดทีละกล่อง
+  setTimeout(() => {
+    if(!live()) return;
+    const top = Math.max(0, ...rest.map(i => deck[i] || 0)), mine = Math.max(0, ...picks.map(i => deck[i] || 0));
+    const miss = tierOf(total) !== 'jackpot' && top > mine;                              // 3) แซวเฉพาะเมื่อมีกล่องที่แพงกว่ากล่องดีที่สุดของเรา (แจ็กพอต = ได้สูงสุดแล้ว ไม่แซว)
+    if(miss){ rest.forEach(i => { if((deck[i] || 0) === top) boxes[i].classList.add('tease'); }); missLine = t('nearMiss', { n: top });
+      const s = $('pickSub'), m = document.createElement('span'); m.className = 'miss'; m.textContent = missLine; s.appendChild(document.createElement('br')); s.appendChild(m); Sound.tease(); }
+    setTimeout(() => { if(live()) done(); }, miss ? RV.holdMiss : RV.hold);              // 4) แล้วคูปองค่อยขึ้น
+  }, RV.gap + Math.max(0, rest.length - 1) * RV.each + RV.tease);
+}
 /* gift boxes — SAMPLE values only; the real game asks the server, which decides and issues the coupon */
 const boxColors = ['#e23a4e', '#27a36b', '#3d7dff', '#9b5de5', '#ff8a3d', '#e23a4e', '#27a36b', '#3d7dff', '#9b5de5'];
 const amtHtml = v => v ? `<span class="amt">฿${v}</span>` : `<span class="amt zero">${t('empty')}</span>`;
+const DECK9 = [0, 50, 50, 100, 100, 100, 100, 150, 150];   // SAMPLE set of 9 boxes for the demo reveal (the real game gets every box from the server)
 function openPick(score, n){
   if(LIVE){ livePick(score, n); return; }
-  let left = n, total = 0; const grid = $('grid9'); grid.innerHTML = ''; pickDemo = false;
+  let left = n, total = 0; const grid = $('grid9'), pool = DECK9.slice(), picks = [], deck = new Array(9).fill(0); grid.innerHTML = ''; grid.classList.remove('busy'); pickDemo = false; pickReset();
+  const draw = c => { const ok = c.filter(v => pool.includes(v)), v = ok[Math.floor(Math.random() * ok.length)]; pool.splice(pool.indexOf(v), 1); return v; };   // หยิบจากสำรับ: ค่าที่หมดแล้วไม่ออกซ้ำ
   $('coupon').hidden = true; $('pickBtns').hidden = true;
   $('pickTitle').textContent = t('pickTitle', { n }); $('pickSub').textContent = t('pickSub');
   for(let i = 0; i < 9; i++){
     const b = document.createElement('button'); b.className = 'gbox'; b.style.color = boxColors[i]; b.innerHTML = ic('gift'); b.setAttribute('aria-label', 'gift ' + (i + 1));
     b.onclick = () => {
       if(b.disabled || left <= 0) return;
-      const first = left === n, v = first ? (Math.random() < 0.6 ? 50 : 100) : [0, 50, 50, 100][Math.floor(Math.random() * 4)];
-      total += v; left--; b.disabled = true; b.classList.add('open'); b.innerHTML = amtHtml(v); Sound.box(); if(v) Sound.star(); else Sound.click();
+      const first = left === n, v = draw(first ? [50, 50, 50, 100, 100] : [0, 50, 50, 100]);   // กล่องแรกได้ ฿50 (6 ใน 10) หรือ ฿100 เสมอ
+      total += v; left--; picks.push(i); deck[i] = v; b.disabled = true; b.classList.add('open'); b.innerHTML = amtHtml(v); Sound.box(); if(v) Sound.star(); else Sound.click();
       if(left > 0){ $('pickSub').textContent = t('pickLeft', { n: left }); return; }
-      setTimeout(() => {
-        grid.querySelectorAll('.gbox:not(.open)').forEach(r => { r.disabled = true; r.classList.add('rest'); r.innerHTML = amtHtml([0, 50, 0, 100, 50, 150][Math.floor(Math.random() * 6)]); });
-        firstResult = { score, opens: n, total }; store.set('first', firstResult); pending = null; store.set('pending', null); $('btnReset').hidden = false;
-        endPick(total);
-      }, 650);
+      for(let k = pool.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+      let r = 0; for(let k = 0; k < 9; k++) if(!picks.includes(k)) deck[k] = pool[r++];              // กล่องที่เหลือ = ของที่เหลือในสำรับ
+      firstResult = { score, opens: n, total }; store.set('first', firstResult); pending = null; store.set('pending', null); $('btnReset').hidden = false;   // ผลล็อกทันทีที่เปิดครบ (ปิดหน้ากลางเฉลยก็ไม่ได้เลือกใหม่)
+      grid.classList.add('busy'); grid.querySelectorAll('.gbox').forEach(x => { x.disabled = true; }); sumLine(total, false);
+      setTimeout(() => revealRest(deck, picks, total, () => { grid.classList.remove('busy'); endPick(total); }), 560);
     };
     grid.appendChild(b);
   }
@@ -1452,13 +1492,13 @@ function openPick(score, n){
 }
 /* sample tools: show an ending without playing (nothing is saved) */
 function demoEnding(total){
-  const vals = { 50: [50], 150: [100, 50], 300: [100, 100, 100] }[total], grid = $('grid9'); grid.innerHTML = ''; pickDemo = true;
-  $('coupon').hidden = true; $('pickBtns').hidden = true; $('pickTitle').textContent = t('pickTitle', { n: vals.length }); $('pickSub').textContent = '';
-  for(let i = 0; i < 9; i++){ const b = document.createElement('button'); b.className = 'gbox'; b.style.color = boxColors[i]; b.disabled = true;
-    const v = [4, 1, 7].indexOf(i) < vals.length && [4, 1, 7].indexOf(i) >= 0 ? vals[[4, 1, 7].indexOf(i)] : null;
-    if(v !== null){ b.classList.add('open'); b.innerHTML = amtHtml(v); } else { b.classList.add('rest'); b.innerHTML = amtHtml([0, 50, 0, 100, 50, 150][i % 6]); }
+  const vals = { 50: [50], 150: [100, 50], 300: [100, 100, 100] }[total], grid = $('grid9'), pos = [4, 1, 7].slice(0, vals.length), pool = DECK9.slice(), deck = new Array(9).fill(0); grid.innerHTML = ''; pickDemo = true; pickReset();
+  vals.forEach((v, k) => { deck[pos[k]] = v; pool.splice(pool.indexOf(v), 1); });                    // กล่องที่ "เลือก" ออกจากสำรับ ที่เหลือแจกให้กล่องอื่น (สูง-ต่ำสลับกัน)
+  $('coupon').hidden = true; $('pickBtns').hidden = true; $('pickTitle').textContent = t('pickTitle', { n: vals.length });
+  for(let i = 0, r = 0; i < 9; i++){ const b = document.createElement('button'); b.className = 'gbox'; b.style.color = boxColors[i]; b.disabled = true;
+    if(pos.includes(i)){ b.classList.add('open'); b.innerHTML = amtHtml(deck[i]); } else { deck[i] = r++ % 2 ? pool.shift() : pool.pop(); b.innerHTML = ic('gift'); }
     grid.appendChild(b); }
-  show('pick'); endPick(total);
+  grid.classList.add('busy'); show('pick'); revealRest(deck, pos, total, () => { grid.classList.remove('busy'); endPick(total); });   // เล่นลำดับเฉลยเดียวกับตอนเล่นจริง
 }
 /* ranking — SAMPLE rows; the real board comes from the server */
 function openBoard(){
@@ -1627,7 +1667,7 @@ async function liveFinish(){
 }
 /* กล่องของขวัญ 9 ใบ: ลูกค้าเลือกให้ครบก่อน แล้วเซิร์ฟเวอร์เป็นคนบอกว่าในกล่องมีอะไร (เครื่องลูกค้าไม่รู้ล่วงหน้า) */
 function livePick(score, n){
-  const grid = $('grid9'), sel = []; let busy = false; grid.innerHTML = ''; grid.classList.remove('busy'); pickDemo = false;
+  const grid = $('grid9'), sel = []; let busy = false; grid.innerHTML = ''; grid.classList.remove('busy'); pickDemo = false; pickReset();
   $('coupon').hidden = true; $('pickBtns').hidden = true; $('btnPickRetry').hidden = true;
   $('pickTitle').textContent = t('pickTitle', { n }); $('pickSub').textContent = t('pickSub');
   const send = async () => {
@@ -1654,12 +1694,13 @@ function livePick(score, n){
   }
   show('pick');
 }
-function revealBoxes(d){   // เปิดกล่องที่เลือกทีละใบ → เฉลยกล่องที่เหลือ → ฉากจบตามยอด
-  const boxes = [...$('grid9').children], picks = d.picks || [], deck = d.deck || []; let k = 0;
-  boxes.forEach(b => { b.disabled = true; });
+function revealBoxes(d){   // เปิดกล่องที่เลือกทีละใบ (ยอดรวมวิ่งตาม) → เฉลยกล่องที่เหลือแบบเกมจิ้งจอก (revealRest) → ฉากจบตามยอด
+  const boxes = [...$('grid9').children], picks = d.picks || [], deck = d.deck || [], run = rvRun; let k = 0, sum = 0;
+  boxes.forEach((b, i) => { b.disabled = true; if(!picks.includes(i)) b.classList.remove('sel'); });
   const step = () => {
-    if(k < picks.length){ const i = picks[k++], v = deck[i] || 0, b = boxes[i]; if(b){ b.classList.remove('sel'); b.classList.add('open'); b.innerHTML = amtHtml(v); } Sound.box(); if(v) Sound.star(); else Sound.click(); setTimeout(step, 560); return; }
-    setTimeout(() => { boxes.forEach((b, i) => { if(!picks.includes(i)){ b.classList.add('rest'); b.innerHTML = amtHtml(deck[i] || 0); } }); $('grid9').classList.remove('busy'); endPick(d.amount); }, 650);
+    if(run !== rvRun) return;
+    if(k < picks.length){ const i = picks[k++], v = deck[i] || 0, b = boxes[i]; if(b){ b.classList.remove('sel'); b.classList.add('open'); b.innerHTML = amtHtml(v); } sum += v; sumLine(sum, false); Sound.box(); if(v) Sound.star(); else Sound.click(); setTimeout(step, 560); return; }
+    revealRest(deck, picks, d.amount, () => { $('grid9').classList.remove('busy'); endPick(d.amount); });
   };
   step();
 }
@@ -1765,7 +1806,7 @@ window.addEventListener('contextmenu', e => e.preventDefault());
 setSky(1); applyLang(); setSoundIcon(); renderHearts(); $('bestHome').textContent = fmt(best); $('btnReset').hidden = !firstResult; show('home'); resize();
 requestAnimationFrame(frame);
 if(LIVE) liveBoot();
-window.__dash = { tempoFor, windFor, get sfx(){ return Sound.pack; }, get wind(){ return Sound.windLevel; }, Sound, get tempo(){ return Sound.tempo; }, get bpm(){ return Sound.bpm; }, get live(){ return LIVE ? { doc: liveDoc, coupon, gate: gateKind, uid: Net.uid, camp: Net.camp } : null; }, scene, camera, renderer, spawn, clearActive, santys, demoEnding, tierOf, get fwAlive(){ return fAlive; }, HOME, homeSet, homeSanty, slots, player, setTheme(n){ skyForce = n === 'day' ? 0 : n === 'dusk' ? 0.5 : n === 'night' ? 1 : null; if(skyForce !== null) setSky(skyForce); }, get sky(){ return skyNow; }, gapMeters, cam, resize, S, CFG, active, startGame, update, finish, goHome, openBoard, moveLane, get best(){ return best; }, get first(){ return firstResult; }, reset(){ firstResult = null; pending = null; best = 0; store.set('first', null); store.set('pending', null); store.set('best', 0); store.set('how', false); seenHow = false; goHome(); }, spawnRow, stop(v){ running = !v; } };
+window.__dash = { tempoFor, windFor, get sfx(){ return Sound.pack; }, get wind(){ return Sound.windLevel; }, Sound, get tempo(){ return Sound.tempo; }, get bpm(){ return Sound.bpm; }, get live(){ return LIVE ? { doc: liveDoc, coupon, gate: gateKind, uid: Net.uid, camp: Net.camp } : null; }, scene, camera, renderer, spawn, clearActive, santys, demoEnding, tierOf, RV, openPick, get miss(){ return missLine; }, get fwAlive(){ return fAlive; }, HOME, homeSet, homeSanty, slots, player, setTheme(n){ skyForce = n === 'day' ? 0 : n === 'dusk' ? 0.5 : n === 'night' ? 1 : null; if(skyForce !== null) setSky(skyForce); }, get sky(){ return skyNow; }, gapMeters, cam, resize, S, CFG, active, startGame, update, finish, goHome, openBoard, moveLane, get best(){ return best; }, get first(){ return firstResult; }, reset(){ firstResult = null; pending = null; best = 0; store.set('first', null); store.set('pending', null); store.set('best', 0); store.set('how', false); seenHow = false; goHome(); }, spawnRow, stop(v){ running = !v; } };
 })();
 </script>
 
