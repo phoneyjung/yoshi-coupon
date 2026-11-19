@@ -678,8 +678,15 @@ const Sound = (() => {
       if(idx >= events.length){ idx = 0; nextT += (LOOP_BEATS - b0) * bt; } else nextT += (events[idx].b - b0) * bt;
     }
   }
+  // v12 · iOS: หลังสลับแอป/มีสายเข้า เสียงของหน้าเว็บอาจค้างที่ 'interrupted' หรือปลุกนอกจังหวะนิ้วแตะไม่ได้ → ปลุกทุกสถานะที่ไม่ใช่ running และลองใหม่เมื่อแตะจอ
+  let asleep = false;                    // true = เราพักเสียงเอง (หน้าหยุดชั่วคราว / หน้าถูกซ่อน) ห้ามปลุกจนกว่าจะสั่ง
+  function wake(){
+    if(!ctx || ctx.state === 'running' || ctx.state === 'closed') return null;
+    try{ const p = ctx.resume(); if(p && p.catch) p.catch(() => {}); return p && p.then ? p : null; }catch(e){ return null; }
+  }
+  function go(){ if(ctx && !timer && !asleep){ nextT = ctx.currentTime + 0.08; timer = setInterval(schedule, 110); } }   // เพลงเดินต่อจากโน้ตที่ค้างไว้
   function startMusic(){
-    if(!init()) return; if(ctx.state === 'suspended') ctx.resume();
+    if(!init()) return; asleep = false; wake();
     if(timer) return;
     idx = 0; nextT = ctx.currentTime + 0.08; musicT0 = ctx.currentTime; waitInst = true;
     music.gain.setTargetAtTime(musicLevel, ctx.currentTime, 0.4);
@@ -691,7 +698,11 @@ const Sound = (() => {
     setTempo(r){ if(ctx && ctx.currentTime < holdUntil) return; rateTarget = Math.max(0.8, Math.min(2, r || 1)); },   // ความเร็วเพลง: 1 = ปกติ
     preview(r, sec){ if(!ctx) return; rateTarget = Math.max(0.8, Math.min(2, r)); holdUntil = ctx.currentTime + sec; },   // ฟังตัวอย่างจังหวะ (เครื่องมือตัวอย่าง)
     get tempo(){ return rate; }, get bpm(){ return Math.round(138 * rate); },
-    suspend(on){ if(!ctx) return; if(on){ if(timer){ clearInterval(timer); timer = null; } ctx.suspend(); } else { ctx.resume().then(() => { if(!timer){ nextT = ctx.currentTime + 0.08; timer = setInterval(schedule, 110); } }); } },
+    suspend(on){ if(!ctx) return;
+      if(on){ asleep = true; if(timer){ clearInterval(timer); timer = null; } try{ const p = ctx.suspend(); if(p && p.catch) p.catch(() => {}); }catch(e){} }
+      else { asleep = false; (wake() || Promise.resolve()).then(go, () => {}); } },          // ปลุกไม่สำเร็จ (iOS นอกจังหวะนิ้วแตะ) → poke() ลองใหม่ตอนแตะจอ
+    poke(){ if(!ctx || asleep || (timer && ctx.state === 'running')) return; const p = wake(); if(!timer) (p || Promise.resolve()).then(go, () => {}); },   // เรียกทุกครั้งที่นิ้วแตะจอ: ปกติไม่ทำอะไร
+    get awake(){ return !!ctx && !asleep && !!timer && ctx.state === 'running'; },
     toggleMute(){ muted = !muted; store.set('mute', muted); if(ctx) master.gain.setTargetAtTime(muted ? 0 : OUT, ctx.currentTime, 0.03); return muted; },
     get muted(){ return muted; },
     setWind(k){ if(!ctx || ctx.currentTime < windHold) return; k = Math.round(k * 50) / 50; if(k === windWant) return; windWant = k; applyWind(); },   // ลมตามความเร็ว: 0 = เงียบ
@@ -1800,6 +1811,8 @@ window.addEventListener('keydown', e => {
   else if(e.key === 'Escape' || e.key === 'p' || e.key === 'P'){ if(S.mode === 'play') pause(true); else if(S.mode === 'paused') pause(false); }
 });
 document.addEventListener('visibilitychange', () => { if(document.hidden){ pause(true); Sound.suspend(true); } else if(S.mode !== 'paused') Sound.suspend(false); });
+for(const ev of ['pointerup', 'touchend', 'keydown']) window.addEventListener(ev, () => Sound.poke(), { capture: true, passive: true });   // v12 · iOS: เสียงที่ปลุกไม่ขึ้นตอนกลับเข้าหน้า จะกลับมาเมื่อแตะจอครั้งถัดไป
+window.addEventListener('pageshow', e => { if(e.persisted && !document.hidden && S.mode !== 'paused') Sound.suspend(false); });
 window.addEventListener('contextmenu', e => e.preventDefault());
 
 /* ---- boot ---- */
