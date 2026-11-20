@@ -203,6 +203,7 @@ button.proto{cursor:pointer;min-height:34px;font-family:inherit}
 .code{font-family:var(--f-data);font-size:22px;font-weight:700;letter-spacing:.06em;color:var(--gold);user-select:all;-webkit-user-select:all}
 #mine.used .qr{opacity:.25}
 #mine.used .coupon{filter:grayscale(.7)}
+#mineTest{display:inline-block;padding:0 8px;border-radius:8px;background:#fff;color:#b3122f;font-weight:800}
 .card{box-sizing:border-box}
 .chips{gap:6px}
 .chips .btn-ghost{min-height:34px;padding:4px 11px;font-size:13px}
@@ -431,7 +432,8 @@ button.proto{cursor:pointer;min-height:34px;font-family:inherit}
       <h2 data-t="mineTitle"></h2>
       <div class="coupon" id="mineCard">
         <div class="big" id="mineAmt"></div>
-        <div class="note" style="color:#fff" data-t="mineOff"></div>
+        <div class="note" style="color:#fff" data-t="mineOff" id="mineOff"></div>
+        <div class="note" id="mineTest" hidden>🧪 คูปองทดสอบ · ใช้จริงไม่ได้</div>
       </div>
       <div class="qr" id="mineQR"></div>
       <div class="code" id="mineCode"></div>
@@ -1264,7 +1266,7 @@ function update(dt){
     if(sc !== S.score){ S.score = sc; $('sc').textContent = fmt(sc); }
     const kmh = Math.round(S.speed * 3.6); if(kmh !== S.kmh){ S.kmh = kmh; $('spd').textContent = fmt(kmh); }
     if(S.first){ const o = opensFor(sc); if(o > S.opens){ S.opens = o; Sound.tier(); toast(t(o === 2 ? 'toast2' : 'toast3')); } renderGoal(); }
-    if(LIVE && S.first && sc >= S.nextSave && S.nextSave <= CFG.open3 + 500){ S.nextSave = (Math.floor(sc / 500) + 1) * 500; Net.api('progress', { score: sc }, true).catch(() => {}); }   // รอบแรก: ฝากคะแนนไว้ที่เซิร์ฟเวอร์ทุก 500 แต้ม — ออกกลางคันคะแนนไม่หาย
+    if(LIVE && sc >= S.nextSave){ const step = (S.first && sc < 6000) ? 500 : 1500; S.nextSave = (Math.floor(sc / step) + 1) * step; Net.save(sc); }   // รอบแรก: ฝากคะแนนไว้ที่เซิร์ฟเวอร์ทุก 500 แต้ม — ออกกลางคันคะแนนไม่หาย
   }
   const cheerOn = S.mode === 'play' && S.cheer > 0;
   if(cheerOn !== S.cheerHud){ S.cheerHud = cheerOn; $('x2').hidden = !cheerOn; $('scoreBox').classList.toggle('cheer', cheerOn); }
@@ -1400,7 +1402,7 @@ function startGame(){
 }
 function beginRun(){
   clearActive();
-  Object.assign(S, { mode: 'play', score: 0, dist: 0, bonus: 0, speed: CFG.speed0, hearts: CFG.hearts, lane: 1, px: 0, invuln: 0, opens: 1, combo: 0, comboT: 0, rowAcc: 0, rows: 0, lastFree: 1, shake: 0, hits: 0, gifts: 0, stars: 0, kmh: 0, skyT: 0, pt: 0, extra: 0, cheer: 0, cheers: 0, nextCheer: CFG.cheerFirst, first: !firstResult, nextSave: 500 });
+  Object.assign(S, { mode: 'play', score: 0, dist: 0, bonus: 0, speed: CFG.speed0, hearts: CFG.hearts, lane: 1, px: 0, invuln: 0, opens: 1, combo: 0, comboT: 0, rowAcc: 0, rows: 0, lastFree: 1, shake: 0, hits: 0, gifts: 0, stars: 0, kmh: 0, skyT: 0, pt: 0, extra: 0, cheer: 0, cheers: 0, nextCheer: CFG.cheerFirst, first: !firstResult, nextSave: firstResult ? 1500 : 500 });
   for(const z of [-46, -72, -98, -124]) spawnRow(z);
   $('sc').textContent = '0'; goalKey = ''; renderHearts(); renderGoal(); show(null); resize();
   Sound.setLevel(CFG.musicPlay); Sound.restart(); Sound.hoho();
@@ -1458,7 +1460,7 @@ function endPick(total){ const tier = tierOf(total); if(tier === 'jackpot') setT
 const RV = { gap: 800, each: 120, tease: 260, hold: 450, holdMiss: 1300 };   // มิลลิวินาที: เว้นหลังยอดรวม · ต่อกล่อง · ก่อนแซว · ค้างก่อนคูปอง (ไม่แซว / แซว)
 let rvRun = 0, missLine = '';
 function pickReset(){ rvRun++; missLine = ''; const s = $('pickSub'); s.className = 'sub rv'; s.textContent = ''; }
-function sumLine(n, big){ const s = $('pickSub'); s.className = big ? 'sub rv sum' : 'sub rv'; s.innerHTML = t('sumNow', { n }); }
+function sumLine(n, big){ const s = $('pickSub'); s.className = big ? 'sub rv sum' : 'sub rv'; s.innerHTML = t('sumNow', { n: Number(n) || 0 }); }
 function revealRest(deck, picks, total, done){
   const run = ++rvRun, boxes = [...$('grid9').children], live = () => run === rvRun && !$('pick').hidden;
   const rest = boxes.map((b, i) => i).filter(i => !picks.includes(i));
@@ -1476,7 +1478,7 @@ function revealRest(deck, picks, total, done){
 }
 /* gift boxes — SAMPLE values only; the real game asks the server, which decides and issues the coupon */
 const boxColors = ['#e23a4e', '#27a36b', '#3d7dff', '#9b5de5', '#ff8a3d', '#e23a4e', '#27a36b', '#3d7dff', '#9b5de5'];
-const amtHtml = v => v ? `<span class="amt">฿${v}</span>` : `<span class="amt zero">${t('empty')}</span>`;
+const amtHtml = v => (v = Number(v) || 0) ? `<span class="amt">฿${v}</span>` : `<span class="amt zero">${t('empty')}</span>`;
 const DECK9 = [0, 50, 50, 100, 100, 100, 100, 150, 150];   // SAMPLE set of 9 boxes for the demo reveal (the real game gets every box from the server)
 function openPick(score, n){
   if(LIVE){ livePick(score, n); return; }
@@ -1538,8 +1540,9 @@ let liveDoc = null, coupon = null, startBusy = false, gateKind = '', mineTimer =
 const expLabel = () => LIVE ? (LANG === 'en' ? LIVE.expEN : LIVE.expTH) : '';
 function notice(msg){ const el = $('note'); el.textContent = msg; el.classList.add('on'); clearTimeout(noteT); noteT = setTimeout(() => el.classList.remove('on'), 2600); }
 const Net = LIVE && (() => {
-  const TEST = /test/i.test(location.hash + location.search), qs = new URLSearchParams(location.search);
-  const API = (TEST && qs.get('api')) || LIVE.api;
+  const qs = new URLSearchParams(location.search), TEST = qs.has('test') || /^#test/i.test(location.hash);   // v13: เฉพาะ ?test หรือ #test…
+  const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  const API = (TEST && LOCAL && qs.get('api')) || LIVE.api;   // v13: เปลี่ยนปลายทางได้เฉพาะตอนทดสอบบนเครื่องผู้พัฒนา
   const N = { uid: '', camp: null, friend: null, needFriend: false, tester: false, uidShown: '', test: TEST };
   const isTest = () => N.uid.startsWith('test_');
   const auth = () => { if(isTest()) return { test: true, testId: N.uid }; let at = '', it = ''; try{ at = liff.getAccessToken() || ''; }catch(e){} try{ it = liff.getIDToken() || ''; }catch(e){} return { accessToken: at, idToken: it }; };
@@ -1553,6 +1556,21 @@ const Net = LIVE && (() => {
     try{ sessionStorage.removeItem('_relogin'); }catch(e){}
     return j;
   };
+  let saveWant = 0, saveRun = null, saveGen = 0;
+  N.save = (sc) => {
+    saveWant = Math.max(saveWant, sc); if(saveRun) return;
+    const gen = saveGen;
+    saveRun = (async () => {
+      let tries = 0;
+      while(saveWant > 0 && gen === saveGen){
+        const v = saveWant; saveWant = 0;
+        try{ await N.api('progress', { score: v }, true); tries = 0; }
+        catch(e){ if(e.status && e.status < 500) break; if(++tries > 6) break; saveWant = Math.max(saveWant, v); await new Promise(r => setTimeout(r, 1200)); }
+      }
+    })().finally(() => { saveRun = null; if(saveWant > 0 && gen === saveGen) N.save(saveWant); });
+  };
+  N.flush = () => saveRun ? within(saveRun, 3000).catch(() => {}) : Promise.resolve();
+  N.saveReset = () => { saveGen++; saveWant = 0; };
   N.retry = async (fn) => { let last; for(let i = 0; i < 3; i++){ try{ return await fn(); }catch(e){ last = e; if(e.status && e.status < 500) throw e; await new Promise(r => setTimeout(r, 900 + i * 800)); } } throw last; };   // ลองซ้ำเฉพาะเน็ต/เซิร์ฟเวอร์ขัดข้อง
   N.src = (() => {   // ช่องทางที่มา …?src=line / tg / web / x / today (LIFF ส่งต่อมาใน liff.state)
     let s = '';
@@ -1598,7 +1616,7 @@ const closedNow = () => !!(LIVE && Net.camp && !Net.camp.open && !Net.sandbox())
 function homeState(){   // หน้าแรก: ปุ่มเริ่ม + ป้ายรางวัล/คูปอง ตามสถานะของลูกค้า
   if(!LIVE) return;
   $('bestHome').textContent = fmt(best);
-  $('btnStart').textContent = t(startBusy ? 'starting' : (pending && !coupon) ? 'startPick' : coupon ? (closedNow() ? 'seeCoupon' : 'startAgain') : 'start');
+  $('btnStart').textContent = t(startBusy ? 'starting' : ((pending || (liveDoc && liveDoc.stage === 'playing')) && !coupon) ? 'startPick' : coupon ? (closedNow() ? 'seeCoupon' : 'startAgain') : 'start');
   $('prizePill').classList.toggle('mine', !!coupon);
   $('prizeTxt').textContent = coupon ? t(coupon.isUsed ? 'mineUsedBtn' : 'mineBtn', { a: coupon.amount }) : t('prize');
 }
@@ -1632,7 +1650,9 @@ async function liveStart(){
   if(pending && !coupon){ openPick(pending.score, pending.opens); return; }
   startBusy = true; homeState(); if($('home').hidden) notice(t('starting'));
   try{
-    const j = await Net.retry(() => Net.api('start', { src: Net.src }));
+    Net.saveReset();
+    const rid = Math.random().toString(36).slice(2, 12) + Date.now().toString(36);
+    const j = await Net.retry(() => Net.api('start', { src: Net.src, rid }));
     if(j.route){   // มีรอบค้างอยู่ที่เซิร์ฟเวอร์ (ออกกลางคัน / เปิดอีกเครื่อง)
       let d = j.route;
       if(d.stage === 'playing'){ const e = await Net.retry(() => Net.api('end', { stats: { score: d.score || 0, secs: 0 } })); d = e.pick || e.route || d; if(e.pick) notice(t('resumed')); }
@@ -1662,6 +1682,7 @@ async function liveFinish(){
   let j = null;
   while(!j){
     overCard({ title: t('over'), score: sc, sub: t('saving') });
+    Net.save(sc); await Net.flush();   // v13: ส่งจุดบันทึกสุดท้ายให้ถึงเซิร์ฟเวอร์ก่อนส่งจบ (คะแนนตอนจบต้องมีจุดบันทึกรองรับ)
     try{ j = await Net.retry(() => Net.api('end', { stats })); }
     catch(e){
       if(e.status === 401){ gate('err'); return; }
@@ -1734,6 +1755,7 @@ function openMine(){
   if(!coupon) return;
   $('mineAmt').textContent = '฿' + coupon.amount; $('mineCode').textContent = coupon.code || ''; $('mineHow').textContent = t('mineHow', { exp: expLabel() });
   $('mineCard').className = 'coupon' + (tierOf(coupon.amount) === 'normal' ? '' : ' ' + tierOf(coupon.amount));
+  { const tc = Net.sandbox() || /^TEST-/.test(coupon.code || ''); $('mineTest').hidden = !tc; $('mineOff').hidden = tc; }
   mineUsed(!!coupon.isUsed); drawQR(); show('mine');
   clearInterval(mineTimer);   // เปิดหน้าคูปองค้างไว้ → พนักงานสแกนแล้วขึ้น "ใช้แล้ว" เอง
   mineTimer = setInterval(async () => {
@@ -1746,9 +1768,9 @@ async function liveBoard(){
   $('boardSub').textContent = t('boardSubLive', { shop: LIVE.shopName }); $('lb').innerHTML = `<div class="sub">${t('boardLoad')}</div>`; show('board');
   try{
     const j = await Net.retry(() => Net.api('board')), top = j.top || [], al = t('alias');
-    const nm = r => r.me ? t('you') : (al[r.k] || al[0]) + ' ' + (r.n || '');
+    const nm = r => r.me ? t('you') : (al[r.k | 0] || al[0]) + ' ' + ((r.n | 0) || '');
     let h = top.map((r, i) => `<div class="r ${i < 3 ? 'top' : ''} ${r.me ? 'me' : ''}"><span class="n">${i + 1}</span><span>${nm(r)}</span><b>${fmt(r.best)}</b></div>`).join('');
-    if(j.me && !top.some(r => r.me)) h += `<div class="r me"><span class="n">${j.me.rank || '–'}</span><span>${t('you')}</span><b>${fmt(j.me.best)}</b></div>`;
+    if(j.me && !top.some(r => r.me)) h += `<div class="r me"><span class="n">${(j.me.rank | 0) || '–'}</span><span>${t('you')}</span><b>${fmt(j.me.best)}</b></div>`;
     $('lb').innerHTML = h || `<div class="sub">${t('boardEmpty')}</div>`;
   }catch(e){ $('lb').innerHTML = `<div class="sub">${t('boardErr')}</div>`; }
 }

@@ -587,7 +587,7 @@ function generateTestId(){
    stage 'done'    → มีผลแล้ว — เปิดใหม่ = หน้าคูปองเดิม
    เซิร์ฟเวอร์ตรวจตัวตนจาก LINE (ID token) · สุ่มรางวัล · ออกรหัส · กันเปิด 2 เครื่อง
    ============================================================ */
-const GAME_API = (IS_TEST_URL && new URLSearchParams(location.search).get('api')) || GAME_API_DEFAULT;
+const GAME_API = (IS_TEST_URL && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) && new URLSearchParams(location.search).get('api')) || GAME_API_DEFAULT;   // 20 พ.ย. 69: เปลี่ยนปลายทางได้เฉพาะตอนทดสอบบนเครื่องผู้พัฒนา
 function isTestUser(){ return String(lineUserId || '').startsWith('test_'); }
 function couponCollection(){ return (isTestUser() ? 'coupons_test_' : 'coupons_') + SHOP_ID + '_' + CAMPAIGN_ID; }
 function withTimeout(p, ms){ return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); }
